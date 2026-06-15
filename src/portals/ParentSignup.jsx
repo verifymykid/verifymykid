@@ -1,0 +1,295 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { UserPlus, CheckCircle2 } from 'lucide-react';
+import { useStore } from '../data/mockStore';
+
+export default function ParentSignup() {
+  const { registerParent, schools, sendNotification } = useStore();
+  const navigate = useNavigate();
+
+  const [parentForm, setParentForm] = useState({
+    name: '', email: '', phone: '', address: '',
+    password: '',
+    singleParent: false, spouseName: '', spousePhone: '',
+    childrenCount: 1, children: [{ name: '', age: '' }],
+    schoolId: ''
+  });
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const [newParentId, setNewParentId] = useState('');
+
+  const handleParentSignup = (e) => {
+    e.preventDefault();
+    const cleanChildren = parentForm.children.filter(c => c.name !== '');
+    if (cleanChildren.length === 0) {
+      alert("Please add at least one child.");
+      return;
+    }
+    const p = registerParent({
+      name: parentForm.name,
+      email: parentForm.email,
+      phone: parentForm.phone,
+      address: parentForm.address,
+      password: parentForm.password,
+      singleParent: parentForm.singleParent,
+      spouseName: parentForm.spouseName,
+      spousePhone: parentForm.spousePhone,
+      children: cleanChildren,
+      schoolId: parentForm.schoolId
+    });
+    
+    const targetSchoolObj = schools.find(s => s.id === parentForm.schoolId);
+    const targetSchoolName = targetSchoolObj ? targetSchoolObj.name : 'School';
+    
+    sendNotification(p.id, p.name, p.schoolId, 'New Parent Sign Up', `A new parent has just signed up: Parent ${p.name} registered and is awaiting your access approval.`);
+    sendNotification(p.id, p.name, 'SUPER_ADMIN', 'New Parent Sign Up', `A new parent has just signed up: Parent ${p.name} registered at ${targetSchoolName} and is pending approval.`);
+    
+    setNewParentId(p.id);
+    setSignupSuccess(true);
+  };
+
+  const handleChildChange = (index, field, value) => {
+    const nextChildren = [...parentForm.children];
+    nextChildren[index] = { ...nextChildren[index], [field]: value };
+    setParentForm({ ...parentForm, children: nextChildren });
+  };
+
+  const addMoreChildren = () => {
+    setParentForm(prev => ({
+      ...prev,
+      children: [...prev.children, { name: '', age: '' }]
+    }));
+  };
+
+  return (
+    <div style={{ background: 'var(--bg-primary)', minHeight: 'calc(100vh - 70px)', padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ maxWidth: '600px', width: '100%' }}>
+        {!signupSuccess ? (
+          <div className="glass-card">
+            <h2 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <UserPlus style={{ color: 'var(--accent-blue)' }} /> Parent Sign Up Portal
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+              Register child profiles and authorized pickup arrangements.
+            </p>
+
+            <form onSubmit={handleParentSignup}>
+              <h3 style={{ fontSize: '0.9rem', color: 'var(--accent-blue)', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.25rem' }}>
+                Parent Identity
+              </h3>
+              
+              <div className="form-group">
+                <label>Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Parent Full Name"
+                  value={parentForm.name}
+                  onChange={(e) => setParentForm({ ...parentForm, name: e.target.value })}
+                  className="input-control"
+                  id="parent-reg-name"
+                />
+              </div>
+
+              <div className="grid-2">
+                <div className="form-group">
+                  <label>Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="parent@email.com"
+                    value={parentForm.email}
+                    onChange={(e) => setParentForm({ ...parentForm, email: e.target.value })}
+                    className="input-control"
+                    id="parent-reg-email"
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Mobile Number *</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="+234 xxxx xxxx"
+                    value={parentForm.phone}
+                    onChange={(e) => setParentForm({ ...parentForm, phone: e.target.value })}
+                    className="input-control"
+                    id="parent-reg-phone"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Residential Address *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Street address, Lagos"
+                  value={parentForm.address}
+                  onChange={(e) => setParentForm({ ...parentForm, address: e.target.value })}
+                  className="input-control"
+                  id="parent-reg-address"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Account Password *</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Set account password"
+                  value={parentForm.password}
+                  onChange={(e) => setParentForm({ ...parentForm, password: e.target.value })}
+                  className="input-control"
+                  id="parent-reg-password"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Select Child's Registered School *</label>
+                <select
+                  value={parentForm.schoolId}
+                  onChange={(e) => setParentForm({ ...parentForm, schoolId: e.target.value })}
+                  required
+                  className="input-control"
+                  id="parent-reg-school-select"
+                >
+                  <option value="">-- Choose Registered School --</option>
+                  {schools.filter(s => s.status === 'APPROVED').map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.type} - {s.id})</option>
+                  ))}
+                </select>
+              </div>
+
+              <h3 style={{ fontSize: '0.9rem', color: 'var(--accent-blue)', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.25rem' }}>
+                Family Configuration
+              </h3>
+
+              <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <label style={{ margin: 0 }}>Are you a Single Parent?</label>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={parentForm.singleParent}
+                    onChange={(e) => setParentForm({ ...parentForm, singleParent: e.target.checked })}
+                    id="parent-reg-single"
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+
+              {!parentForm.singleParent && (
+                <div className="grid-2">
+                  <div className="form-group">
+                    <label>Spouse Full Name</label>
+                    <input
+                      type="text"
+                      placeholder="Spouse Name"
+                      value={parentForm.spouseName}
+                      onChange={(e) => setParentForm({ ...parentForm, spouseName: e.target.value })}
+                      className="input-control"
+                      id="parent-reg-spousename"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Spouse Phone Number</label>
+                    <input
+                      type="tel"
+                      placeholder="Spouse Mobile"
+                      value={parentForm.spousePhone}
+                      onChange={(e) => setParentForm({ ...parentForm, spousePhone: e.target.value })}
+                      className="input-control"
+                      id="parent-reg-spousephone"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <h3 style={{ fontSize: '0.9rem', color: 'var(--accent-blue)', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.25rem' }}>
+                Children Profiles
+              </h3>
+
+              {parentForm.children.map((child, index) => (
+                <div key={index} className="grid-2" style={{ marginBottom: '0.5rem' }}>
+                  <div className="form-group">
+                    <label>Child #{index + 1} Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Child's Full Name"
+                      value={child.name}
+                      onChange={(e) => handleChildChange(index, 'name', e.target.value)}
+                      className="input-control"
+                      id={`child-name-${index}`}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Child #{index + 1} Age *</label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="Age"
+                      value={child.age}
+                      onChange={(e) => handleChildChange(index, 'age', e.target.value)}
+                      className="input-control"
+                      id={`child-age-${index}`}
+                    />
+                  </div>
+                </div>
+              ))}
+
+              <button 
+                type="button" 
+                onClick={addMoreChildren} 
+                className="btn btn-outline" 
+                style={{ width: '100%', padding: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}
+                id="btn-add-child"
+              >
+                + Add Another Child
+              </button>
+
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} id="btn-parent-submit">
+                Register & Generate Unique ID
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className="glass-card" style={{ textAlign: 'center' }}>
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
+              <CheckCircle2 size={32} />
+            </div>
+            <h2 style={{ marginBottom: '0.5rem' }}>Account Registered!</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              Your generated Parent Unique ID for sign-in is:
+            </p>
+            <div style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--glass-border)',
+              borderRadius: '8px',
+              padding: '0.75rem',
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              letterSpacing: '0.1em',
+              color: 'var(--accent-cyan)',
+              display: 'inline-block',
+              marginBottom: '1.5rem',
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)'
+            }} id="parent-uniq-id">
+              {newParentId}
+            </div>
+            
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+              Save this ID safely! You need it to access your pickup codes. Your account is currently <strong>PENDING</strong> school admin approval. You will be able to sign in once the school administration approves your access profile.
+            </p>
+
+            <button 
+              onClick={() => navigate(`/parent-signin?id=${newParentId}`)} 
+              className="btn btn-primary"
+              id="btn-goto-signin"
+            >
+              Proceed to Parent Sign-in
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
