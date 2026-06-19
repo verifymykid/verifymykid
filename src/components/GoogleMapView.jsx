@@ -6,6 +6,7 @@ export default function GoogleMapView({ schoolIdFilter = null, centerCoords = nu
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
   const markersRef = useRef({});
+  const prevActiveIdsRef = useRef('');
 
   useEffect(() => {
     // If google maps is already loaded, skip loading script
@@ -180,22 +181,31 @@ export default function GoogleMapView({ schoolIdFilter = null, centerCoords = nu
       }
     });
 
+    // Check if the set of active trackers actually changed
+    const activeIds = [...activeGuardians.map(g => g.id), ...activeParents.map(p => p.id)].sort().join(',');
+    const activeIdsChanged = prevActiveIdsRef.current !== activeIds;
+    prevActiveIdsRef.current = activeIds;
+
     // Auto-focus and adjust map viewport dynamically
     const hasItems = activeGuardians.length > 0 || activeParents.length > 0;
     if (hasItems) {
-      const bounds = new window.google.maps.LatLngBounds();
-      activeGuardians.forEach(g => {
-        bounds.extend({ lat: g.lastLocation?.lat || 6.43, lng: g.lastLocation?.lng || 3.42 });
-      });
-      activeParents.forEach(p => {
-        bounds.extend({ lat: p.lat || 6.4312, lng: p.lng || 3.4190 });
-      });
-      mapInstance.fitBounds(bounds);
+      if (activeIdsChanged) {
+        const bounds = new window.google.maps.LatLngBounds();
+        activeGuardians.forEach(g => {
+          bounds.extend({ lat: g.lastLocation?.lat || 6.43, lng: g.lastLocation?.lng || 3.42 });
+        });
+        activeParents.forEach(p => {
+          bounds.extend({ lat: p.lat || 6.4312, lng: p.lng || 3.4190 });
+        });
+        mapInstance.fitBounds(bounds);
+      }
     } else {
-      // Reset to Greenwood Academy HQ in Victoria Island, Lagos
-      const lagosCenter = { lat: 6.4281, lng: 3.4219 };
-      mapInstance.panTo(lagosCenter);
-      mapInstance.setZoom(14);
+      if (activeIdsChanged) {
+        // Reset to Greenwood Academy HQ in Victoria Island, Lagos
+        const lagosCenter = { lat: 6.4281, lng: 3.4219 };
+        mapInstance.panTo(lagosCenter);
+        mapInstance.setZoom(14);
+      }
     }
   }, [mapInstance, guardians, activeAlerts, parents, schoolIdFilter]);
 

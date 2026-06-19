@@ -454,29 +454,8 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               Authenticate & Initialize Terminal
             </button>
           </form>
-          
           <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '1.5rem', paddingTop: '1rem' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-              Demo Bus Guardian Accounts:
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {guardians.map(g => (
-                <button
-                  key={g.id}
-                  onClick={() => { 
-                    setNameInput(g.name); 
-                    setPasswordInput('password123'); 
-                  }}
-                  className="btn btn-outline"
-                  style={{ justifyContent: 'space-between', padding: '0.4rem 0.6rem', fontSize: '0.75rem', width: '100%' }}
-                  type="button"
-                >
-                  <span>{g.name} ({g.busNumber})</span>
-                  <code style={{ color: 'var(--accent-cyan)' }}>Password: password123</code>
-                </button>
-              ))}
-            </div>
-            <div style={{ marginTop: '0.75rem', fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.3' }}>
+            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.3' }}>
               ℹ️ Security Audit Info: Device telemetry coordinates and MAC signature logs will register upon terminal start.
             </div>
           </div>

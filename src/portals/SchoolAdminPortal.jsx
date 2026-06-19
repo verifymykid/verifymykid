@@ -419,23 +419,27 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     );
   }
 
-  const handleAddGuardian = (e) => {
+  const handleAddGuardian = async (e) => {
     e.preventDefault();
     if (!guardianForm.name || !guardianForm.busNumber) return;
     
-    const newG = addGuardian(schoolId, guardianForm);
-    setGeneratedCreds({
-      name: newG.name,
-      password: newG.password,
-      id: newG.id
-    });
-    
-    // Clear form
-    setGuardianForm({
-      name: '', phone: '', busNumber: '', driverName: '', plateNumber: '', assignedRoute: '',
-      password: '',
-      profilePic: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
-    });
+    try {
+      const newG = await addGuardian(schoolId, guardianForm);
+      setGeneratedCreds({
+        name: newG.name,
+        password: guardianForm.password || 'password123',
+        id: newG.id
+      });
+      
+      // Clear form
+      setGuardianForm({
+        name: '', phone: '', busNumber: '', driverName: '', plateNumber: '', assignedRoute: '',
+        password: '',
+        profilePic: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
+      });
+    } catch (err) {
+      alert(err.message || 'Failed to add guardian.');
+    }
   };
 
   const handleExportCSV = () => {

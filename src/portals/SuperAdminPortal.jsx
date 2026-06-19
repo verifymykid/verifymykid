@@ -1423,6 +1423,7 @@ export default function SuperAdminPortal() {
                               <div><strong>Bus / Plate Number:</strong> {g.busNumber} / <code>{g.plateNumber}</code></div>
                               <div><strong>Driver Name:</strong> {g.driverName}</div>
                               <div><strong>Assigned Route:</strong> {g.assignedRoute}</div>
+                              <div><strong>Live Coordinates:</strong> {g.lastLocation?.lat || g.lat || 'N/A'}, {g.lastLocation?.lng || g.lng || 'N/A'}</div>
                             </div>
                           </div>
                         ))}

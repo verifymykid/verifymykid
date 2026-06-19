@@ -108,6 +108,8 @@ class GuardianCreateRequest(BaseModel):
     plateNumber: str
     assignedRoute: str
     password: Optional[str] = "password123"
+    profilePic: Optional[str] = ""
+
 
 class PanicRequest(BaseModel):
     guardianId: str
@@ -327,9 +329,26 @@ def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
             )
             db.add(new_child)
             
+    # Save log of registration
+    school = db.query(models.School).filter(models.School.id == new_parent.schoolId).first()
+    school_name = school.name if school else "Unknown School"
+
+    db_log = models.SystemLog(
+        id=f"SLOG-{uuid.uuid4().hex[:4].upper()}",
+        type="Parent Registered",
+        timestamp=datetime.utcnow().isoformat(),
+        schoolId=new_parent.schoolId,
+        parentName=new_parent.name,
+        gps="N/A",
+        device="Parent Registration Portal",
+        details=f"Parent '{new_parent.name}' (ID: {new_parent.id}) registered and is pending approval by school '{school_name}' (ID: {new_parent.schoolId})."
+    )
+    db.add(db_log)
+
     db.commit()
     db.refresh(new_parent)
     return {"id": new_parent.id, "name": new_parent.name}
+
 
 @app.post("/api/auth/parent/login")
 def parent_login(data: LoginRequest, db: Session = Depends(get_db)):
@@ -406,7 +425,10 @@ def parent_reset_password(data: ParentResetPasswordRequest, db: Session = Depend
 def guardian_login(data: GuardianLoginRequest, db: Session = Depends(get_db)):
     g = db.query(models.Guardian).filter(func.lower(models.Guardian.name) == data.name.lower().strip()).first()
     if not g:
+        g = db.query(models.Guardian).filter(models.Guardian.id == data.name.upper().strip()).first()
+    if not g:
         raise HTTPException(status_code=404, detail="Invalid Bus Guardian name or password.")
+
         
     is_valid = False
     if data.password == "password123" or verify_password(data.password, g.password):
@@ -844,7 +866,7 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
         email=f"{data.name.lower().replace(' ', '')}@verifymykid.com",
         phone=data.phone,
         password=get_password_hash(data.password),
-        profilePic="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+        profilePic=data.profilePic if data.profilePic else "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         busNumber=data.busNumber,
         driverName=data.driverName,
         plateNumber=data.plateNumber,
@@ -857,9 +879,27 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
         lastLocationUpdated=datetime.utcnow().isoformat()
     )
     db.add(new_g)
+    
+    # Retrieve school details to log onboarding accurately
+    school = db.query(models.School).filter(models.School.id == schoolId).first()
+    school_name = school.name if school else "Unknown School"
+    
+    db_log = models.SystemLog(
+        id=f"SLOG-{uuid.uuid4().hex[:4].upper()}",
+        type="Bus Guardian Onboarded",
+        timestamp=datetime.utcnow().isoformat(),
+        schoolId=schoolId,
+        parentName="N/A",
+        gps=f"{new_g.lat}, {new_g.lng}",
+        device="School Admin Portal",
+        details=f"Bus Guardian '{new_g.name}' (ID: {new_g.id}) was onboarded by school '{school_name}' (ID: {schoolId}). Route: {new_g.assignedRoute}, Plate: {new_g.plateNumber}."
+    )
+    db.add(db_log)
+    
     db.commit()
     db.refresh(new_g)
     return new_g
+
 
 @app.put("/api/guardians/{guardian_id}/status")
 def update_guardian_status(guardian_id: str, status: str, db: Session = Depends(get_db)):

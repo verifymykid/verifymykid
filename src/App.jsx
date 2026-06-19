@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { StoreProvider } from './data/mockStore';
 import Navbar from './components/Navbar';
+import GlobalAlertModal from './components/GlobalAlertModal';
 import LandingPage from './portals/LandingPage';
 import SchoolRegister from './portals/SchoolRegister';
 import ParentSignup from './portals/ParentSignup';
@@ -96,6 +97,7 @@ export default function App() {
     <StoreProvider>
       <BrowserRouter>
         <AppContent />
+        <GlobalAlertModal />
       </BrowserRouter>
     </StoreProvider>
   );
