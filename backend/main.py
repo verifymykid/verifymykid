@@ -425,7 +425,7 @@ def parent_reset_password(data: ParentResetPasswordRequest, db: Session = Depend
 def guardian_login(data: GuardianLoginRequest, db: Session = Depends(get_db)):
     g = db.query(models.Guardian).filter(func.lower(models.Guardian.name) == data.name.lower().strip()).first()
     if not g:
-        g = db.query(models.Guardian).filter(models.Guardian.id == data.name.upper().strip()).first()
+        g = db.query(models.Guardian).filter(func.lower(models.Guardian.id) == data.name.lower().strip()).first()
     if not g:
         raise HTTPException(status_code=404, detail="Invalid Bus Guardian name or password.")
 
@@ -865,7 +865,7 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
         name=data.name,
         email=f"{data.name.lower().replace(' ', '')}@verifymykid.com",
         phone=data.phone,
-        password=get_password_hash(data.password),
+        password=get_password_hash(data.password if (data.password and data.password.strip()) else "password123"),
         profilePic=data.profilePic if data.profilePic else "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         busNumber=data.busNumber,
         driverName=data.driverName,
@@ -1241,6 +1241,24 @@ def suspend_school(school_id: str, db: Session = Depends(get_db)):
     s.subscriptionStatus = "SUSPENDED"
     db.commit()
     return s
+
+@app.delete("/api/schools/{school_id}")
+def delete_school(school_id: str, db: Session = Depends(get_db)):
+    s = db.query(models.School).filter(models.School.id == school_id).first()
+    if not s:
+        raise HTTPException(status_code=404, detail="School not found")
+    
+    # Cascade delete related entries to preserve integrity
+    db.query(models.Guardian).filter(models.Guardian.schoolId == school_id).delete()
+    db.query(models.Parent).filter(models.Parent.schoolId == school_id).delete()
+    db.query(models.SystemLog).filter(models.SystemLog.schoolId == school_id).delete()
+    db.query(models.PickupLog).filter(models.PickupLog.schoolId == school_id).delete()
+    db.query(models.ActiveAlert).filter(models.ActiveAlert.schoolId == school_id).delete()
+    
+    db.delete(s)
+    db.commit()
+    return {"message": "School deleted successfully."}
+
 
 @app.post("/api/schools/{school_id}/trial-activate")
 def activate_school_trial(school_id: str, db: Session = Depends(get_db)):

@@ -142,34 +142,39 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
           const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
           activateOnline(coords);
 
-          // Start active watch
+          // Start active watch with high accuracy
           const wId = navigator.geolocation.watchPosition(
             (pos) => {
               setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
             },
-            () => {},
-            { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+            (err) => {
+              console.warn("Watch position error:", err);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
           );
           watchIdRef.current = wId;
         },
         (error) => {
+          console.warn("Current position error, using lastLocation or fallback:", error);
           // Fallback to driver's last logged coordinates to prevent thread freeze
-          const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : { lat: 6.4312, lng: 3.4190 };
+          const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : { lat: 6.4281, lng: 3.4219 };
           activateOnline(coords);
           
           const wId = navigator.geolocation.watchPosition(
             (pos) => {
               setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
             },
-            () => {},
-            { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+            (err) => {
+              console.warn("Watch position error in fallback:", err);
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
           );
           watchIdRef.current = wId;
         },
-        { enableHighAccuracy: false, timeout: 3000, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : { lat: 6.4312, lng: 3.4190 };
+      const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : { lat: 6.4281, lng: 3.4219 };
       activateOnline(coords);
     }
   };
@@ -465,7 +470,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   }
 
       // Header Info
-      const unreadCount = notifications.filter(n => n.recipientId === currentGuardian?.id && !n.read).length;
+      const unreadCount = notifications.filter(n => n.recipientId === currentGuardian?.id && !(n.read || n.isRead)).length;
 
       return (
         <main className="container" style={{ padding: '2rem 1.5rem', minHeight: 'calc(100vh - 70px)' }}>
@@ -871,15 +876,15 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                       <div 
                         key={n.id} 
                         style={{ 
-                          background: n.read ? 'var(--bg-secondary)' : 'rgba(6, 182, 212, 0.15)', 
-                          border: n.read ? '1px solid var(--glass-border)' : '1px solid var(--accent-cyan)', 
+                          background: (n.read || n.isRead) ? 'var(--bg-secondary)' : 'rgba(6, 182, 212, 0.15)', 
+                          border: (n.read || n.isRead) ? '1px solid var(--glass-border)' : '1px solid var(--accent-cyan)', 
                           padding: '0.75rem', 
                           borderRadius: '8px'
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 'bold' }}>
                           <span>{n.title}</span>
-                          {!n.read && (
+                          {!(n.read || n.isRead) && (
                             <button 
                               onClick={() => markNotificationRead(n.id)}
                               style={{ background: 'none', border: 'none', color: 'var(--accent-green)', cursor: 'pointer', fontSize: '0.7rem', textDecoration: 'underline' }}

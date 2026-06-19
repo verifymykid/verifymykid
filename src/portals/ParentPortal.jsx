@@ -540,7 +540,7 @@ export default function ParentPortal({ parentId, setParentId }) {
     );
   }
 
-  const isRead = (n) => (n.readBy && n.readBy.includes(currentParent.id)) || n.read;
+  const isRead = (n) => (n.readBy && n.readBy.includes(currentParent.id)) || n.read || n.isRead;
   const unreadCount = notifications.filter(n => n.recipientId === currentParent.id && !isRead(n)).length;
 
   return (

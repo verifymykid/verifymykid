@@ -301,7 +301,7 @@ export default function SuperAdminPortal() {
   const superAdminAlerts = activeAlerts.filter(a => !a.acknowledgedBySuperAdmin);
   const activeAlertCount = superAdminAlerts.length;
 
-  const isRead = (n) => (n.readBy && n.readBy.includes('SUPER_ADMIN')) || n.read;
+  const isRead = (n) => (n.readBy && n.readBy.includes('SUPER_ADMIN')) || n.read || n.isRead;
   const superAdminUnreadCount = notifications.filter(n => n.recipientId === 'SUPER_ADMIN' && !isRead(n)).length;
 
   const handleSendNotification = (e) => {

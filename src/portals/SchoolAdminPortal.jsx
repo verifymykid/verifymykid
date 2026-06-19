@@ -192,7 +192,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     return l.status === 'VERIFIED';
   }).length;
 
-  const isRead = (n) => (n.readBy && n.readBy.includes(schoolId)) || n.read;
+  const isRead = (n) => (n.readBy && n.readBy.includes(schoolId)) || n.read || n.isRead;
   const unreadCount = notifications.filter(n => n.recipientId === schoolId && !isRead(n)).length;
 
   // Billing desk calculations

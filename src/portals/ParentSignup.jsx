@@ -17,34 +17,38 @@ export default function ParentSignup() {
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [newParentId, setNewParentId] = useState('');
 
-  const handleParentSignup = (e) => {
+  const handleParentSignup = async (e) => {
     e.preventDefault();
     const cleanChildren = parentForm.children.filter(c => c.name !== '');
     if (cleanChildren.length === 0) {
       alert("Please add at least one child.");
       return;
     }
-    const p = registerParent({
-      name: parentForm.name,
-      email: parentForm.email,
-      phone: parentForm.phone,
-      address: parentForm.address,
-      password: parentForm.password,
-      singleParent: parentForm.singleParent,
-      spouseName: parentForm.spouseName,
-      spousePhone: parentForm.spousePhone,
-      children: cleanChildren,
-      schoolId: parentForm.schoolId
-    });
-    
-    const targetSchoolObj = schools.find(s => s.id === parentForm.schoolId);
-    const targetSchoolName = targetSchoolObj ? targetSchoolObj.name : 'School';
-    
-    sendNotification(p.id, p.name, p.schoolId, 'New Parent Sign Up', `A new parent has just signed up: Parent ${p.name} registered and is awaiting your access approval.`);
-    sendNotification(p.id, p.name, 'SUPER_ADMIN', 'New Parent Sign Up', `A new parent has just signed up: Parent ${p.name} registered at ${targetSchoolName} and is pending approval.`);
-    
-    setNewParentId(p.id);
-    setSignupSuccess(true);
+    try {
+      const p = await registerParent({
+        name: parentForm.name,
+        email: parentForm.email,
+        phone: parentForm.phone,
+        address: parentForm.address,
+        password: parentForm.password,
+        singleParent: parentForm.singleParent,
+        spouseName: parentForm.spouseName,
+        spousePhone: parentForm.spousePhone,
+        children: cleanChildren,
+        schoolId: parentForm.schoolId
+      });
+      
+      const targetSchoolObj = schools.find(s => s.id === parentForm.schoolId);
+      const targetSchoolName = targetSchoolObj ? targetSchoolObj.name : 'School';
+      
+      sendNotification(p.id, p.name, p.schoolId, 'New Parent Sign Up', `A new parent has just signed up: Parent ${p.name} registered and is awaiting your access approval.`);
+      sendNotification(p.id, p.name, 'SUPER_ADMIN', 'New Parent Sign Up', `A new parent has just signed up: Parent ${p.name} registered at ${targetSchoolName} and is pending approval.`);
+      
+      setNewParentId(p.id);
+      setSignupSuccess(true);
+    } catch (err) {
+      alert(err.message || 'Failed to register parent.');
+    }
   };
 
   const handleChildChange = (index, field, value) => {
