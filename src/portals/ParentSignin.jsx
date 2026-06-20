@@ -25,20 +25,15 @@ export default function ParentSignin({ setParentId }) {
   const [forgotError, setForgotError] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState('');
 
-  const prefilledRef = useRef(false);
-
   useEffect(() => {
-    if (prefilledRef.current) return;
     const queryId = searchParams.get('id');
     if (queryId && parents.length > 0) {
       const p = parents.find(x => x.id === queryId);
-      if (p) {
+      if (p && !emailInput) {
         setEmailInput(p.email);
-        setPasswordInput('');
-        prefilledRef.current = true;
       }
     }
-  }, [searchParams, parents]);
+  }, [searchParams, parents, emailInput]);
 
   useEffect(() => {
     const termMsg = sessionStorage.getItem('parent_login_error');
