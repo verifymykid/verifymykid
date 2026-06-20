@@ -276,16 +276,11 @@ export default function ParentPortal({ parentId, setParentId }) {
     });
   };
 
-  const handleUpdatePassword = (e) => {
+  const handleUpdatePassword = async (e) => {
     e.preventDefault();
     setSettingsError('');
     setSettingsSuccess('');
 
-    const activePass = currentParent.password || hashPassword('password123');
-    if (hashPassword(currentPasswordVal) !== activePass) {
-      setSettingsError("Incorrect current password.");
-      return;
-    }
     if (newPasswordVal.length < 6) {
       setSettingsError("New password must be at least 6 characters.");
       return;
@@ -295,14 +290,21 @@ export default function ParentPortal({ parentId, setParentId }) {
       return;
     }
 
-    updateParentProfile(currentParent.id, { password: newPasswordVal });
-    setSettingsSuccess("Password updated successfully!");
-    setCurrentPasswordVal('');
-    setNewPasswordVal('');
-    setConfirmPasswordVal('');
+    try {
+      await updateParentProfile(currentParent.id, { 
+        password: newPasswordVal, 
+        currentPassword: currentPasswordVal 
+      });
+      setSettingsSuccess("Password updated successfully!");
+      setCurrentPasswordVal('');
+      setNewPasswordVal('');
+      setConfirmPasswordVal('');
+    } catch (err) {
+      setSettingsError(err.message || "Failed to update password.");
+    }
   };
 
-  const handleMandatoryUpload = (e) => {
+  const handleMandatoryUpload = async (e) => {
     e.preventDefault();
     setUploadError('');
     if (!profilePicInput) {
@@ -310,13 +312,16 @@ export default function ParentPortal({ parentId, setParentId }) {
       return;
     }
     setIsActivating(true);
-    setTimeout(() => {
-      updateParentProfile(currentParent.id, { 
+    try {
+      await updateParentProfile(currentParent.id, { 
         profilePic: profilePicInput, 
         hasUploadedPic: true 
       });
       setIsActivating(false);
-    }, 1500);
+    } catch (err) {
+      setIsActivating(false);
+      setUploadError(err.message || "Failed to activate profile.");
+    }
   };
 
   if (currentParent && !currentParent.hasUploadedPic) {

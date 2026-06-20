@@ -213,11 +213,15 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   const isRead = (n) => (n.readBy && n.readBy.includes(schoolId)) || n.read || n.isRead;
   const unreadCount = notifications.filter(n => n.recipientId === schoolId && !isRead(n)).length;
 
+  const isTrialActive = currentSchool?.subscriptionStatus === 'FREE_TRIAL' && 
+                        currentSchool?.trialExpiresAt && 
+                        new Date(currentSchool.trialExpiresAt) > new Date();
+
   // Billing desk calculations
   const schoolPayments = payments.filter(pay => pay.schoolId === schoolId);
   const paidChildrenCount = schoolPayments.reduce((acc, pay) => acc + pay.childrenCount, 0);
-  const unpaidChildrenCount = Math.max(0, schoolStudentsCount - paidChildrenCount);
-  const amountDue = unpaidChildrenCount * 3600;
+  const unpaidChildrenCount = isTrialActive ? 0 : Math.max(0, schoolStudentsCount - paidChildrenCount);
+  const amountDue = isTrialActive ? 0 : unpaidChildrenCount * 3600;
 
   if (currentSchool.status !== 'APPROVED') {
     const isSuspended = currentSchool.status === 'SUSPENDED';
@@ -557,16 +561,11 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     printWindow.document.close();
   };
 
-  const handleUpdateSchoolPassword = (e) => {
+  const handleUpdateSchoolPassword = async (e) => {
     e.preventDefault();
     setSettingsError('');
     setSettingsSuccess('');
 
-    const activePass = currentSchool.password || 'password123';
-    if (currentPasswordVal !== activePass) {
-      setSettingsError("Incorrect current password.");
-      return;
-    }
     if (newPasswordVal.length < 6) {
       setSettingsError("New password must be at least 6 characters.");
       return;
@@ -576,17 +575,24 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
       return;
     }
 
-    updateSchoolProfile(currentSchool.id, { password: newPasswordVal });
-    setSettingsSuccess("Password updated successfully!");
-    setCurrentPasswordVal('');
-    setNewPasswordVal('');
-    setConfirmPasswordVal('');
+    try {
+      await updateSchoolProfile(currentSchool.id, { 
+        password: newPasswordVal, 
+        currentPassword: currentPasswordVal 
+      });
+      setSettingsSuccess("Password updated successfully!");
+      setCurrentPasswordVal('');
+      setNewPasswordVal('');
+      setConfirmPasswordVal('');
 
-    addSystemLog({
-      type: 'School Profile Settings Update',
-      schoolId: currentSchool.id,
-      details: `School administrator for ${currentSchool.name} successfully updated their account password.`
-    });
+      addSystemLog({
+        type: 'School Profile Settings Update',
+        schoolId: currentSchool.id,
+        details: `School administrator for ${currentSchool.name} successfully updated their account password.`
+      });
+    } catch (err) {
+      setSettingsError(err.message || "Failed to update password.");
+    }
   };
 
   // Filter logs logic
@@ -1514,6 +1520,19 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                             {p.status === 'PENDING' && (
                               <button 
                                 onClick={() => {
+                                  const realUnpaid = Math.max(0, schoolStudentsCount - paidChildrenCount);
+                                  if (!isTrialActive && realUnpaid > 0) {
+                                    setConfirmDialog({
+                                      title: "SaaS License Payment Required",
+                                      message: `Your 1-month free trial has expired. To approve parent ${p.name}, you must settle your outstanding licensing balance of ₦${(realUnpaid * 3600).toLocaleString()} at the Billing Desk.`,
+                                      confirmText: "Go to Billing Desk",
+                                      isAlert: true,
+                                      onConfirm: () => {
+                                        setActiveSubTab('billing');
+                                      }
+                                    });
+                                    return;
+                                  }
                                   setConfirmDialog({
                                     title: "Approve Parent Account",
                                     message: `Are you sure you want to approve parent ${p.name}? They will gain immediate access to the Parent Portal.`,
@@ -1537,6 +1556,19 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                             {p.status === 'SUSPENDED' && (
                               <button 
                                 onClick={() => {
+                                  const realUnpaid = Math.max(0, schoolStudentsCount - paidChildrenCount);
+                                  if (!isTrialActive && realUnpaid > 0) {
+                                    setConfirmDialog({
+                                      title: "SaaS License Payment Required",
+                                      message: `Your 1-month free trial has expired. To unsuspend parent ${p.name}, you must settle your outstanding licensing balance of ₦${(realUnpaid * 3600).toLocaleString()} at the Billing Desk.`,
+                                      confirmText: "Go to Billing Desk",
+                                      isAlert: true,
+                                      onConfirm: () => {
+                                        setActiveSubTab('billing');
+                                      }
+                                    });
+                                    return;
+                                  }
                                   setConfirmDialog({
                                     title: "Unsuspend Parent Account",
                                     message: `Are you sure you want to unsuspend parent ${p.name}? They will regain access to their portal.`,
@@ -1625,8 +1657,8 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
         const totalChildren = schoolParents.reduce((acc, p) => acc + p.children.length, 0);
         const schoolPayments = payments.filter(pay => pay.schoolId === schoolId);
         const paidChildrenCount = schoolPayments.reduce((acc, pay) => acc + pay.childrenCount, 0);
-        const unpaidChildrenCount = Math.max(0, totalChildren - paidChildrenCount);
-        const amountDue = unpaidChildrenCount * 3600;
+        const unpaidChildrenCount = isTrialActive ? 0 : Math.max(0, totalChildren - paidChildrenCount);
+        const amountDue = isTrialActive ? 0 : unpaidChildrenCount * 3600;
 
         return (
           <div className="glass-card">

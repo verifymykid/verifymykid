@@ -31,7 +31,7 @@ export default function ParentSignin({ setParentId }) {
       const p = parents.find(x => x.id === queryId);
       if (p) {
         setEmailInput(p.email);
-        setPasswordInput(p.password || 'password123');
+        setPasswordInput('');
       }
     }
   }, [searchParams, parents]);

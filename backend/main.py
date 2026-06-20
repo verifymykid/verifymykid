@@ -71,6 +71,7 @@ class SchoolUpdateRequest(BaseModel):
     address: Optional[str] = None
     website: Optional[str] = None
     password: Optional[str] = None
+    currentPassword: Optional[str] = None
 
 class ParentSignupRequest(BaseModel):
     name: str
@@ -93,6 +94,10 @@ class ParentUpdateRequest(BaseModel):
     spouseName: Optional[str] = None
     spousePhone: Optional[str] = None
     password: Optional[str] = None
+    currentPassword: Optional[str] = None
+    profilePic: Optional[str] = None
+    hasUploadedPic: Optional[bool] = None
+    spouseProfilePic: Optional[str] = None
     pendingSchoolId: Optional[str] = None
     schoolId: Optional[str] = None
     status: Optional[str] = None
@@ -569,8 +574,11 @@ def update_school(school_id: str, data: SchoolUpdateRequest, db: Session = Depen
     s.address = data.address
     s.website = data.website
     if data.password:
+        if not data.currentPassword or not verify_password(data.currentPassword, s.password):
+            raise HTTPException(status_code=400, detail="Incorrect current password.")
         s.password = get_password_hash(data.password)
     db.commit()
+    db.refresh(s)
     return s
 
 @app.post("/api/schools/{school_id}/verify-otp")
@@ -786,7 +794,12 @@ def update_parent(parent_id: str, data: ParentUpdateRequest, db: Session = Depen
     if data.singleParent is not None: p.singleParent = data.singleParent
     if data.spouseName is not None: p.spouseName = data.spouseName
     if data.spousePhone is not None: p.spousePhone = data.spousePhone
+    if data.profilePic is not None: p.profilePic = data.profilePic
+    if data.hasUploadedPic is not None: p.hasUploadedPic = data.hasUploadedPic
+    if data.spouseProfilePic is not None: p.spouseProfilePic = data.spouseProfilePic
     if data.password:
+        if not data.currentPassword or not verify_password(data.currentPassword, p.password):
+            raise HTTPException(status_code=400, detail="Incorrect current password.")
         p.password = get_password_hash(data.password)
     if "pendingSchoolId" in data.dict(exclude_unset=True):
         p.pendingSchoolId = data.pendingSchoolId

@@ -48,6 +48,7 @@ export default function GoogleMapView({ schoolIdFilter = null, centerCoords = nu
     const map = new window.google.maps.Map(mapRef.current, {
       center: lagosCenter,
       zoom: 14,
+      maxZoom: 15,
       disableDefaultUI: true,
       zoomControl: true,
       styles: [

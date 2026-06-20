@@ -264,11 +264,15 @@ export const StoreProvider = ({ children }) => {
   };
 
   const updateSchoolProfile = async (schoolId, updatedFields) => {
-    await fetch(`${API_BASE_URL}/api/schools/${schoolId}`, {
+    const res = await fetch(`${API_BASE_URL}/api/schools/${schoolId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedFields)
     });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to update school profile.');
+    }
     await syncWithBackend();
   };
 
@@ -312,11 +316,15 @@ export const StoreProvider = ({ children }) => {
   };
 
   const updateParentProfile = async (parentId, updatedFields) => {
-    await fetch(`${API_BASE_URL}/api/parents/${parentId}`, {
+    const res = await fetch(`${API_BASE_URL}/api/parents/${parentId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedFields)
     });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to update parent profile.');
+    }
     await syncWithBackend();
   };
 

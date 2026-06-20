@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bus, Key, ShieldAlert, CheckCircle2, Navigation, AlertTriangle, AlertOctagon, ScanLine, Lock, Eye, EyeOff, Bell, Send, LogOut, School } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
+import { Html5Qrcode } from 'html5-qrcode';
 import DynamicCode from '../components/DynamicCode';
 
 export default function BusGuardianPortal({ guardianId, setGuardianId }) {
@@ -40,6 +41,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   // Location and Notifications states
   const [gpsPermissionStatus, setGpsPermissionStatus] = useState('prompt'); // 'prompt' | 'granted' | 'denied'
   const watchIdRef = useRef(null);
+  const html5QrcodeRef = useRef(null);
 
   // Compose & Inbox states
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
@@ -236,6 +238,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
           details: `Bus Guardian ${currentGuardian.name} signed out and terminated tracking for ${schoolName}.`
         });
 
+        sessionStorage.removeItem('vmk_current_guardian_id');
         setGuardianOnlineStatus(currentGuardian.id, false);
         setGuardianId('');
         setNameInput('');
@@ -286,37 +289,143 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     setDropOffResult(res);
   };
 
-  // Simulate scanning the parent's active QR code
-  const handleTriggerParentQrScan = () => {
-    // We assume Sarah Jenkins (PAR-4482) is approaching the bus
-    const targetParentId = 'PAR-4482';
-    const activeCodeObj = getDynamicCode(targetParentId);
-
-    const res = verifyPickupEvent({
-      parentId: targetParentId,
-      guardianId: currentGuardian.id,
-      enteredCode: activeCodeObj.qrValue,
-      isMorning: false
-    });
-
-    setDropOffResult(res);
-  };
-
-  const handleTriggerMasterQrScan = async (isMatching) => {
-    if (!isMatching) {
-      // Out of bounds coordinates (spoofed)
-      await runMasterQrCheck(6.9999, 3.9999);
-      return;
+  // Handle real-world QR code scanned
+  const handleQrCodeScanned = async (decodedText) => {
+    // Stop scanner immediately to prevent double scans
+    if (html5QrcodeRef.current) {
+      try {
+        await html5QrcodeRef.current.stop();
+        html5QrcodeRef.current = null;
+      } catch (e) {
+        console.warn("Failed to stop scanner on scan:", e);
+      }
     }
 
-    // Direct match: always use the school's registered Master QR location to ensure verification succeeds
-    const schoolLocs = school?.masterQrLocations || [];
-    if (schoolLocs.length > 0) {
-      await runMasterQrCheck(schoolLocs[0].lat, schoolLocs[0].lng);
+    if (decodedText.startsWith('VMK-MASTER-')) {
+      // Wall QR scan: bound to registered campus GPS coordinates
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            await runMasterQrCheck(pos.coords.latitude, pos.coords.longitude);
+          },
+          async () => {
+            // Geolocation error/denied: fallback to out-of-bounds to fail coordinate check
+            await runMasterQrCheck(6.9999, 3.9999);
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        await runMasterQrCheck(6.9999, 3.9999);
+      }
+    } else if (decodedText.startsWith('VMK-')) {
+      // Parent Dynamic QR code scan
+      const parts = decodedText.split('-');
+      if (parts.length >= 4) {
+        const parentId = `${parts[1]}-${parts[2]}`; // e.g. PAR-4482
+        const enteredCode = parts[3];
+
+        const proceedVerify = (coordsStr) => {
+          verifyPickupEvent({
+            parentId,
+            guardianId: currentGuardian.id,
+            enteredCode,
+            isMorning: false,
+            scannedGps: coordsStr
+          }).then((res) => {
+            setDropOffResult(res);
+          });
+        };
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              proceedVerify(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+            },
+            () => {
+              proceedVerify(null);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          );
+        } else {
+          proceedVerify(null);
+        }
+      }
     } else {
-      await runMasterQrCheck(6.4312, 3.4190);
+      // Process raw alphanumeric code (OTP or Temporary Auth PIN)
+      const proceedVerify = (coordsStr) => {
+        // Fallback to first available parent or try validation
+        const targetParentId = 'PAR-4482';
+        verifyPickupEvent({
+          parentId: targetParentId,
+          guardianId: currentGuardian.id,
+          enteredCode: decodedText,
+          isMorning: false,
+          scannedGps: coordsStr
+        }).then((res) => {
+          setDropOffResult(res);
+        });
+      };
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            proceedVerify(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+          },
+          () => {
+            proceedVerify(null);
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        proceedVerify(null);
+      }
     }
   };
+
+  // QR Scanner mounting lifecycle handler
+  useEffect(() => {
+    let activeScanner = null;
+    if (currentGuardian && !dropOffResult) {
+      // Small timeout to allow container element mounting to complete in DOM
+      const timer = setTimeout(() => {
+        const container = document.getElementById("qr-reader-container");
+        if (container) {
+          const html5QrCode = new Html5Qrcode("qr-reader-container");
+          html5QrcodeRef.current = html5QrCode;
+          activeScanner = html5QrCode;
+
+          html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 180, height: 180 }
+            },
+            (decodedText) => {
+              handleQrCodeScanned(decodedText);
+            },
+            (errorMessage) => {
+              // Ignore scan parsing noise
+            }
+          ).catch((err) => {
+            console.warn("QR Scanner failed to start:", err);
+          });
+        }
+      }, 300);
+
+      return () => {
+        clearTimeout(timer);
+        if (activeScanner) {
+          activeScanner.stop().then(() => {
+            if (html5QrcodeRef.current === activeScanner) {
+              html5QrcodeRef.current = null;
+            }
+          }).catch(err => {
+            console.error("Failed to clean up scanner on unmount:", err);
+          });
+        }
+      };
+    }
+  }, [currentGuardian, dropOffResult]);
 
   const runMasterQrCheck = async (lat, lng) => {
     const res = await scanMasterQrCode(currentGuardian.id, lat, lng);
@@ -685,54 +794,14 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {/* Camera Scanner Simulation Frame */}
-                <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem' }}>
-                  <div className="qr-scanner-line" />
-                  <div className="qr-corner qr-corner-tl" />
-                  <div className="qr-corner qr-corner-tr" />
-                  <div className="qr-corner qr-corner-bl" />
-                  <div className="qr-corner qr-corner-br" />
-                  
-                   <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    textAlign: 'center',
-                    zIndex: 2,
-                    width: '80%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.4rem'
-                  }}>
-                    <button 
-                      onClick={handleTriggerParentQrScan} 
-                      className="btn btn-success" 
-                      style={{ fontSize: '0.72rem', padding: '0.4rem 0.6rem', boxShadow: '0 4px 10px rgba(16,185,129,0.3)', width: '100%' }}
-                      type="button"
-                      id="btn-detect-parent-qr"
-                    >
-                      📷 Detect Parent QR Code
-                    </button>
-                    <button 
-                      onClick={() => handleTriggerMasterQrScan(true)} 
-                      className="btn btn-primary" 
-                      style={{ fontSize: '0.72rem', padding: '0.4rem 0.6rem', boxShadow: '0 4px 10px rgba(59,130,246,0.3)', width: '100%' }}
-                      type="button"
-                      id="btn-scan-master-qr-match"
-                    >
-                      📷 Scan Wall QR (Correct GPS)
-                    </button>
-                    <button 
-                      onClick={() => handleTriggerMasterQrScan(false)} 
-                      className="btn btn-danger" 
-                      style={{ fontSize: '0.72rem', padding: '0.4rem 0.6rem', boxShadow: '0 4px 10px rgba(239,68,68,0.3)', width: '100%' }}
-                      type="button"
-                      id="btn-scan-master-qr-mismatch"
-                    >
-                      📷 Scan Wall QR (Spoofed GPS)
-                    </button>
-                  </div>
+                {/* Real-world Camera Scanner Container */}
+                <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                  <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                  <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
                 </div>
 
                 {/* Manual input form */}
@@ -750,7 +819,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                       id="dropoff-code-box"
                     />
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
-                      💡 <strong>Simulation tip:</strong> Click the <em>Detect Parent QR Code</em> button, or copy the 6-digit code showing on the <strong>Parent</strong> view (or use Grandma Helen's static relative OTP <code>582914</code>).
+                      💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Parent Portal</strong> safety screen (or relative PIN).
                     </div>
                   </div>
 
