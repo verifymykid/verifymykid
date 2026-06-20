@@ -398,28 +398,60 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
             html5QrCode = new Html5Qrcode("qr-reader-container");
             html5QrcodeRef.current = html5QrCode;
 
-            html5QrCode.start(
-              { facingMode: "environment" },
-              {
-                fps: 10,
-                qrbox: { width: 180, height: 180 }
-              },
-              (decodedText) => {
-                if (isMounted) {
-                  handleQrCodeScanned(decodedText);
+            const startScanner = () => {
+              html5QrCode.start(
+                { facingMode: "environment" },
+                {
+                  fps: 10,
+                  qrbox: { width: 180, height: 180 }
+                },
+                (decodedText) => {
+                  if (isMounted) {
+                    handleQrCodeScanned(decodedText);
+                  }
+                },
+                (errorMessage) => {
+                  // Ignore scan parsing noise
                 }
-              },
-              (errorMessage) => {
-                // Ignore scan parsing noise
-              }
-            ).then(() => {
-              started = true;
-              if (!isMounted) {
-                html5QrCode.stop().catch(err => console.warn("Failed to stop scanner after late unmount:", err));
-              }
-            }).catch((err) => {
-              console.warn("QR Scanner failed to start:", err);
-            });
+              ).then(() => {
+                started = true;
+                if (!isMounted) {
+                  html5QrCode.stop().catch(err => console.warn("Failed to stop scanner after late unmount:", err));
+                }
+              }).catch((err) => {
+                console.warn("Environment camera start failed, querying all cameras...", err);
+                Html5Qrcode.getCameras().then(devices => {
+                  if (devices && devices.length > 0 && isMounted) {
+                    html5QrCode.start(
+                      devices[0].id,
+                      {
+                        fps: 10,
+                        qrbox: { width: 180, height: 180 }
+                      },
+                      (decodedText) => {
+                        if (isMounted) {
+                          handleQrCodeScanned(decodedText);
+                        }
+                      },
+                      (errorMessage) => {}
+                    ).then(() => {
+                      started = true;
+                      if (!isMounted) {
+                        html5QrCode.stop().catch(err2 => console.warn("Failed to stop scanner after late unmount:", err2));
+                      }
+                    }).catch(err3 => {
+                      console.error("All camera start attempts failed:", err3);
+                    });
+                  } else {
+                    console.error("No camera devices found.");
+                  }
+                }).catch(err4 => {
+                  console.error("Failed to query cameras:", err4);
+                });
+              });
+            };
+
+            startScanner();
           } catch (e) {
             console.error("Error creating Html5Qrcode instance:", e);
           }
@@ -815,7 +847,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {/* Real-world Camera Scanner Container */}
                 <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <div id="qr-reader-container" dangerouslySetInnerHTML={{ __html: "" }} style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                  <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
                   <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
                   <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
                   <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />

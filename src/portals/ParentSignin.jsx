@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Users, Key, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail } from 'lucide-react';
 import { useStore, hashPassword } from '../data/mockStore';
@@ -25,13 +25,17 @@ export default function ParentSignin({ setParentId }) {
   const [forgotError, setForgotError] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState('');
 
+  const prefilledRef = useRef(false);
+
   useEffect(() => {
+    if (prefilledRef.current) return;
     const queryId = searchParams.get('id');
-    if (queryId) {
+    if (queryId && parents.length > 0) {
       const p = parents.find(x => x.id === queryId);
       if (p) {
         setEmailInput(p.email);
         setPasswordInput('');
+        prefilledRef.current = true;
       }
     }
   }, [searchParams, parents]);
