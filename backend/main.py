@@ -205,6 +205,17 @@ def send_real_email(to_email: str, subject: str, message_body: str):
         print(f"ERROR: Failed to send real email to {to_email}: {e}")
         return False
 
+def check_and_update_school_trial_status(school, db):
+    if school and school.subscriptionStatus == "FREE_TRIAL" and school.trialExpiresAt:
+        try:
+            expiry = datetime.fromisoformat(school.trialExpiresAt)
+            if expiry < datetime.utcnow():
+                school.status = "SUSPENDED"
+                school.subscriptionStatus = "SUSPENDED"
+                db.commit()
+        except Exception as e:
+            print(f"Error checking trial expiration: {e}")
+
 @app.get("/api/status")
 def get_status():
     return {"status": "ONLINE", "server_time": datetime.utcnow().isoformat()}
@@ -285,6 +296,8 @@ def school_login(data: LoginRequest, db: Session = Depends(get_db)):
     if not school:
         raise HTTPException(status_code=404, detail="Unrecognized school email or password.")
     
+    check_and_update_school_trial_status(school, db)
+    
     # Allow password123 default bypass for demo, otherwise check hash
     is_valid = False
     if data.password == "password123" or verify_password(data.password, school.password):
@@ -310,7 +323,12 @@ def school_login(data: LoginRequest, db: Session = Depends(get_db)):
 def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
     existing = db.query(models.Parent).filter(func.lower(models.Parent.email) == data.email.lower()).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Parent email address already registered.")
+        if existing.status == "DELETED":
+            # Physically delete the deleted parent to release email and child records
+            db.delete(existing)
+            db.commit()
+        else:
+            raise HTTPException(status_code=400, detail="Parent email address already registered.")
         
     parent_id = f"PAR-{uuid.uuid4().hex[:4].upper()}"
     new_parent = models.Parent(
@@ -388,8 +406,10 @@ def parent_login(data: LoginRequest, db: Session = Depends(get_db)):
         
     # Check if parent school is suspended
     school = db.query(models.School).filter(models.School.id == parent.schoolId).first()
-    if school and school.status == "SUSPENDED":
-        raise HTTPException(status_code=403, detail="Your school's account is suspended. Contact school administration.")
+    if school:
+        check_and_update_school_trial_status(school, db)
+    if school and (school.status == "SUSPENDED" or school.subscriptionStatus == "SUSPENDED"):
+        raise HTTPException(status_code=403, detail="Your child's school subscription has been SUSPENDED. Please contact school admin.")
         
     token = create_access_token({"sub": parent.id, "role": "PARENT"})
     return {"token": token, "role": "PARENT", "id": parent.id, "name": parent.name, "schoolId": parent.schoolId}
@@ -455,7 +475,9 @@ def guardian_login(data: GuardianLoginRequest, db: Session = Depends(get_db)):
         
     # Check if school is suspended
     school = db.query(models.School).filter(models.School.id == g.schoolId).first()
-    if school and school.status == "SUSPENDED":
+    if school:
+        check_and_update_school_trial_status(school, db)
+    if school and (school.status == "SUSPENDED" or school.subscriptionStatus == "SUSPENDED"):
         raise HTTPException(status_code=403, detail="Your school's account is suspended. Contact school administration.")
         
     token = create_access_token({"sub": g.id, "role": "BUS_GUARDIAN"})
@@ -555,6 +577,9 @@ def super_admin_reset_password(data: SuperAdminResetPasswordRequest, db: Session
 # ----------------- SCHOOLS ROUTER -----------------
 @app.get("/api/schools")
 def list_schools(db: Session = Depends(get_db)):
+    schools = db.query(models.School).all()
+    for s in schools:
+        check_and_update_school_trial_status(s, db)
     return db.query(models.School).all()
 
 @app.get("/api/schools/{school_id}")
@@ -562,6 +587,7 @@ def get_school(school_id: str, db: Session = Depends(get_db)):
     s = db.query(models.School).filter(models.School.id == school_id).first()
     if not s:
         raise HTTPException(status_code=404, detail="School not found")
+    check_and_update_school_trial_status(s, db)
     return s
 
 @app.put("/api/schools/{school_id}")
@@ -1076,10 +1102,13 @@ def verify_pickup_event(data: VerifyPickupRequest, db: Session = Depends(get_db)
     )
     db.add(new_log)
     db.commit()
-    return {"status": "SUCCESS", "message": "Pickup scan verification succeeded.", "log": {
+    return {"status": "VERIFIED", "message": "Pickup scan verification succeeded.", "log": {
         "id": new_log.id,
         "type": new_log.type,
         "parentName": new_log.parentName,
+        "childName": new_log.childName,
+        "guardianName": new_log.guardianName,
+        "gps": new_log.gps,
         "timestamp": new_log.timestamp
     }}
 

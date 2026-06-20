@@ -222,7 +222,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     setConfirmDialog({
       title: "Logout Confirmation",
       message: "Are you sure you want to log out of the Bus Guardian Portal? This will stop your live location tracking on the school map.",
-      onConfirm: () => {
+      onConfirm: async () => {
         if (watchIdRef.current) {
           navigator.geolocation.clearWatch(watchIdRef.current);
           watchIdRef.current = null;
@@ -238,8 +238,9 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
           details: `Bus Guardian ${currentGuardian.name} signed out and terminated tracking for ${schoolName}.`
         });
 
+        await setGuardianOnlineStatus(currentGuardian.id, false);
         sessionStorage.removeItem('vmk_current_guardian_id');
-        setGuardianOnlineStatus(currentGuardian.id, false);
+        sessionStorage.removeItem('vmk_token');
         setGuardianId('');
         setNameInput('');
         setPasswordInput('');

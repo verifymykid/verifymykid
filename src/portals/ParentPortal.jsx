@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
 import DynamicCode from '../components/DynamicCode';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export default function ParentPortal({ parentId, setParentId }) {
   const { 
@@ -42,6 +43,7 @@ export default function ParentPortal({ parentId, setParentId }) {
   const [activeToast, setActiveToast] = useState(null);
   const lastNotifIdRef = useRef('');
   const isMountedRef = useRef(false);
+  const html5QrcodeRef = useRef(null);
 
   // Fetch current parent details
   const currentParent = parents.find(p => p.id === parentId);
@@ -110,8 +112,135 @@ export default function ParentPortal({ parentId, setParentId }) {
 
   const matchedGuardian = scanResult ? guardians.find(g => g.name === scanResult.log.guardianName) : null;
 
+  const handleQrCodeScanned = async (decodedText) => {
+    // Stop scanner immediately to prevent double scans
+    if (html5QrcodeRef.current) {
+      try {
+        await html5QrcodeRef.current.stop();
+        html5QrcodeRef.current = null;
+      } catch (e) {
+        console.warn("Failed to stop scanner on scan:", e);
+      }
+    }
+
+    if (decodedText.startsWith('VMK-GDN-')) {
+      const parts = decodedText.split('-');
+      if (parts.length >= 4) {
+        const guardianId = `${parts[1]}-${parts[2]}`; // e.g. GDN-501
+        const enteredCode = parts[3];
+
+        const proceedVerify = async (coordsStr) => {
+          try {
+            const res = await verifyPickupEvent({
+              parentId: currentParent.id,
+              guardianId,
+              enteredCode,
+              isMorning: true,
+              scannedGps: coordsStr
+            });
+            setScanResult(res);
+            setReportedAlert(false);
+          } catch (err) {
+            console.error("Verification error:", err);
+          }
+        };
+
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              proceedVerify(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+            },
+            () => {
+              proceedVerify(null);
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          );
+        } else {
+          proceedVerify(null);
+        }
+      }
+    } else {
+      // Process raw alphanumeric code (OTP or Temporary Auth PIN)
+      const proceedVerify = async (coordsStr) => {
+        // Fallback to targetGuardianId or try validation
+        try {
+          const res = await verifyPickupEvent({
+            parentId: currentParent.id,
+            guardianId: targetGuardianId,
+            enteredCode: decodedText,
+            isMorning: true,
+            scannedGps: coordsStr
+          });
+          setScanResult(res);
+          setReportedAlert(false);
+        } catch (err) {
+          console.error("Verification error:", err);
+        }
+      };
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            proceedVerify(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+          },
+          () => {
+            proceedVerify(null);
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      } else {
+        proceedVerify(null);
+      }
+    }
+  };
+
+  // QR Scanner mounting lifecycle handler
+  useEffect(() => {
+    let activeScanner = null;
+    if (currentParent && !scanResult && activeSubTab === 'simulate') {
+      // Small timeout to allow container element mounting to complete in DOM
+      const timer = setTimeout(() => {
+        const container = document.getElementById("parent-qr-reader-container");
+        if (container) {
+          const html5QrCode = new Html5Qrcode("parent-qr-reader-container");
+          html5QrcodeRef.current = html5QrCode;
+          activeScanner = html5QrCode;
+
+          html5QrCode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 180, height: 180 }
+            },
+            (decodedText) => {
+              handleQrCodeScanned(decodedText);
+            },
+            (errorMessage) => {
+              // Ignore scan parsing noise
+            }
+          ).catch((err) => {
+            console.warn("QR Scanner failed to start:", err);
+          });
+        }
+      }, 300);
+
+      return () => {
+        clearTimeout(timer);
+        if (activeScanner) {
+          activeScanner.stop().then(() => {
+            if (html5QrcodeRef.current === activeScanner) {
+              html5QrcodeRef.current = null;
+            }
+          }).catch(err => {
+            console.error("Failed to clean up scanner on unmount:", err);
+          });
+        }
+      };
+    }
+  }, [currentParent, scanResult, activeSubTab]);
+
   // Handle Morning Simulator Scan (Manual PIN input)
-  const handleSimulateMorningScan = (e) => {
+  const handleSimulateMorningScan = async (e) => {
     e.preventDefault();
     const cleanCode = guardianCodeInput.trim().replace(/\s+/g, '');
     if (!cleanCode) return;
@@ -129,48 +258,20 @@ export default function ParentPortal({ parentId, setParentId }) {
     }
     const finalGuardianId = foundGuardianId || 'GDN-501';
 
-    const triggerVerification = (scannedGps) => {
-      const res = verifyPickupEvent({
-        parentId: currentParent.id,
-        guardianId: finalGuardianId,
-        enteredCode: cleanCode,
-        isMorning: true,
-        scannedGps
-      });
-      setScanResult(res);
-      setReportedAlert(false);
-    };
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const gpsCoord = `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`;
-          triggerVerification(gpsCoord);
-        },
-        () => {
-          triggerVerification('Permission Denied');
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-    } else {
-      triggerVerification('N/A');
-    }
-  };
-
-  // Simulate scanning the guardian's active QR code
-  const handleTriggerQrScan = () => {
-    const activeCodeObj = getDynamicCode(targetGuardianId);
-    
-    const triggerVerification = (scannedGps) => {
-      const res = verifyPickupEvent({
-        parentId: currentParent.id,
-        guardianId: targetGuardianId,
-        enteredCode: activeCodeObj.qrValue,
-        isMorning: true,
-        scannedGps
-      });
-      setScanResult(res);
-      setReportedAlert(false);
+    const triggerVerification = async (scannedGps) => {
+      try {
+        const res = await verifyPickupEvent({
+          parentId: currentParent.id,
+          guardianId: finalGuardianId,
+          enteredCode: cleanCode,
+          isMorning: true,
+          scannedGps
+        });
+        setScanResult(res);
+        setReportedAlert(false);
+      } catch (err) {
+        console.error("Verification error:", err);
+      }
     };
 
     if (navigator.geolocation) {
@@ -786,33 +887,14 @@ export default function ParentPortal({ parentId, setParentId }) {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  {/* Camera Scanner Simulation Frame */}
-                  <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem' }}>
-                    <div className="qr-scanner-line" />
-                    <div className="qr-corner qr-corner-tl" />
-                    <div className="qr-corner qr-corner-tr" />
-                    <div className="qr-corner qr-corner-bl" />
-                    <div className="qr-corner qr-corner-br" />
-                    
-                    <div style={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      textAlign: 'center',
-                      zIndex: 2,
-                      width: '80%'
-                    }}>
-                      <button 
-                        onClick={handleTriggerQrScan} 
-                        className="btn btn-success" 
-                        style={{ fontSize: '0.75rem', padding: '0.5rem 0.8rem', boxShadow: '0 4px 10px rgba(16,185,129,0.3)' }}
-                        type="button"
-                        id="btn-detect-guardian-qr"
-                      >
-                        📷 Detect Bus Guardian QR Code
-                      </button>
-                    </div>
+                  {/* Real-world Camera Scanner Container */}
+                  <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                    <div id="parent-qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                    <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
+                    <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
+                    <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
+                    <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
+                    <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
                   </div>
 
                   {/* Manual input form */}
@@ -830,7 +912,7 @@ export default function ParentPortal({ parentId, setParentId }) {
                         id="sim-scan-code"
                       />
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
-                        💡 <strong>Simulation tip:</strong> To test a <strong>valid scan</strong>, click the <em>Detect Bus Guardian QR Code</em> button, or copy the 6-digit code showing on the <strong>Bus Guardian</strong> view.
+                        💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Bus Guardian Portal</strong> safety screen.
                       </div>
                     </div>
 

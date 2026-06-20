@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useRef } from 'react';
 
 // Helper to calculate the current TOTP values
 export const getDynamicCode = (uniqueId, offset = 0) => {
@@ -51,6 +51,7 @@ export const StoreProvider = ({ children }) => {
   const [sessionsLoaded, setSessionsLoaded] = useState(false);
   const [smtpLogs, setSmtpLogs] = useState([]);
   const [otpTimer, setOtpTimer] = useState(180);
+  const telemetryAbortControllerRef = useRef(null);
 
   // Auth helper
   const getAuthHeaders = () => {
@@ -155,15 +156,30 @@ export const StoreProvider = ({ children }) => {
           const match = prev.find(g => g.id === activeGuardianId);
           if (!match || !match.online) return prev;
 
+          // Verify again right before doing the fetch
+          if (sessionStorage.getItem('vmk_current_guardian_id') !== activeGuardianId) {
+            return prev;
+          }
+
           const driftLat = (Math.random() - 0.5) * 0.0006;
           const driftLng = (Math.random() - 0.5) * 0.0006;
           const nextLat = parseFloat(((match.lat || 6.4312) + driftLat).toFixed(6));
           const nextLng = parseFloat(((match.lng || 3.4190) + driftLng).toFixed(6));
 
+          if (telemetryAbortControllerRef.current) {
+            telemetryAbortControllerRef.current.abort();
+          }
+          telemetryAbortControllerRef.current = new AbortController();
+
           // Post coordinates to FastAPI backend
           fetch(`${API_BASE_URL}/api/guardians/${activeGuardianId}/online?online=true&lat=${nextLat}&lng=${nextLng}`, {
-            method: 'PUT'
-          }).then(() => syncWithBackend());
+            method: 'PUT',
+            signal: telemetryAbortControllerRef.current.signal
+          }).then(() => syncWithBackend()).catch((err) => {
+            if (err.name !== 'AbortError') {
+              console.warn("Telemetry update failed:", err);
+            }
+          });
 
           return prev;
         });
@@ -368,6 +384,10 @@ export const StoreProvider = ({ children }) => {
   };
 
   const setGuardianOnlineStatus = async (guardianId, isOnline, coords = null) => {
+    if (!isOnline && telemetryAbortControllerRef.current) {
+      telemetryAbortControllerRef.current.abort();
+      telemetryAbortControllerRef.current = null;
+    }
     const latParam = coords ? `&lat=${coords.lat}` : '';
     const lngParam = coords ? `&lng=${coords.lng}` : '';
     await fetch(`${API_BASE_URL}/api/guardians/${guardianId}/online?online=${isOnline}${latParam}${lngParam}`, { method: 'PUT' });
