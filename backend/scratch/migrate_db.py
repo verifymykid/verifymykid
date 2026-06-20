@@ -64,6 +64,17 @@ def migrate():
                 except Exception as e:
                     print(f"Error altering table {table_name}: {e}")
                     
+    # Clean up trailing whitespaces from existing records
+    print("Trimming whitespace from names/emails/ids in database tables...")
+    try:
+        cursor.execute("UPDATE guardians SET name = TRIM(name), driverName = TRIM(driverName), email = TRIM(email)")
+        cursor.execute("UPDATE schools SET name = TRIM(name), email = TRIM(email)")
+        cursor.execute("UPDATE parents SET name = TRIM(name), email = TRIM(email)")
+        conn.commit()
+        print("Data trimmed and cleaned successfully!")
+    except Exception as e:
+        print(f"Error trimming database data: {e}")
+
     conn.close()
     print("Migration check completed successfully!")
 

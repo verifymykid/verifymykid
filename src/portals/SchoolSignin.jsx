@@ -93,7 +93,7 @@ export default function SchoolSignin({ setSchoolId }) {
         () => {
           proceedLogin('N/A (Permission Denied)');
         },
-        { enableHighAccuracy: true, timeout: 5000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       proceedLogin('N/A (Not Supported)');

@@ -116,7 +116,7 @@ export default function ParentSignin({ setParentId }) {
           () => {
             proceedLogin('N/A (Permission Denied)');
           },
-          { timeout: 4000 }
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
       } else {
         proceedLogin('N/A (Not Supported)');

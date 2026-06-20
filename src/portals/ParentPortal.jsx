@@ -149,7 +149,8 @@ export default function ParentPortal({ parentId, setParentId }) {
         },
         () => {
           triggerVerification('Permission Denied');
-        }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       triggerVerification('N/A');
@@ -180,7 +181,8 @@ export default function ParentPortal({ parentId, setParentId }) {
         },
         () => {
           triggerVerification('Permission Denied');
-        }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       triggerVerification('N/A');
@@ -265,7 +267,7 @@ export default function ParentPortal({ parentId, setParentId }) {
             () => {
               proceedLogout('N/A (Permission Denied)');
             },
-            { timeout: 4000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
           );
         } else {
           proceedLogout('N/A (Not Supported)');

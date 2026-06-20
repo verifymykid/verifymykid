@@ -215,12 +215,12 @@ def school_register(data: SchoolRegisterRequest, db: Session = Depends(get_db)):
     school_id = f"SCH-{uuid.uuid4().hex[:4].upper()}"
     new_school = models.School(
         id=school_id,
-        name=data.name,
-        email=data.email.lower(),
+        name=data.name.strip(),
+        email=data.email.lower().strip(),
         password=get_password_hash(data.password),
-        phone=data.phone,
-        address=data.address,
-        website=data.website,
+        phone=data.phone.strip() if data.phone else None,
+        address=data.address.strip() if data.address else None,
+        website=data.website.strip() if data.website else None,
         type=data.type,
         verifiedEmail=False,
         status="PENDING APPROVAL",
@@ -310,10 +310,10 @@ def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
     parent_id = f"PAR-{uuid.uuid4().hex[:4].upper()}"
     new_parent = models.Parent(
         id=parent_id,
-        name=data.name,
-        email=data.email.lower(),
-        phone=data.phone,
-        address=data.address,
+        name=data.name.strip(),
+        email=data.email.lower().strip(),
+        phone=data.phone.strip() if data.phone else None,
+        address=data.address.strip() if data.address else None,
         password=get_password_hash(data.password),
         schoolId=data.schoolId,
         singleParent=data.singleParent,
@@ -874,9 +874,9 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
     g_id = f"GDN-{uuid.uuid4().hex[:3].upper()}"
     new_g = models.Guardian(
         id=g_id,
-        name=data.name,
-        email=f"{data.name.lower().replace(' ', '')}@verifymykid.com",
-        phone=data.phone,
+        name=data.name.strip(),
+        email=f"{data.name.lower().strip().replace(' ', '')}@verifymykid.com",
+        phone=data.phone.strip() if data.phone else None,
         password=get_password_hash(data.password if (data.password and data.password.strip()) else "password123"),
         profilePic=data.profilePic if data.profilePic else "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         busNumber=data.busNumber,
@@ -1164,6 +1164,22 @@ def approve_school(school_id: str, db: Session = Depends(get_db)):
     s.trialType = "1_MONTH"
     # Expires in 30 days
     s.trialExpiresAt = (datetime.utcnow() + timedelta(days=30)).isoformat()
+    
+    # Send live actual confirmation email
+    subject = "VerifyMyKid - School Account Approved!"
+    body = (
+        f"Hello {s.name},\n\n"
+        "Congratulations! We are pleased to inform you that your registration on VerifyMyKid has been reviewed and approved by the Super Administrator.\n\n"
+        "You now have full access to your school portal to register bus guardians, authorize parent accounts, configure routing, and download your Master QR attendance sheets.\n\n"
+        "Welcome to VerifyMyKid!\n\n"
+        "Best regards,\n"
+        "The VerifyMyKid Team"
+    )
+    send_real_email(s.email, subject, body)
+    
+    # Log in SMTP logs
+    db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {s.email} | SUBJECT: {subject} | MESSAGE: {body}"))
+    
     db.commit()
     return s
 
@@ -1173,6 +1189,22 @@ def reject_school(school_id: str, db: Session = Depends(get_db)):
     if not s:
         raise HTTPException(status_code=404, detail="School not found")
     s.status = "REJECTED"
+    
+    # Send live actual rejection email
+    subject = "VerifyMyKid - School Account Registration Status"
+    body = (
+        f"Hello {s.name},\n\n"
+        "Thank you for your interest in VerifyMyKid.\n\n"
+        "We regret to inform you that your school registration request has been reviewed and rejected by the Super Administrator at this time.\n\n"
+        "If you believe this was an error or would like to provide additional verification details, please contact our support team.\n\n"
+        "Best regards,\n"
+        "The VerifyMyKid Team"
+    )
+    send_real_email(s.email, subject, body)
+    
+    # Log in SMTP logs
+    db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {s.email} | SUBJECT: {subject} | MESSAGE: {body}"))
+    
     db.commit()
     return s
 

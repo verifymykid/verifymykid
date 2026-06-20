@@ -73,7 +73,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
         (error) => {
           console.warn("SchoolAdminPortal geolocation capture failed:", error);
         },
-        { enableHighAccuracy: true, timeout: 5000 }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     }
   }, []);
@@ -2066,7 +2066,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                               onConfirm: () => {}
                             });
                           },
-                          { enableHighAccuracy: true, timeout: 10000 }
+                          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                         );
                       } else {
                         setConfirmDialog({
@@ -2325,7 +2325,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                                     onConfirm: () => {}
                                   });
                                 },
-                                { enableHighAccuracy: true, timeout: 10000 }
+                                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                               );
                             }
                           }
