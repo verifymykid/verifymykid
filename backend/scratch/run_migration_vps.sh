@@ -24,10 +24,10 @@ expect "*# "
 send "git pull origin main\r"
 expect "*# "
 
-# Run migration script on VPS using backend virtual env
+# Run migration script on VPS inside backend directory using virtual env
 send "echo '=== RUNNING DB MIGRATION ON VPS ==='\r"
 expect "*# "
-send "/var/www/verifymykid-backend/backend/venv/bin/python /var/www/verifymykid-backend/backend/scratch/migrate_db.py\r"
+send "cd backend && ./venv/bin/python scratch/migrate_db.py\r"
 expect "*# "
 
 # Restart backend service to load new changes
