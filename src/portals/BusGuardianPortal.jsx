@@ -280,14 +280,14 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     // If a parent matches, verify them. Otherwise, run against first parent to trigger unrecognized log
     const targetParentId = foundParentId || 'PAR-4482';
 
-    const res = verifyPickupEvent({
+    verifyPickupEvent({
       parentId: targetParentId,
       guardianId: currentGuardian.id,
       enteredCode: cleanCode,
       isMorning: false
+    }).then((res) => {
+      setDropOffResult(res);
     });
-
-    setDropOffResult(res);
   };
 
   // Handle real-world QR code scanned

@@ -308,6 +308,29 @@ export const StoreProvider = ({ children }) => {
     return parent;
   };
 
+  const verifyParentEmail = async (parentId, code) => {
+    const res = await fetch(`${API_BASE_URL}/api/parents/${parentId}/verify-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Invalid OTP code.');
+    }
+    await syncWithBackend();
+  };
+
+  const resendParentOtp = async (parentId) => {
+    const res = await fetch(`${API_BASE_URL}/api/parents/${parentId}/resend-otp`, {
+      method: 'POST'
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to resend OTP.');
+    }
+  };
+
   const addTempAuthorization = async (parentId, tempForm) => {
     const res = await fetch(`${API_BASE_URL}/api/parents/${parentId}/temp-auth`, {
       method: 'POST',
@@ -564,6 +587,8 @@ export const StoreProvider = ({ children }) => {
       upliftSchoolTrial,
       deleteSchool,
       registerParent,
+      verifyParentEmail,
+      resendParentOtp,
       addTempAuthorization,
       addGuardian,
       triggerPanic,

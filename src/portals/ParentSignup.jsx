@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus, CheckCircle2 } from 'lucide-react';
+import { UserPlus, CheckCircle2, Mail } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 
 export default function ParentSignup() {
-  const { registerParent, schools, sendNotification } = useStore();
+  const { registerParent, verifyParentEmail, resendParentOtp, schools, sendNotification } = useStore();
   const navigate = useNavigate();
 
   const [parentForm, setParentForm] = useState({
@@ -14,6 +14,9 @@ export default function ParentSignup() {
     childrenCount: 1, children: [{ name: '', age: '' }],
     schoolId: ''
   });
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpInput, setOtpInput] = useState('');
+  const [otpError, setOtpError] = useState('');
   const [signupSuccess, setSignupSuccess] = useState(false);
   const [newParentId, setNewParentId] = useState('');
 
@@ -45,9 +48,30 @@ export default function ParentSignup() {
       sendNotification(p.id, p.name, 'SUPER_ADMIN', 'New Parent Sign Up', `A new parent has just signed up: Parent ${p.name} registered at ${targetSchoolName} and is pending approval.`);
       
       setNewParentId(p.id);
-      setSignupSuccess(true);
+      setOtpSent(true);
+      setOtpError('');
     } catch (err) {
       alert(err.message || 'Failed to register parent.');
+    }
+  };
+
+  const handleVerifyParentOtp = async (e) => {
+    e.preventDefault();
+    setOtpError('');
+    try {
+      await verifyParentEmail(newParentId, otpInput);
+      setSignupSuccess(true);
+    } catch (err) {
+      setOtpError(err.message || 'Invalid verification OTP. Please try again.');
+    }
+  };
+
+  const handleResendParentOtp = async () => {
+    try {
+      await resendParentOtp(newParentId);
+      alert('Verification OTP code resent successfully to parent email.');
+    } catch (err) {
+      alert(err.message || 'Failed to resend OTP.');
     }
   };
 
@@ -67,7 +91,7 @@ export default function ParentSignup() {
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: 'calc(100vh - 70px)', padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ maxWidth: '600px', width: '100%' }}>
-        {!signupSuccess ? (
+        {!otpSent ? (
           <div className="glass-card">
             <h2 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <UserPlus style={{ color: 'var(--accent-blue)' }} /> Parent Sign Up Portal
@@ -251,7 +275,51 @@ export default function ParentSignup() {
               </button>
 
               <button type="submit" className="btn btn-primary" style={{ width: '100%' }} id="btn-parent-submit">
-                Register & Generate Unique ID
+                Register & Verify Email
+              </button>
+            </form>
+          </div>
+        ) : !signupSuccess ? (
+          <div className="glass-card" style={{ textAlign: 'center' }}>
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
+              <Mail size={32} />
+            </div>
+            <h2 style={{ marginBottom: '0.5rem' }}>Verify Your Email</h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              We've sent a 6-digit verification code to <strong>{parentForm.email}</strong>. Please check your inbox and enter the OTP below.
+            </p>
+
+            {otpError && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-red)', color: 'var(--accent-red)', padding: '0.6rem', borderRadius: '6px', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'center' }}>
+                {otpError}
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyParentOtp} style={{ maxWidth: '300px', margin: '0 auto' }}>
+              <div className="form-group">
+                <input
+                  type="text"
+                  maxLength={6}
+                  required
+                  placeholder="Enter 6-Digit OTP"
+                  value={otpInput}
+                  onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
+                  className="input-control"
+                  style={{ textAlign: 'center', letterSpacing: '0.4em', fontSize: '1.3rem' }}
+                  id="parent-otp-input-box"
+                />
+              </div>
+              <button type="submit" className="btn btn-warning" style={{ width: '100%', fontWeight: 'bold' }} id="btn-verify-parent-otp">
+                Verify Email Address
+              </button>
+              <button 
+                type="button" 
+                onClick={handleResendParentOtp} 
+                className="btn btn-outline" 
+                style={{ width: '100%', marginTop: '0.5rem', borderColor: 'var(--accent-yellow)', color: 'var(--accent-yellow)' }}
+                id="btn-resend-parent-otp"
+              >
+                Resend Verification Code
               </button>
             </form>
           </div>

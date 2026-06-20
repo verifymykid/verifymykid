@@ -342,7 +342,7 @@ def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
         singleParent=data.singleParent,
         spouseName=data.spouseName,
         spousePhone=data.spousePhone,
-        status="PENDING",
+        status="PENDING_VERIFICATION",
         lat=6.425,
         lng=3.415,
         online=False
@@ -360,6 +360,22 @@ def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
             )
             db.add(new_child)
             
+    # Generate 6-digit verification code
+    otp_code = str(uuid.uuid4().int)[:6]
+    
+    # Store in SystemSettings
+    db.add(models.SystemSettings(key=f"parent_otp_{new_parent.id}", value=otp_code))
+    db.commit()
+    
+    # Send live actual OTP
+    subject = "VerifyMyKid - Parent Verification OTP"
+    body = f"Hello {new_parent.name},\n\nThank you for registering on VerifyMyKid. Your 6-digit email verification OTP code is: {otp_code}\n\nPlease enter this code to verify your parent account."
+    send_real_email(new_parent.email, subject, body)
+    
+    # Log in SMTP logs
+    log_text = f"EMAIL TO: {new_parent.email} | SUBJECT: {subject} | MESSAGE: {body}"
+    db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=log_text))
+    
     # Save log of registration
     school = db.query(models.School).filter(models.School.id == new_parent.schoolId).first()
     school_name = school.name if school else "Unknown School"
@@ -372,7 +388,7 @@ def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
         parentName=new_parent.name,
         gps="N/A",
         device="Parent Registration Portal",
-        details=f"Parent '{new_parent.name}' (ID: {new_parent.id}) registered and is pending approval by school '{school_name}' (ID: {new_parent.schoolId})."
+        details=f"Parent '{new_parent.name}' (ID: {new_parent.id}) registered and is pending email verification via OTP."
     )
     db.add(db_log)
 
@@ -397,6 +413,8 @@ def parent_login(data: LoginRequest, db: Session = Depends(get_db)):
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid Email/ID or Password.")
         
+    if parent.status == "PENDING_VERIFICATION":
+        raise HTTPException(status_code=403, detail="Your parent account email is not verified. Please verify your email first via the OTP code sent to you.")
     if parent.status == "PENDING":
         raise HTTPException(status_code=403, detail="Your parent account is currently PENDING approval by the school administration.")
     if parent.status == "SUSPENDED":
@@ -858,6 +876,55 @@ def update_parent_status(
     db.commit()
     return p
 
+@app.post("/api/parents/{parent_id}/verify-otp")
+def verify_parent_otp(parent_id: str, data: VerifyOtpRequest, db: Session = Depends(get_db)):
+    stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"parent_otp_{parent_id}").first()
+    if not stored_otp or stored_otp.value != data.code.strip():
+        raise HTTPException(status_code=400, detail="Invalid OTP code. Please check your email and try again.")
+        
+    p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Parent profile not found")
+        
+    p.status = "PENDING"
+    db.delete(stored_otp)
+    
+    # Log in system logs
+    db.add(models.SystemLog(
+        id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+        type="Parent Email Verified",
+        timestamp=datetime.utcnow().isoformat(),
+        schoolId=p.schoolId,
+        parentName=p.name,
+        gps="N/A",
+        device="Security Server Gate",
+        details=f"Parent email verified successfully via OTP. Account status updated to PENDING (awaiting school admin approval)."
+    ))
+    db.commit()
+    return {"message": "OTP verified successfully. Your profile is now awaiting school admin approval."}
+
+@app.post("/api/parents/{parent_id}/resend-otp")
+def resend_parent_otp(parent_id: str, db: Session = Depends(get_db)):
+    p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
+    if not p:
+        raise HTTPException(status_code=404, detail="Parent profile not found")
+        
+    code = str(uuid.uuid4().int)[:6]
+    stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"parent_otp_{parent_id}").first()
+    if stored_otp:
+        stored_otp.value = code
+    else:
+        db.add(models.SystemSettings(key=f"parent_otp_{parent_id}", value=code))
+    db.commit()
+    
+    subject = "VerifyMyKid - Parent Verification OTP"
+    body = f"Hello {p.name},\n\nYour new 6-digit email verification OTP code is: {code}\n\nPlease enter this code to verify your parent account."
+    send_real_email(p.email, subject, body)
+    
+    db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {p.email} | SUBJECT: {subject} | MESSAGE: {body}"))
+    db.commit()
+    return {"message": "Verification OTP code resent successfully to parent email."}
+
 @app.put("/api/parents/{parent_id}/online")
 def set_parent_online(parent_id: str, online: bool, lat: Optional[float] = None, lng: Optional[float] = None, db: Session = Depends(get_db)):
     p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
@@ -1221,6 +1288,19 @@ def approve_school(school_id: str, db: Session = Depends(get_db)):
     
     # Log in SMTP logs
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {s.email} | SUBJECT: {subject} | MESSAGE: {body}"))
+    
+    # Save in-app notification for the school admin
+    db_notif = models.Notification(
+        id=f"NOTIF-{uuid.uuid4().hex[:4].upper()}",
+        senderId="SUPER_ADMIN",
+        senderName="Super Admin",
+        recipientId=s.id,
+        subject="School Account Approved!",
+        message=f"Congratulations! Your school account for '{s.name}' has been approved by the Super Administrator. Welcome to VerifyMyKid!",
+        isRead=False,
+        timestamp=datetime.utcnow().isoformat()
+    )
+    db.add(db_notif)
     
     db.commit()
     return s

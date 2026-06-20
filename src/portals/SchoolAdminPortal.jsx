@@ -1444,6 +1444,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                         <>
                           {(p.status || 'APPROVED') === 'APPROVED' && <span className="badge badge-success">Active</span>}
                           {p.status === 'PENDING' && <span className="badge badge-warning">Pending Approval</span>}
+                          {p.status === 'PENDING_VERIFICATION' && <span className="badge badge-outline" style={{ borderColor: 'var(--accent-yellow)', color: 'var(--accent-yellow)' }}>Unverified Email</span>}
                           {p.status === 'SUSPENDED' && <span className="badge badge-danger">Suspended</span>}
                         </>
                       )}
