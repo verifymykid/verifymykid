@@ -385,48 +385,66 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
 
   // QR Scanner mounting lifecycle handler
   useEffect(() => {
-    let activeScanner = null;
-    if (currentGuardian && !dropOffResult) {
-      // Small timeout to allow container element mounting to complete in DOM
+    let isMounted = true;
+    let html5QrCode = null;
+    let started = false;
+
+    if (guardianId && !dropOffResult) {
       const timer = setTimeout(() => {
+        if (!isMounted) return;
         const container = document.getElementById("qr-reader-container");
         if (container) {
-          const html5QrCode = new Html5Qrcode("qr-reader-container");
-          html5QrcodeRef.current = html5QrCode;
-          activeScanner = html5QrCode;
+          try {
+            html5QrCode = new Html5Qrcode("qr-reader-container");
+            html5QrcodeRef.current = html5QrCode;
 
-          html5QrCode.start(
-            { facingMode: "environment" },
-            {
-              fps: 10,
-              qrbox: { width: 180, height: 180 }
-            },
-            (decodedText) => {
-              handleQrCodeScanned(decodedText);
-            },
-            (errorMessage) => {
-              // Ignore scan parsing noise
-            }
-          ).catch((err) => {
-            console.warn("QR Scanner failed to start:", err);
-          });
+            html5QrCode.start(
+              { facingMode: "environment" },
+              {
+                fps: 10,
+                qrbox: { width: 180, height: 180 }
+              },
+              (decodedText) => {
+                if (isMounted) {
+                  handleQrCodeScanned(decodedText);
+                }
+              },
+              (errorMessage) => {
+                // Ignore scan parsing noise
+              }
+            ).then(() => {
+              started = true;
+              if (!isMounted) {
+                html5QrCode.stop().catch(err => console.warn("Failed to stop scanner after late unmount:", err));
+              }
+            }).catch((err) => {
+              console.warn("QR Scanner failed to start:", err);
+            });
+          } catch (e) {
+            console.error("Error creating Html5Qrcode instance:", e);
+          }
         }
       }, 300);
 
       return () => {
+        isMounted = false;
         clearTimeout(timer);
-        if (activeScanner) {
-          activeScanner.stop().then(() => {
-            if (html5QrcodeRef.current === activeScanner) {
-              html5QrcodeRef.current = null;
-            }
-          }).catch(err => {
-            console.error("Failed to clean up scanner on unmount:", err);
-          });
+        if (html5QrCode) {
+          if (started) {
+            html5QrCode.stop().then(() => {
+              if (html5QrcodeRef.current === html5QrCode) {
+                html5QrcodeRef.current = null;
+              }
+            }).catch(err => {
+              console.warn("Failed to stop scanner on cleanup:", err);
+            });
+          } else {
+            html5QrcodeRef.current = null;
+          }
         }
       };
     }
-  }, [currentGuardian, dropOffResult]);
+  }, [guardianId, dropOffResult]);
 
   const runMasterQrCheck = async (lat, lng) => {
     const res = await scanMasterQrCode(currentGuardian.id, lat, lng);
@@ -797,7 +815,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 {/* Real-world Camera Scanner Container */}
                 <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                  <div id="qr-reader-container" dangerouslySetInnerHTML={{ __html: "" }} style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
                   <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
                   <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
                   <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />

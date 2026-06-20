@@ -1653,7 +1653,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
 
       {/* Billing Desk SubTab */}
       {activeSubTab === 'billing' && (() => {
-        const schoolParents = parents.filter(p => p.schoolId === schoolId);
+        const schoolParents = parents.filter(p => p.schoolId === schoolId && p.status !== 'DELETED');
         const totalChildren = schoolParents.reduce((acc, p) => acc + p.children.length, 0);
         const schoolPayments = payments.filter(pay => pay.schoolId === schoolId);
         const paidChildrenCount = schoolPayments.reduce((acc, pay) => acc + pay.childrenCount, 0);

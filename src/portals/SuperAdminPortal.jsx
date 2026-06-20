@@ -294,8 +294,9 @@ export default function SuperAdminPortal() {
   const totalSchools = schools.length;
   const approvedSchools = schools.filter(s => s.status === 'APPROVED').length;
   const pendingSchools = schools.filter(s => s.status === 'PENDING APPROVAL').length;
-  const totalParents = parents.length;
-  const totalChildren = parents.reduce((acc, p) => acc + p.children.length, 0);
+  const activeParentsList = parents.filter(p => p.status !== 'DELETED');
+  const totalParents = activeParentsList.length;
+  const totalChildren = activeParentsList.reduce((acc, p) => acc + p.children.length, 0);
   const totalGuardians = guardians.length;
   const totalVerifications = logs.filter(l => l.status === 'VERIFIED').length;
   const superAdminAlerts = activeAlerts.filter(a => !a.acknowledgedBySuperAdmin);
