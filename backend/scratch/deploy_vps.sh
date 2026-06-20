@@ -49,12 +49,12 @@ expect "*# "
 # 6. Write production .env file (using braces to prevent interpolation)
 send {cat << 'EOF' > .env
 DATABASE_URL=sqlite:///./verifymykid.db
-SMTP_HOST=smtp.hostinger.com
-SMTP_PORT=587
-SMTP_USERNAME=notifications@verifymykid.com
-SMTP_PASSWORD=LEOVEOjco77&.
-SMTP_USE_SSL=False
-SMTP_USE_TLS=True
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USERNAME=verifymykid@gmail.com
+SMTP_PASSWORD=xnltojhpeoxuozuq
+SMTP_USE_SSL=True
+SMTP_USE_TLS=False
 SECRET_KEY=a7d2e8b15d2a938fc28abdf81eefc38d
 EOF} ; send "\r"
 expect "*# "
