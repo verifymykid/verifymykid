@@ -60,6 +60,24 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   const [agreeLocationUse, setAgreeLocationUse] = useState(false);
   const currentSessionId = sessionStorage.getItem('vmk_current_school_session_id');
 
+  // Capture browser geolocation on portal load to dynamically store the school admin location
+  React.useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          localStorage.setItem('vmk_school_admin_lat', String(lat));
+          localStorage.setItem('vmk_school_admin_lng', String(lng));
+        },
+        (error) => {
+          console.warn("SchoolAdminPortal geolocation capture failed:", error);
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    }
+  }, []);
+
   // Monitor if active session gets frozen or deleted
   React.useEffect(() => {
     if (schoolId && currentSessionId && sessionsLoaded) {
@@ -2047,7 +2065,8 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                               confirmText: "OK",
                               onConfirm: () => {}
                             });
-                          }
+                          },
+                          { enableHighAccuracy: true, timeout: 10000 }
                         );
                       } else {
                         setConfirmDialog({
@@ -2305,7 +2324,8 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                                     confirmText: "OK",
                                     onConfirm: () => {}
                                   });
-                                }
+                                },
+                                { enableHighAccuracy: true, timeout: 10000 }
                               );
                             }
                           }

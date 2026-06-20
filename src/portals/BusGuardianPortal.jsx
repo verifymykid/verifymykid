@@ -11,6 +11,15 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     scanMasterQrCode
   } = useStore();
 
+  const getSchoolCoords = (g) => {
+    if (!g) return { lat: 6.5244, lng: 3.3792 };
+    const gSchool = schools.find(s => s.id === g.schoolId);
+    if (gSchool && gSchool.lat && gSchool.lng) {
+      return { lat: gSchool.lat, lng: gSchool.lng };
+    }
+    return { lat: 6.5244, lng: 3.3792 };
+  };
+
   const navigate = useNavigate();
   const [nameInput, setNameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
@@ -89,11 +98,12 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         watchIdRef.current = null;
       }
       
+      const schoolCoords = getSchoolCoords(currentGuardian);
       addSystemLog({
         type: 'Bus Guardian Session Terminated',
         schoolId: currentGuardian.schoolId,
         guardianName: currentGuardian.name,
-        gps: `${currentGuardian.lastLocation?.lat || 6.4281}, ${currentGuardian.lastLocation?.lng || 3.4219}`,
+        gps: `${currentGuardian.lastLocation?.lat || schoolCoords.lat}, ${currentGuardian.lastLocation?.lng || schoolCoords.lng}`,
         device: getDeviceString(),
         details: `Bus Guardian ${currentGuardian.name} session terminated automatically due to account suspension.`
       });
@@ -156,8 +166,8 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         },
         (error) => {
           console.warn("Current position error, using lastLocation or fallback:", error);
-          // Fallback to driver's last logged coordinates to prevent thread freeze
-          const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : { lat: 6.4281, lng: 3.4219 };
+          const schoolCoords = getSchoolCoords(g);
+          const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : schoolCoords;
           activateOnline(coords);
           
           const wId = navigator.geolocation.watchPosition(
@@ -174,7 +184,8 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
-      const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : { lat: 6.4281, lng: 3.4219 };
+      const schoolCoords = getSchoolCoords(g);
+      const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : schoolCoords;
       activateOnline(coords);
     }
   };
@@ -215,11 +226,12 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
           watchIdRef.current = null;
         }
         
+        const schoolCoords = getSchoolCoords(currentGuardian);
         addSystemLog({
           type: 'Bus Guardian Sign-Out',
           schoolId: currentGuardian.schoolId,
           guardianName: currentGuardian.name,
-          gps: `${currentGuardian.lastLocation?.lat || 6.4281}, ${currentGuardian.lastLocation?.lng || 3.4219}`,
+          gps: `${currentGuardian.lastLocation?.lat || schoolCoords.lat}, ${currentGuardian.lastLocation?.lng || schoolCoords.lng}`,
           device: getDeviceString(),
           details: `Bus Guardian ${currentGuardian.name} signed out and terminated tracking for ${schoolName}.`
         });

@@ -28,6 +28,9 @@ class School(Base):
     masterQrMaxLocations = Column(Integer, default=1)
     masterQrLocations = Column(JSON, default=list)  # Stored coordinates
     masterQrRequests = Column(JSON, default=list)  # Pending/history requests
+    lat = Column(Float, nullable=True)
+    lng = Column(Float, nullable=True)
+
 
 class Parent(Base):
     __tablename__ = "parents"

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../data/mockStore';
 
 export default function GoogleMapView({ schoolIdFilter = null, centerCoords = null }) {
-  const { guardians, activeAlerts, parents } = useStore();
+  const { guardians, activeAlerts, parents, schools } = useStore();
   const mapRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
   const markersRef = useRef({});
@@ -32,8 +32,18 @@ export default function GoogleMapView({ schoolIdFilter = null, centerCoords = nu
   const initMap = () => {
     if (!mapRef.current || !window.google) return;
     
-    // Lagos Victoria Island center coordinates
-    const lagosCenter = { lat: 6.4281, lng: 3.4219 };
+    const school = schoolIdFilter ? schools.find(s => s.id === schoolIdFilter) : null;
+    const schoolLat = school && school.lat;
+    const schoolLng = school && school.lng;
+    
+    // Lagos center coordinates (falls back to school admin's login coordinates if available)
+    const savedLat = parseFloat(localStorage.getItem('vmk_school_admin_lat'));
+    const savedLng = parseFloat(localStorage.getItem('vmk_school_admin_lng'));
+    const lagosCenter = (schoolLat && schoolLng)
+      ? { lat: schoolLat, lng: schoolLng }
+      : ((!isNaN(savedLat) && !isNaN(savedLng)) 
+        ? { lat: savedLat, lng: savedLng } 
+        : { lat: 6.5244, lng: 3.3792 });
     
     const map = new window.google.maps.Map(mapRef.current, {
       center: lagosCenter,
@@ -56,7 +66,7 @@ export default function GoogleMapView({ schoolIdFilter = null, centerCoords = nu
     new window.google.maps.Marker({
       position: lagosCenter,
       map: map,
-      title: "Greenwood Academy VI HQ",
+      title: school ? school.name : "School HQ",
       icon: {
         path: window.google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
         scale: 6,
@@ -201,13 +211,22 @@ export default function GoogleMapView({ schoolIdFilter = null, centerCoords = nu
       }
     } else {
       if (activeIdsChanged) {
-        // Reset to Greenwood Academy HQ in Victoria Island, Lagos
-        const lagosCenter = { lat: 6.4281, lng: 3.4219 };
-        mapInstance.panTo(lagosCenter);
+        const school = schoolIdFilter ? schools.find(s => s.id === schoolIdFilter) : null;
+        const schoolLat = school && school.lat;
+        const schoolLng = school && school.lng;
+        
+        const savedLat = parseFloat(localStorage.getItem('vmk_school_admin_lat'));
+        const savedLng = parseFloat(localStorage.getItem('vmk_school_admin_lng'));
+        const defaultCenter = (schoolLat && schoolLng)
+          ? { lat: schoolLat, lng: schoolLng }
+          : ((!isNaN(savedLat) && !isNaN(savedLng)) 
+            ? { lat: savedLat, lng: savedLng } 
+            : { lat: 6.5244, lng: 3.3792 });
+        mapInstance.panTo(defaultCenter);
         mapInstance.setZoom(14);
       }
     }
-  }, [mapInstance, guardians, activeAlerts, parents, schoolIdFilter]);
+  }, [mapInstance, guardians, activeAlerts, parents, schoolIdFilter, schools]);
 
   // Handle center fly-to centering coordinates
   useEffect(() => {

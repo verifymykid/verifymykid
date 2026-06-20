@@ -21,59 +21,82 @@ export default function SchoolSignin({ setSchoolId }) {
     e.preventDefault();
     setError('');
 
-    try {
-      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/school/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailInput.trim(), password: passwordInput })
-      });
+    const proceedLogin = async (gpsCoords = 'N/A', lat = null, lng = null) => {
+      try {
+        const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/school/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailInput.trim(), password: passwordInput, lat, lng })
+        });
 
-      if (!res.ok) {
-        const err = await res.json();
-        setError(err.detail || "Unrecognized school email or password.");
-        return;
+        if (!res.ok) {
+          const err = await res.json();
+          setError(err.detail || "Unrecognized school email or password.");
+          return;
+        }
+
+        const data = await res.json();
+        sessionStorage.setItem('vmk_token', data.token);
+
+        if (lat && lng) {
+          localStorage.setItem('vmk_school_admin_lat', String(lat));
+          localStorage.setItem('vmk_school_admin_lng', String(lng));
+        }
+
+        const ua = navigator.userAgent;
+        let os = "Unknown OS";
+        if (ua.indexOf("Win") !== -1) os = "Windows";
+        else if (ua.indexOf("Mac") !== -1) os = "macOS";
+        else if (/iPhone|iPad|iPod/.test(ua)) os = "iOS";
+        else if (/Android/.test(ua)) os = "Android";
+        else if (ua.indexOf("Linux") !== -1) os = "Linux";
+        
+        let browser = "Browser";
+        if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
+        else if (ua.indexOf("Safari") !== -1) browser = "Safari";
+        else if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
+
+        const deviceStr = `${browser} on ${os}`;
+        
+        const sessionObj = await addSession({
+          userId: data.id,
+          role: 'SCHOOL_ADMIN',
+          deviceName: `${browser} on ${os} (Current Device)`,
+          ipAddress: '197.210.88.92',
+          loginTime: new Date().toISOString(),
+          status: 'ACTIVE'
+        });
+        sessionStorage.setItem('vmk_current_school_session_id', sessionObj.id);
+
+        await addSystemLog({
+          type: 'School Admin Sign-In',
+          schoolId: data.id,
+          gps: gpsCoords,
+          device: deviceStr,
+          details: `School administrator logged into ${data.name} dashboard.`
+        });
+
+        setSchoolId(data.id);
+        navigate('/school-admin');
+      } catch (err) {
+        setError("Server connection failed. Make sure backend is running.");
       }
+    };
 
-      const data = await res.json();
-      sessionStorage.setItem('vmk_token', data.token);
-
-      const ua = navigator.userAgent;
-      let os = "Unknown OS";
-      if (ua.indexOf("Win") !== -1) os = "Windows";
-      else if (ua.indexOf("Mac") !== -1) os = "macOS";
-      else if (/iPhone|iPad|iPod/.test(ua)) os = "iOS";
-      else if (/Android/.test(ua)) os = "Android";
-      else if (ua.indexOf("Linux") !== -1) os = "Linux";
-      
-      let browser = "Browser";
-      if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
-      else if (ua.indexOf("Safari") !== -1) browser = "Safari";
-      else if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
-
-      const deviceStr = `${browser} on ${os}`;
-      
-      const sessionObj = await addSession({
-        userId: data.id,
-        role: 'SCHOOL_ADMIN',
-        deviceName: `${browser} on ${os} (Current Device)`,
-        ipAddress: '197.210.88.92',
-        loginTime: new Date().toISOString(),
-        status: 'ACTIVE'
-      });
-      sessionStorage.setItem('vmk_current_school_session_id', sessionObj.id);
-
-      await addSystemLog({
-        type: 'School Admin Sign-In',
-        schoolId: data.id,
-        gps: 'N/A',
-        device: deviceStr,
-        details: `School administrator logged into ${data.name} dashboard.`
-      });
-
-      setSchoolId(data.id);
-      navigate('/school-admin');
-    } catch (err) {
-      setError("Server connection failed. Make sure backend is running.");
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          proceedLogin(`${lat.toFixed(6)}, ${lng.toFixed(6)}`, lat, lng);
+        },
+        () => {
+          proceedLogin('N/A (Permission Denied)');
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    } else {
+      proceedLogin('N/A (Not Supported)');
     }
   };
 

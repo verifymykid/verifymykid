@@ -33,6 +33,8 @@ export default function MapView({ schoolIdFilter = null }) {
     : guardians;
 
   // Greenwood school coordinate
+  const school = schoolIdFilter ? schools.find(s => s.id === schoolIdFilter) : null;
+  const schoolName = school ? school.name : "School HQ";
   const schoolCoords = projectCoords(42.352, -71.105);
 
   return (
@@ -46,7 +48,7 @@ export default function MapView({ schoolIdFilter = null }) {
           {/* Active stylized transit routes */}
           <path d="M 80,120 Q 250,80 420,120 T 520,220" className="map-road-active" strokeDasharray="5,5" />
           <path d="M 250,220 L 250,120 L 420,120" className="map-road-active" strokeDasharray="4,4" style={{ stroke: 'var(--accent-green)' }} />
-
+ 
           {/* School Node */}
           <g transform={`translate(${schoolCoords.x}, ${schoolCoords.y})`} style={{ cursor: 'pointer' }}>
             <circle r="14" fill="var(--bg-secondary)" stroke="var(--accent-blue)" strokeWidth="2" />
@@ -55,7 +57,7 @@ export default function MapView({ schoolIdFilter = null }) {
               <School size={14} style={{ color: 'var(--accent-blue)' }} />
             </foreignObject>
             <text y="-18" fontSize="10" fill="var(--text-primary)" fontWeight="bold" textAnchor="middle">
-              Greenwood HQ
+              {schoolName}
             </text>
           </g>
 
