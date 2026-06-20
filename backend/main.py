@@ -420,7 +420,7 @@ def parent_reset_password(data: ParentResetPasswordRequest, db: Session = Depend
         raise HTTPException(status_code=404, detail="No parent account found with this email address.")
         
     stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"parent_forgot_otp_{parent.id}").first()
-    if not stored_otp or (stored_otp.value != data.code.strip() and data.code.strip() != "123456"):
+    if not stored_otp or stored_otp.value != data.code.strip():
         raise HTTPException(status_code=400, detail="Invalid verification code.")
         
     parent.password = get_password_hash(data.password)
@@ -577,7 +577,7 @@ def update_school(school_id: str, data: SchoolUpdateRequest, db: Session = Depen
 def verify_school_otp(school_id: str, data: VerifyOtpRequest, db: Session = Depends(get_db)):
     # Check OTP code
     stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"school_otp_{school_id}").first()
-    if not stored_otp or (stored_otp.value != data.code.strip() and data.code.strip() != "123456"):
+    if not stored_otp or stored_otp.value != data.code.strip():
         raise HTTPException(status_code=400, detail="Invalid OTP code. Please check your email and try again.")
         
     s = db.query(models.School).filter(models.School.id == school_id).first()
