@@ -15,6 +15,12 @@ export default function ParentSignin({ setParentId }) {
   const [error, setError] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  console.log("--- ParentSignin Rendered ---", { emailInput, passwordInput });
+
+  useEffect(() => {
+    console.log("--- ParentSignin Mounted ---");
+  }, []);
+
   // Forgot password flow states
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
@@ -25,15 +31,18 @@ export default function ParentSignin({ setParentId }) {
   const [forgotError, setForgotError] = useState('');
   const [forgotSuccess, setForgotSuccess] = useState('');
 
+  const hasAutofilledRef = useRef(false);
+
   useEffect(() => {
     const queryId = searchParams.get('id');
-    if (queryId && parents.length > 0) {
+    if (queryId && parents.length > 0 && !hasAutofilledRef.current) {
       const p = parents.find(x => x.id === queryId);
-      if (p && !emailInput) {
+      if (p) {
         setEmailInput(p.email);
+        hasAutofilledRef.current = true;
       }
     }
-  }, [searchParams, parents, emailInput]);
+  }, [searchParams, parents]);
 
   useEffect(() => {
     const termMsg = sessionStorage.getItem('parent_login_error');

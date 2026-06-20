@@ -26,6 +26,12 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  console.log("--- BusGuardianPortal Rendered ---", { nameInput, passwordInput });
+
+  useEffect(() => {
+    console.log("--- BusGuardianPortal Mounted ---");
+  }, []);
+
   // Secure login states
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockActive, setCapsLockActive] = useState(false);

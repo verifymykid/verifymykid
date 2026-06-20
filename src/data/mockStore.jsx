@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, useRef } from 'react';
+import { useState, useEffect, createContext, useContext, useRef, useMemo } from 'react';
 
 // Helper to calculate the current TOTP values
 export const getDynamicCode = (uniqueId, offset = 0) => {
@@ -72,19 +72,23 @@ export const StoreProvider = ({ children }) => {
       if (!res.ok) return;
       const data = await res.json();
 
-      if (data.schools) setSchools(data.schools);
+      if (data.schools) {
+        setSchools(prev => JSON.stringify(prev) === JSON.stringify(data.schools) ? prev : data.schools);
+      }
       if (data.parents) {
-        setParents(data.parents.map(p => ({
+        const processedParents = data.parents.map(p => ({
           ...p,
           children: p.children || [],
           tempAuthorizations: p.tempAuthorizations || []
-        })));
+        }));
+        setParents(prev => JSON.stringify(prev) === JSON.stringify(processedParents) ? prev : processedParents);
       }
       if (data.guardians) {
-        setGuardians(data.guardians.map(g => ({
+        const processedGuardians = data.guardians.map(g => ({
           ...g,
           lastLocation: g.lastLocation || { lat: g.lat || 6.43, lng: g.lng || 3.42 }
-        })));
+        }));
+        setGuardians(prev => JSON.stringify(prev) === JSON.stringify(processedGuardians) ? prev : processedGuardians);
       }
       if (data.pickups) {
         const mergedLogs = [
@@ -97,13 +101,21 @@ export const StoreProvider = ({ children }) => {
           }))
         ];
         mergedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        setLogs(mergedLogs);
+        setLogs(prev => JSON.stringify(prev) === JSON.stringify(mergedLogs) ? prev : mergedLogs);
       }
-      if (data.alerts) setActiveAlerts(data.alerts.filter(a => a.status === 'ACTIVE'));
-      if (data.notifications) setNotifications(data.notifications);
-      if (data.smtpLogs) setSmtpLogs(data.smtpLogs.map(l => l.text));
+      if (data.alerts) {
+        const activeAlerts = data.alerts.filter(a => a.status === 'ACTIVE');
+        setActiveAlerts(prev => JSON.stringify(prev) === JSON.stringify(activeAlerts) ? prev : activeAlerts);
+      }
+      if (data.notifications) {
+        setNotifications(prev => JSON.stringify(prev) === JSON.stringify(data.notifications) ? prev : data.notifications);
+      }
+      if (data.smtpLogs) {
+        const logsText = data.smtpLogs.map(l => l.text);
+        setSmtpLogs(prev => JSON.stringify(prev) === JSON.stringify(logsText) ? prev : logsText);
+      }
       if (data.sessions) {
-        setSessions(data.sessions);
+        setSessions(prev => JSON.stringify(prev) === JSON.stringify(data.sessions) ? prev : data.sessions);
         setSessionsLoaded(true);
       }
     } catch (err) {
@@ -118,13 +130,9 @@ export const StoreProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  // OTP Countdown Timer Tick
+  // OTP Countdown Timer Tick (Unused countdown disabled to stop 1s re-renders)
   useEffect(() => {
-    const interval = setInterval(() => {
-      const secondsLeft = 180 - (Math.floor(Date.now() / 1000) % 180);
-      setOtpTimer(secondsLeft);
-    }, 1000);
-    return () => clearInterval(interval);
+    // Left empty since DynamicCode calculates second count locally and dynamically
   }, []);
 
   // Telemetry GPS drift simulator (only runs in guardian panel browser tab)
@@ -548,64 +556,78 @@ export const StoreProvider = ({ children }) => {
     }
   };
 
+  const contextValue = useMemo(() => ({
+    schools,
+    parents,
+    guardians,
+    logs,
+    activeAlerts,
+    otpTimer,
+    notifications,
+    registerSchool,
+    verifySchoolEmail,
+    sendParentForgotCode,
+    resetParentPassword,
+    approveSchool,
+    rejectSchool,
+    suspendSchool,
+    activateSchoolTrial,
+    extendSchoolPaymentDeadline,
+    upliftSchoolTrial,
+    deleteSchool,
+    registerParent,
+    verifyParentEmail,
+    resendParentOtp,
+    addTempAuthorization,
+    addGuardian,
+    triggerPanic,
+    resolvePanic,
+    acknowledgePanicSuperAdmin,
+    acknowledgePanicSchoolAdmin,
+    verifyPickupEvent,
+    setGuardianOnlineStatus,
+    addSystemLog,
+    sendNotification,
+    markNotificationRead,
+    payments,
+    setParentStatus,
+    setParentOnlineStatus,
+    updateParentProfile,
+    updateSchoolProfile,
+    deleteParent,
+    deleteParentBySchool,
+    updateGuardianStatus,
+    deleteGuardian,
+    recordPayment,
+    sessions,
+    sessionsLoaded,
+    smtpLogs,
+    addSession,
+    freezeSession,
+    deleteSession,
+    deleteUnrecognizedSessions,
+    addSmtpLog,
+    requestMasterQrUnlock,
+    approveMasterQrRequest,
+    rejectMasterQrRequest,
+    registerMasterQrLocation,
+    scanMasterQrCode
+  }), [
+    schools,
+    parents,
+    guardians,
+    logs,
+    activeAlerts,
+    otpTimer,
+    notifications,
+    payments,
+    sessions,
+    sessionsLoaded,
+    smtpLogs
+  ]);
+
   return (
-    <StoreContext.Provider value={{
-      schools,
-      parents,
-      guardians,
-      logs,
-      activeAlerts,
-      otpTimer,
-      notifications,
-      registerSchool,
-      verifySchoolEmail,
-      sendParentForgotCode,
-      resetParentPassword,
-      approveSchool,
-      rejectSchool,
-      suspendSchool,
-      activateSchoolTrial,
-      extendSchoolPaymentDeadline,
-      upliftSchoolTrial,
-      deleteSchool,
-      registerParent,
-      verifyParentEmail,
-      resendParentOtp,
-      addTempAuthorization,
-      addGuardian,
-      triggerPanic,
-      resolvePanic,
-      acknowledgePanicSuperAdmin,
-      acknowledgePanicSchoolAdmin,
-      verifyPickupEvent,
-      setGuardianOnlineStatus,
-      addSystemLog,
-      sendNotification,
-      markNotificationRead,
-      payments,
-      setParentStatus,
-      setParentOnlineStatus,
-      updateParentProfile,
-      updateSchoolProfile,
-      deleteParent,
-      deleteParentBySchool,
-      updateGuardianStatus,
-      deleteGuardian,
-      recordPayment,
-      sessions,
-      sessionsLoaded,
-      smtpLogs,
-      addSession,
-      freezeSession,
-      deleteSession,
-      deleteUnrecognizedSessions,
-      addSmtpLog,
-      requestMasterQrUnlock,
-      approveMasterQrRequest,
-      rejectMasterQrRequest,
-      registerMasterQrLocation,
-      scanMasterQrCode
-    }}>
+    <StoreContext.Provider value={contextValue}>
       {children}
     </StoreContext.Provider>
   );
