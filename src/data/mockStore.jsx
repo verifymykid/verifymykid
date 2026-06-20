@@ -62,52 +62,34 @@ export const StoreProvider = ({ children }) => {
   // Sync data from FastAPI backend
   const syncWithBackend = async () => {
     try {
-      const fetchJson = async (endpoint) => {
-        try {
-          const separator = endpoint.includes('?') ? '&' : '?';
-          const res = await fetch(`${API_BASE_URL}${endpoint}${separator}cb=${Date.now()}`, {
-            headers: {
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
-            }
-          });
-          return res.ok ? await res.json() : null;
-        } catch (e) {
-          return null;
+      const res = await fetch(`${API_BASE_URL}/api/sync?cb=${Date.now()}`, {
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
-      };
+      });
+      if (!res.ok) return;
+      const data = await res.json();
 
-      const [sData, pData, gData, lData, aData, nData, smData, seData, sysData] = await Promise.all([
-        fetchJson('/api/schools'),
-        fetchJson('/api/parents'),
-        fetchJson('/api/guardians'),
-        fetchJson('/api/logs/pickups'),
-        fetchJson('/api/alerts'),
-        fetchJson('/api/notifications'),
-        fetchJson('/api/smtp-logs'),
-        fetchJson('/api/sessions'),
-        fetchJson('/api/logs/system')
-      ]);
-
-      if (sData) setSchools(sData);
-      if (pData) {
-        setParents(pData.map(p => ({
+      if (data.schools) setSchools(data.schools);
+      if (data.parents) {
+        setParents(data.parents.map(p => ({
           ...p,
           children: p.children || [],
           tempAuthorizations: p.tempAuthorizations || []
         })));
       }
-      if (gData) {
-        setGuardians(gData.map(g => ({
+      if (data.guardians) {
+        setGuardians(data.guardians.map(g => ({
           ...g,
           lastLocation: g.lastLocation || { lat: g.lat || 6.43, lng: g.lng || 3.42 }
         })));
       }
-      if (lData) {
+      if (data.pickups) {
         const mergedLogs = [
-          ...lData,
-          ...(sysData || []).map(sys => ({
+          ...data.pickups,
+          ...(data.systemLogs || []).map(sys => ({
             ...sys,
             childName: 'N/A',
             guardianName: 'System / School Admin',
@@ -117,11 +99,11 @@ export const StoreProvider = ({ children }) => {
         mergedLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         setLogs(mergedLogs);
       }
-      if (aData) setActiveAlerts(aData.filter(a => a.status === 'ACTIVE'));
-      if (nData) setNotifications(nData);
-      if (smData) setSmtpLogs(smData.map(l => l.text));
-      if (seData) {
-        setSessions(seData);
+      if (data.alerts) setActiveAlerts(data.alerts.filter(a => a.status === 'ACTIVE'));
+      if (data.notifications) setNotifications(data.notifications);
+      if (data.smtpLogs) setSmtpLogs(data.smtpLogs.map(l => l.text));
+      if (data.sessions) {
+        setSessions(data.sessions);
         setSessionsLoaded(true);
       }
     } catch (err) {

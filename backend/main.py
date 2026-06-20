@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, APIRouter, Request
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter, Request, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -222,7 +222,7 @@ def get_status():
 
 # ----------------- AUTH ROUTER -----------------
 @app.post("/api/auth/school/register")
-def school_register(data: SchoolRegisterRequest, db: Session = Depends(get_db)):
+def school_register(data: SchoolRegisterRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     # Check if school email already exists
     existing = db.query(models.School).filter(func.lower(models.School.email) == data.email.lower()).first()
     if existing:
@@ -264,7 +264,7 @@ def school_register(data: SchoolRegisterRequest, db: Session = Depends(get_db)):
     # Send live actual OTP
     subject = "VerifyMyKid - School Verification OTP"
     body = f"Hello {new_school.name},\n\nThank you for registering on VerifyMyKid. Your 6-digit email verification OTP code is: {otp_code}\n\nPlease enter this code to verify your account."
-    send_real_email(new_school.email, subject, body)
+    background_tasks.add_task(send_real_email, new_school.email, subject, body)
     
     # Log in SMTP logs
     log_text = f"EMAIL TO: {new_school.email} | SUBJECT: {subject} | MESSAGE: {body}"
@@ -320,7 +320,7 @@ def school_login(data: LoginRequest, db: Session = Depends(get_db)):
 
 
 @app.post("/api/auth/parent/register")
-def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
+def parent_register(data: ParentSignupRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     existing = db.query(models.Parent).filter(func.lower(models.Parent.email) == data.email.lower()).first()
     if existing:
         if existing.status == "DELETED":
@@ -370,7 +370,7 @@ def parent_register(data: ParentSignupRequest, db: Session = Depends(get_db)):
     # Send live actual OTP
     subject = "VerifyMyKid - Parent Verification OTP"
     body = f"Hello {new_parent.name},\n\nThank you for registering on VerifyMyKid. Your 6-digit email verification OTP code is: {otp_code}\n\nPlease enter this code to verify your parent account."
-    send_real_email(new_parent.email, subject, body)
+    background_tasks.add_task(send_real_email, new_parent.email, subject, body)
     
     # Log in SMTP logs
     log_text = f"EMAIL TO: {new_parent.email} | SUBJECT: {subject} | MESSAGE: {body}"
@@ -434,7 +434,7 @@ def parent_login(data: LoginRequest, db: Session = Depends(get_db)):
 
 
 @app.post("/api/auth/parent/forgot-password")
-def parent_forgot_password(data: ParentForgotPasswordRequest, db: Session = Depends(get_db)):
+def parent_forgot_password(data: ParentForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     parent = db.query(models.Parent).filter(func.lower(models.Parent.email) == data.email.lower().strip()).first()
     if not parent:
         raise HTTPException(status_code=404, detail="No parent account found with this email address.")
@@ -449,7 +449,7 @@ def parent_forgot_password(data: ParentForgotPasswordRequest, db: Session = Depe
     
     subject = "VerifyMyKid - Parent Password Recovery OTP"
     body = f"Hello {parent.name},\n\nYour secure 6-digit password recovery reset code is: {code}\n\nIf you did not request this, please ignore this email."
-    send_real_email(parent.email, subject, body)
+    background_tasks.add_task(send_real_email, parent.email, subject, body)
     
     # Log in SMTP logs
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {parent.email} | SUBJECT: {subject} | MESSAGE: {body}"))
@@ -657,7 +657,7 @@ def verify_school_otp(school_id: str, data: VerifyOtpRequest, db: Session = Depe
     return {"message": "OTP verified successfully. Status changed to PENDING APPROVAL."}
 
 @app.post("/api/schools/{school_id}/resend-otp")
-def resend_school_otp(school_id: str, db: Session = Depends(get_db)):
+def resend_school_otp(school_id: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     s = db.query(models.School).filter(models.School.id == school_id).first()
     if not s:
         raise HTTPException(status_code=404, detail="School not found")
@@ -672,7 +672,7 @@ def resend_school_otp(school_id: str, db: Session = Depends(get_db)):
     
     subject = "VerifyMyKid - School Registration OTP"
     body = f"Hello {s.name},\n\nYour 6-digit school verification OTP code is: {code}\n\nPlease enter this code to verify your school's email."
-    send_real_email(s.email, subject, body)
+    background_tasks.add_task(send_real_email, s.email, subject, body)
     
     # Log in SMTP logs
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {s.email} | SUBJECT: {subject} | MESSAGE: {body}"))
@@ -904,7 +904,7 @@ def verify_parent_otp(parent_id: str, data: VerifyOtpRequest, db: Session = Depe
     return {"message": "OTP verified successfully. Your profile is now awaiting school admin approval."}
 
 @app.post("/api/parents/{parent_id}/resend-otp")
-def resend_parent_otp(parent_id: str, db: Session = Depends(get_db)):
+def resend_parent_otp(parent_id: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
     if not p:
         raise HTTPException(status_code=404, detail="Parent profile not found")
@@ -919,7 +919,7 @@ def resend_parent_otp(parent_id: str, db: Session = Depends(get_db)):
     
     subject = "VerifyMyKid - Parent Verification OTP"
     body = f"Hello {p.name},\n\nYour new 6-digit email verification OTP code is: {code}\n\nPlease enter this code to verify your parent account."
-    send_real_email(p.email, subject, body)
+    background_tasks.add_task(send_real_email, p.email, subject, body)
     
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {p.email} | SUBJECT: {subject} | MESSAGE: {body}"))
     db.commit()
@@ -1264,7 +1264,7 @@ def delete_session(session_id: str, db: Session = Depends(get_db)):
 
 # ----------------- SUPER ADMIN ROUTER -----------------
 @app.post("/api/superadmin/approve-school/{school_id}")
-def approve_school(school_id: str, db: Session = Depends(get_db)):
+def approve_school(school_id: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     s = db.query(models.School).filter(models.School.id == school_id).first()
     if not s:
         raise HTTPException(status_code=404, detail="School not found")
@@ -1284,7 +1284,7 @@ def approve_school(school_id: str, db: Session = Depends(get_db)):
         "Best regards,\n"
         "The VerifyMyKid Team"
     )
-    send_real_email(s.email, subject, body)
+    background_tasks.add_task(send_real_email, s.email, subject, body)
     
     # Log in SMTP logs
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {s.email} | SUBJECT: {subject} | MESSAGE: {body}"))
@@ -1306,7 +1306,7 @@ def approve_school(school_id: str, db: Session = Depends(get_db)):
     return s
 
 @app.post("/api/superadmin/reject-school/{school_id}")
-def reject_school(school_id: str, db: Session = Depends(get_db)):
+def reject_school(school_id: str, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     s = db.query(models.School).filter(models.School.id == school_id).first()
     if not s:
         raise HTTPException(status_code=404, detail="School not found")
@@ -1322,7 +1322,7 @@ def reject_school(school_id: str, db: Session = Depends(get_db)):
         "Best regards,\n"
         "The VerifyMyKid Team"
     )
-    send_real_email(s.email, subject, body)
+    background_tasks.add_task(send_real_email, s.email, subject, body)
     
     # Log in SMTP logs
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: {s.email} | SUBJECT: {subject} | MESSAGE: {body}"))
@@ -1438,7 +1438,7 @@ def activate_school_trial(school_id: str, db: Session = Depends(get_db)):
     return s
 
 @app.post("/api/guardians/{guardian_id}/scan-master-qr")
-def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, db: Session = Depends(get_db)):
+def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     import math
     g = db.query(models.Guardian).filter(func.lower(models.Guardian.id) == guardian_id.lower()).first()
     if not g:
@@ -1528,7 +1528,7 @@ def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, db: Session = Dep
             f"Best regards,\n"
             f"{school.name}"
         )
-        send_real_email(p.email, subject, body)
+        background_tasks.add_task(send_real_email, p.email, subject, body)
         # Log each email in the SmtpLog
         db.add(models.SmtpLog(
             timestamp=datetime.utcnow().isoformat(),
@@ -1541,5 +1541,61 @@ def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, db: Session = Dep
         "status": "VERIFIED",
         "type": scan_type,
         "message": f"SUCCESS: Master QR scan verified as {scan_type}. Notifications sent to parents."
+    }
+
+
+@app.get("/api/sync")
+def global_sync(db: Session = Depends(get_db)):
+    schools = db.query(models.School).all()
+    for s in schools:
+        check_and_update_school_trial_status(s, db)
+        
+    parents_db = db.query(models.Parent).all()
+    parents_data = []
+    for p in parents_db:
+        parents_data.append({
+            "id": p.id,
+            "name": p.name,
+            "email": p.email,
+            "phone": p.phone,
+            "address": p.address,
+            "profilePic": p.profilePic,
+            "hasUploadedPic": p.hasUploadedPic,
+            "schoolId": p.schoolId,
+            "pendingSchoolId": p.pendingSchoolId,
+            "singleParent": p.singleParent,
+            "spouseName": p.spouseName,
+            "spousePhone": p.spousePhone,
+            "spouseProfilePic": p.spouseProfilePic,
+            "status": p.status,
+            "lat": p.lat,
+            "lng": p.lng,
+            "online": p.online,
+            "deletedBySchoolId": p.deletedBySchoolId,
+            "deletedBySchoolName": p.deletedBySchoolName,
+            "deleteReason": p.deleteReason,
+            "deletedAt": p.deletedAt,
+            "children": [{"name": c.name, "age": c.age} for c in p.children],
+            "tempAuthorizations": [{"id": a.id, "name": a.name, "phone": a.phone, "type": a.type, "status": a.status, "code": a.code, "createdAt": a.createdAt} for a in p.authorizations]
+        })
+        
+    guardians = db.query(models.Guardian).all()
+    pickups = db.query(models.PickupLog).order_by(models.PickupLog.timestamp.desc()).all()
+    alerts = db.query(models.ActiveAlert).all()
+    notifications = db.query(models.Notification).all()
+    smtp_logs = db.query(models.SmtpLog).order_by(models.SmtpLog.id.desc()).all()
+    sessions = db.query(models.UserSession).all()
+    system_logs = db.query(models.SystemLog).order_by(models.SystemLog.timestamp.desc()).all()
+    
+    return {
+        "schools": schools,
+        "parents": parents_data,
+        "guardians": guardians,
+        "pickups": pickups,
+        "alerts": alerts,
+        "notifications": notifications,
+        "smtpLogs": smtp_logs,
+        "sessions": sessions,
+        "systemLogs": system_logs
     }
 
