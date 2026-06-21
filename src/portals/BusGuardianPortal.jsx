@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bus, Key, ShieldAlert, CheckCircle2, Navigation, AlertTriangle, AlertOctagon, ScanLine, Lock, Eye, EyeOff, Bell, Send, LogOut, School } from 'lucide-react';
+import { Bus, Key, ShieldAlert, CheckCircle2, Navigation, AlertTriangle, AlertOctagon, ScanLine, Lock, Eye, EyeOff, Bell, Send, LogOut, School, RefreshCw } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
 import { Html5Qrcode } from 'html5-qrcode';
 import DynamicCode from '../components/DynamicCode';
@@ -92,10 +92,10 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   };
 
   useEffect(() => {
-    const termMsg = sessionStorage.getItem('guardian_login_error');
+    const termMsg = localStorage.getItem('guardian_login_error');
     if (termMsg) {
       setLoginError(termMsg);
-      sessionStorage.removeItem('guardian_login_error');
+      localStorage.removeItem('guardian_login_error');
     }
   }, []);
 
@@ -122,7 +122,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       setPasswordInput('');
       setGpsPermissionStatus('prompt');
       setLoginError("Your bus guardian account has been suspended by the school administrator.");
-      sessionStorage.setItem('guardian_login_error', "Your bus guardian account has been suspended by the school administrator.");
+      localStorage.setItem('guardian_login_error', "Your bus guardian account has been suspended by the school administrator.");
     }
   }, [guardians, guardianId, currentGuardian?.status]);
 
@@ -216,8 +216,8 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       }
 
       const data = await res.json();
-      sessionStorage.setItem('vmk_token', data.token);
-      sessionStorage.setItem('vmk_current_guardian_id', data.id);
+      localStorage.setItem('vmk_token', data.token);
+      localStorage.setItem('vmk_current_guardian_id', data.id);
       setGuardianId(data.id);
     } catch (err) {
       setLoginError("Server connection failed. Make sure backend is running.");
@@ -245,8 +245,8 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         });
 
         await setGuardianOnlineStatus(currentGuardian.id, false);
-        sessionStorage.removeItem('vmk_current_guardian_id');
-        sessionStorage.removeItem('vmk_token');
+        localStorage.removeItem('vmk_current_guardian_id');
+        localStorage.removeItem('vmk_token');
         setGuardianId('');
         setNameInput('');
         setPasswordInput('');
@@ -468,16 +468,22 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         isMounted = false;
         clearTimeout(timer);
         if (html5QrCode) {
-          if (started) {
-            html5QrCode.stop().then(() => {
-              if (html5QrcodeRef.current === html5QrCode) {
-                html5QrcodeRef.current = null;
-              }
-            }).catch(err => {
-              console.warn("Failed to stop scanner on cleanup:", err);
-            });
+          if (started && html5QrcodeRef.current === html5QrCode) {
+            try {
+              html5QrCode.stop().then(() => {
+                if (html5QrcodeRef.current === html5QrCode) {
+                  html5QrcodeRef.current = null;
+                }
+              }).catch(err => {
+                console.warn("Failed to stop scanner on cleanup:", err);
+              });
+            } catch (err) {
+              console.warn("Synchronous error stopping scanner on cleanup:", err);
+            }
           } else {
-            html5QrcodeRef.current = null;
+            if (html5QrcodeRef.current === html5QrCode) {
+              html5QrcodeRef.current = null;
+            }
           }
         }
       };
@@ -558,6 +564,15 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
             🔒 Privacy Note: Geolocation tracking is active only while you are signed into the active route run. Logging out halts tracking immediately.
           </div>
         </div>
+      </main>
+    );
+  }
+
+  if (guardianId && guardians.length === 0) {
+    return (
+      <main className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)' }}>
+        <RefreshCw className="animate-spin" size={48} style={{ color: 'var(--accent-blue)' }} />
+        <p style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Synchronizing your secure session...</p>
       </main>
     );
   }

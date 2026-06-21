@@ -14,7 +14,7 @@ export default function SuperAdminPortal() {
   } = useStore();
 
   // Secure admin session states
-  const [isLoggedIn, setIsLoggedIn] = useState(() => sessionStorage.getItem('vmk_super_admin_logged') === 'true');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('vmk_super_admin_logged') === 'true');
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [twoFactorInput, setTwoFactorInput] = useState('');
@@ -100,7 +100,7 @@ export default function SuperAdminPortal() {
         return;
       }
       const data = await res.json();
-      sessionStorage.setItem('vmk_token', data.token);
+      localStorage.setItem('vmk_token', data.token);
       setLoginStep(2); // Proceed to 2FA verification
     } catch (err) {
       setLoginError('Server connection failed. Make sure backend is running.');
@@ -140,10 +140,10 @@ export default function SuperAdminPortal() {
         loginTime: new Date().toISOString(),
         status: 'ACTIVE'
       });
-      sessionStorage.setItem('vmk_current_session_id', sessionObj.id);
+      localStorage.setItem('vmk_current_session_id', sessionObj.id);
 
       setIsLoggedIn(true);
-      sessionStorage.setItem('vmk_super_admin_logged', 'true');
+      localStorage.setItem('vmk_super_admin_logged', 'true');
 
       setLoginError('');
       setLoginStep(1);
@@ -160,8 +160,8 @@ export default function SuperAdminPortal() {
       details: 'Super Administrator signed out.'
     });
     setIsLoggedIn(false);
-    sessionStorage.removeItem('vmk_super_admin_logged');
-    sessionStorage.removeItem('vmk_current_session_id');
+    localStorage.removeItem('vmk_super_admin_logged');
+    localStorage.removeItem('vmk_current_session_id');
     setEmailInput('');
     setPasswordInput('');
     setTwoFactorInput('');
@@ -177,7 +177,7 @@ export default function SuperAdminPortal() {
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [trialMonths, setTrialMonths] = useState(1);
   const [extendDays, setExtendDays] = useState(7);
-  const currentSessionId = sessionStorage.getItem('vmk_current_session_id');
+  const currentSessionId = localStorage.getItem('vmk_current_session_id');
 
   // Monitor if active session gets frozen or deleted
   React.useEffect(() => {
@@ -218,7 +218,7 @@ export default function SuperAdminPortal() {
   // Register current session if missing on load
   React.useEffect(() => {
     const registerSession = async () => {
-      if (isLoggedIn && !sessionStorage.getItem('vmk_current_session_id')) {
+      if (isLoggedIn && !localStorage.getItem('vmk_current_session_id')) {
         const ua = navigator.userAgent;
         let os = "macOS";
         let browser = "Chrome";
@@ -239,7 +239,7 @@ export default function SuperAdminPortal() {
           loginTime: new Date().toISOString(),
           status: 'ACTIVE'
         });
-        sessionStorage.setItem('vmk_current_session_id', sessionObj.id);
+        localStorage.setItem('vmk_current_session_id', sessionObj.id);
       }
     };
     registerSession();

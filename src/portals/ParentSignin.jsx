@@ -45,10 +45,10 @@ export default function ParentSignin({ setParentId }) {
   }, [searchParams, parents]);
 
   useEffect(() => {
-    const termMsg = sessionStorage.getItem('parent_login_error');
+    const termMsg = localStorage.getItem('parent_login_error');
     if (termMsg) {
       setError(termMsg);
-      sessionStorage.removeItem('parent_login_error');
+      localStorage.removeItem('parent_login_error');
     }
   }, []);
 
@@ -70,7 +70,7 @@ export default function ParentSignin({ setParentId }) {
       }
 
       const data = await res.json();
-      sessionStorage.setItem('vmk_token', data.token);
+      localStorage.setItem('vmk_token', data.token);
       setIsLoggingIn(true);
 
       const ua = navigator.userAgent;

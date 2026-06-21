@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School } from 'lucide-react';
+import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School, RefreshCw } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
 import DynamicCode from '../components/DynamicCode';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -89,10 +89,19 @@ export default function ParentPortal({ parentId, setParentId }) {
         parentName: currentParent.name,
         details: `Parent ${currentParent.name} session terminated automatically due to account suspension.`
       });
-      sessionStorage.setItem('parent_login_error', "Your parent account has been suspended by the school administrator.");
+      localStorage.setItem('parent_login_error', "Your parent account has been suspended by the school administrator.");
       setParentId('');
     }
   }, [parents, parentId, currentParent?.status]);
+
+  if (parentId && parents.length === 0) {
+    return (
+      <div className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)' }}>
+        <RefreshCw className="animate-spin" size={48} style={{ color: 'var(--accent-blue)' }} />
+        <p style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Synchronizing your secure session...</p>
+      </div>
+    );
+  }
 
   if (!currentParent) {
     return (
@@ -273,16 +282,22 @@ export default function ParentPortal({ parentId, setParentId }) {
         isMounted = false;
         clearTimeout(timer);
         if (html5QrCode) {
-          if (started) {
-            html5QrCode.stop().then(() => {
-              if (html5QrcodeRef.current === html5QrCode) {
-                html5QrcodeRef.current = null;
-              }
-            }).catch(err => {
-              console.warn("Failed to stop parent scanner on cleanup:", err);
-            });
+          if (started && html5QrcodeRef.current === html5QrCode) {
+            try {
+              html5QrCode.stop().then(() => {
+                if (html5QrcodeRef.current === html5QrCode) {
+                  html5QrcodeRef.current = null;
+                }
+              }).catch(err => {
+                console.warn("Failed to stop parent scanner on cleanup:", err);
+              });
+            } catch (err) {
+              console.warn("Synchronous error stopping parent scanner on cleanup:", err);
+            }
           } else {
-            html5QrcodeRef.current = null;
+            if (html5QrcodeRef.current === html5QrCode) {
+              html5QrcodeRef.current = null;
+            }
           }
         }
       };

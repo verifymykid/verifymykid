@@ -37,17 +37,11 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="bg-hero-gradient relative flex flex-col justify-center overflow-hidden" style={{ padding: '6rem 0' }}>
         <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none"></div>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '4rem', alignItems: 'center', position: 'relative', zIndex: 10 }}>
+        <div className="container hero-grid">
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h1 style={{ 
-                fontFamily: 'var(--font-display)', 
-                fontSize: '3.6rem', 
-                fontWeight: '900', 
-                lineHeight: '1.1', 
-                letterSpacing: '-0.03em' 
-              }}>
+              <h1 className="hero-title">
                 <span className="text-gradient" style={{ position: 'relative' }}>Track School Runs</span><br />
                 in <span className="text-gradient">Real Time</span>
               </h1>
@@ -214,7 +208,7 @@ export default function LandingPage() {
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Platform Features</span>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#0f172a', marginTop: '1rem', marginBottom: '1rem', letterSpacing: '-0.02em' }}>
+            <h2 className="landing-section-h2" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>
               Everything you need to run a <span className="text-gradient">safer school fleet</span>
             </h2>
             <p style={{ color: '#475569', fontSize: '1.1rem', lineHeight: '1.6' }}>
@@ -299,7 +293,7 @@ export default function LandingPage() {
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Operational Flow</span>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#0f172a', marginTop: '1rem', marginBottom: '1rem' }}>
+            <h2 className="landing-section-h2" style={{ color: '#0f172a' }}>
               Up and running in <span className="text-gradient">minutes</span>
             </h2>
             <p style={{ color: '#475569', fontSize: '1.1rem' }}>
@@ -380,7 +374,7 @@ export default function LandingPage() {
 
           <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 3rem auto' }}>
             <span className="section-label">Testimonials</span>
-            <h2 style={{ fontSize: '2.2rem', fontWeight: '800', color: '#0f172a', marginTop: '1rem', marginBottom: '0.5rem' }}>
+            <h2 className="landing-section-h2" style={{ color: '#0f172a', marginBottom: '0.5rem' }}>
               What Nigerian school administrators say
             </h2>
           </div>
@@ -439,7 +433,7 @@ export default function LandingPage() {
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Pricing Inquiry</span>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', color: '#0f172a', marginTop: '1rem', marginBottom: '1rem' }}>
+            <h2 className="landing-section-h2" style={{ color: '#0f172a' }}>
               Start free, scale as you grow
             </h2>
             <p style={{ color: '#475569', fontSize: '1.1rem' }}>
@@ -542,7 +536,7 @@ export default function LandingPage() {
                     />
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="grid-2">
                     <div className="form-group">
                       <label style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>Phone Number *</label>
                       <input 
@@ -613,7 +607,7 @@ export default function LandingPage() {
           }}>
             🇳🇬 Built for Nigerian Schools
           </span>
-          <h2 style={{ fontSize: '2.5rem', fontWeight: '800', lineHeight: '1.2', marginBottom: '1rem' }}>
+          <h2 className="landing-section-h2" style={{ lineHeight: '1.2' }}>
             Join schools already on VerifyMyKid
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.15rem', marginBottom: '2rem' }}>

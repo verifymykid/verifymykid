@@ -55,7 +55,7 @@ export const StoreProvider = ({ children }) => {
 
   // Auth helper
   const getAuthHeaders = () => {
-    const token = sessionStorage.getItem('vmk_token');
+    const token = localStorage.getItem('vmk_token');
     return token ? { 'Authorization': `Bearer ${token}` } : {};
   };
 
@@ -139,7 +139,7 @@ export const StoreProvider = ({ children }) => {
   useEffect(() => {
     const interval = setInterval(async () => {
       if (window.location.pathname.includes('/bus-guardian')) {
-        const activeGuardianId = sessionStorage.getItem('vmk_current_guardian_id');
+        const activeGuardianId = localStorage.getItem('vmk_current_guardian_id');
         if (!activeGuardianId) return;
 
         setGuardians(prev => {
@@ -147,7 +147,7 @@ export const StoreProvider = ({ children }) => {
           if (!match || !match.online) return prev;
 
           // Verify again right before doing the fetch
-          if (sessionStorage.getItem('vmk_current_guardian_id') !== activeGuardianId) {
+          if (localStorage.getItem('vmk_current_guardian_id') !== activeGuardianId) {
             return prev;
           }
 

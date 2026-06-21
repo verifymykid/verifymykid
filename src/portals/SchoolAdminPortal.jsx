@@ -58,7 +58,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [deleteReasonInput, setDeleteReasonInput] = useState('');
   const [agreeLocationUse, setAgreeLocationUse] = useState(false);
-  const currentSessionId = sessionStorage.getItem('vmk_current_school_session_id');
+  const currentSessionId = localStorage.getItem('vmk_current_school_session_id');
 
   // Capture browser geolocation on portal load to dynamically store the school admin location
   React.useEffect(() => {
@@ -98,7 +98,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
               const latestSessions = await res.json();
               const stillExists = latestSessions.some(s => s.id === currentSessionId);
               if (!stillExists) {
-                sessionStorage.setItem('school_login_error', "Your session was terminated by an administrator.");
+                localStorage.setItem('school_login_error', "Your session was terminated by an administrator.");
                 handleLogoutClick();
               }
             }
@@ -108,7 +108,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
         };
         verifyAndLogout();
       } else if (currentSession.status === 'FROZEN') {
-        sessionStorage.setItem('school_login_error', "Your session has been frozen by an administrator.");
+        localStorage.setItem('school_login_error', "Your session has been frozen by an administrator.");
         handleLogoutClick();
       }
     }
@@ -117,7 +117,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   // Register current session if missing on load (e.g., page refresh or direct navigation)
   React.useEffect(() => {
     const registerSession = async () => {
-      if (schoolId && !sessionStorage.getItem('vmk_current_school_session_id')) {
+      if (schoolId && !localStorage.getItem('vmk_current_school_session_id')) {
         const ua = navigator.userAgent;
         let os = "macOS";
         let browser = "Chrome";
@@ -138,7 +138,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
           loginTime: new Date().toISOString(),
           status: 'ACTIVE'
         });
-        sessionStorage.setItem('vmk_current_school_session_id', sessionObj.id);
+        localStorage.setItem('vmk_current_school_session_id', sessionObj.id);
       }
     };
     registerSession();
@@ -168,6 +168,8 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
       details: `School administrator logged out from ${currentSchool.name}.`
     });
 
+    localStorage.removeItem('vmk_current_school_session_id');
+    localStorage.removeItem('vmk_token');
     setSchoolId('');
   };
 

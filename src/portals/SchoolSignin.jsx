@@ -9,9 +9,9 @@ export default function SchoolSignin({ setSchoolId }) {
   const [emailInput, setEmailInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [error, setError] = useState(() => {
-    const msg = sessionStorage.getItem('school_login_error');
+    const msg = localStorage.getItem('school_login_error');
     if (msg) {
-      sessionStorage.removeItem('school_login_error');
+      localStorage.removeItem('school_login_error');
       return msg;
     }
     return '';
@@ -36,7 +36,7 @@ export default function SchoolSignin({ setSchoolId }) {
         }
 
         const data = await res.json();
-        sessionStorage.setItem('vmk_token', data.token);
+        localStorage.setItem('vmk_token', data.token);
 
         if (lat && lng) {
           localStorage.setItem('vmk_school_admin_lat', String(lat));
@@ -66,7 +66,7 @@ export default function SchoolSignin({ setSchoolId }) {
           loginTime: new Date().toISOString(),
           status: 'ACTIVE'
         });
-        sessionStorage.setItem('vmk_current_school_session_id', sessionObj.id);
+        localStorage.setItem('vmk_current_school_session_id', sessionObj.id);
 
         await addSystemLog({
           type: 'School Admin Sign-In',

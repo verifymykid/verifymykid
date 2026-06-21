@@ -15,20 +15,20 @@ import SchoolSignin from './portals/SchoolSignin';
 
 function AppContent() {
   // Global simulation states representing active login profiles
-  const [parentId, setParentId] = useState(() => sessionStorage.getItem('vmk_logged_parent_id') || '');
-  const [guardianId, setGuardianId] = useState(() => sessionStorage.getItem('vmk_logged_guardian_id') || '');
-  const [schoolId, setSchoolId] = useState(() => sessionStorage.getItem('vmk_logged_school_id') || '');
+  const [parentId, setParentId] = useState(() => localStorage.getItem('vmk_logged_parent_id') || '');
+  const [guardianId, setGuardianId] = useState(() => localStorage.getItem('vmk_logged_guardian_id') || '');
+  const [schoolId, setSchoolId] = useState(() => localStorage.getItem('vmk_logged_school_id') || '');
 
   useEffect(() => {
-    sessionStorage.setItem('vmk_logged_parent_id', parentId);
+    localStorage.setItem('vmk_logged_parent_id', parentId);
   }, [parentId]);
 
   useEffect(() => {
-    sessionStorage.setItem('vmk_logged_guardian_id', guardianId);
+    localStorage.setItem('vmk_logged_guardian_id', guardianId);
   }, [guardianId]);
 
   useEffect(() => {
-    sessionStorage.setItem('vmk_logged_school_id', schoolId);
+    localStorage.setItem('vmk_logged_school_id', schoolId);
   }, [schoolId]);
 
   return (

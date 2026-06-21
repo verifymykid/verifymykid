@@ -1144,6 +1144,42 @@ def verify_pickup_event(data: VerifyPickupRequest, db: Session = Depends(get_db)
     if not parent or not guardian:
         raise HTTPException(status_code=404, detail="Parent or Bus Guardian credentials not found.")
         
+    # Check if enteredCode corresponds to an active TemporaryAuthorization for the parent
+    temp_auth = db.query(models.TemporaryAuthorization).filter(
+        models.TemporaryAuthorization.parentId == parent.id,
+        models.TemporaryAuthorization.code == data.enteredCode.strip(),
+        models.TemporaryAuthorization.status == "Active"
+    ).first()
+    
+    parent_display_name = parent.name
+    details_str = "Student pickup confirmed by verified dynamic scan token."
+    
+    if temp_auth:
+        is_expired = False
+        if temp_auth.createdAt:
+            try:
+                created_dt = datetime.fromisoformat(temp_auth.createdAt)
+                elapsed_seconds = (datetime.utcnow() - created_dt).total_seconds()
+                if temp_auth.type == "Time Limited (Today)" and elapsed_seconds > 12 * 3600:
+                    is_expired = True
+                elif temp_auth.type == "Time Limited (2 Days)" and elapsed_seconds > 48 * 3600:
+                    is_expired = True
+            except Exception:
+                pass
+        
+        if is_expired:
+            temp_auth.status = "Expired"
+            db.commit()
+            raise HTTPException(status_code=400, detail="This temporary authorization code has expired.")
+            
+        # Invalidate the code (single-use)
+        temp_auth.status = "Used"
+        db.commit()
+        
+        # Override parent display name in logs to show the authorized person's name
+        parent_display_name = f"{parent.name} (Auth: {temp_auth.name})"
+        details_str = f"Pickup confirmed by authorized relative/driver: {temp_auth.name}."
+
     gps = data.scannedGps or f"{guardian.lat}, {guardian.lng}"
     
     children_names = ", ".join([c.name for c in parent.children]) if parent.children else "N/A"
@@ -1153,13 +1189,13 @@ def verify_pickup_event(data: VerifyPickupRequest, db: Session = Depends(get_db)
         type="Morning Pickup" if data.isMorning else "Afternoon Drop-Off",
         timestamp=datetime.utcnow().isoformat(),
         schoolId=guardian.schoolId,
-        parentName=parent.name,
+        parentName=parent_display_name,
         childName=children_names,
         guardianName=guardian.name,
         status="VERIFIED",
         gps=gps,
         device="Parent Device" if data.isMorning else "Bus Guardian Terminal",
-        details="Student pickup confirmed by verified dynamic scan token."
+        details=details_str
     )
     db.add(new_log)
     db.commit()
