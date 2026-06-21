@@ -777,115 +777,119 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               Verify parent authorization before releasing a student at their drop-off point. Scan their dynamic QR code or type their OTP PIN below.
             </p>
 
-            {dropOffResult ? (
-              <div style={{ textAlign: 'center', padding: '1rem' }}>
-                {dropOffResult.status === 'VERIFIED' ? (
-                  <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1.5px solid var(--accent-green)', padding: '2rem', borderRadius: '12px' }} id="dropoff-success-screen">
-                    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-green)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.8rem', fontWeight: 'bold' }}>
-                      ✓
-                    </div>
-                    <h2 style={{ color: 'var(--accent-green)', marginBottom: '0.5rem' }}>RELEASE AUTHORIZED</h2>
-                    
-                    {/* Visual Verification Hand-off Profiles */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', marginTop: '1.25rem' }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-cyan)', boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)', margin: '0 auto 0.5rem' }}>
-                          <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {/* Result view */}
+            <div style={{ display: dropOffResult ? 'block' : 'none', textAlign: 'center', padding: '1rem' }}>
+              {dropOffResult && (
+                <>
+                  {dropOffResult.status === 'VERIFIED' ? (
+                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1.5px solid var(--accent-green)', padding: '2rem', borderRadius: '12px' }} id="dropoff-success-screen">
+                      <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-green)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.8rem', fontWeight: 'bold' }}>
+                        ✓
+                      </div>
+                      <h2 style={{ color: 'var(--accent-green)', marginBottom: '0.5rem' }}>RELEASE AUTHORIZED</h2>
+                      
+                      {/* Visual Verification Hand-off Profiles */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', marginTop: '1.25rem' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-cyan)', boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)', margin: '0 auto 0.5rem' }}>
+                            <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{currentGuardian.name}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
                         </div>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{currentGuardian.name}</div>
-                        <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--accent-green)' }}>
+                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1' }}>↔</div>
+                          <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '9999px', marginTop: '4px' }}>SECURE MATCH</span>
+                        </div>
+
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-blue)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', margin: '0 auto 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)' }}>
+                            {dropOffResult.log?.parentName === 'N/A (Master QR)' ? (
+                              <School size={28} />
+                            ) : (
+                              <img src={matchedParent ? matchedParent.profilePic : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'} alt={dropOffResult.log?.parentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{dropOffResult.log?.parentName}</div>
+                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
+                            {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Compound' : 'Parent'}
+                          </div>
+                        </div>
                       </div>
 
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--accent-green)' }}>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1' }}>↔</div>
-                        <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '9999px', marginTop: '4px' }}>SECURE MATCH</span>
-                      </div>
-
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-blue)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', margin: '0 auto 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)' }}>
-                          {dropOffResult.log?.parentName === 'N/A (Master QR)' ? (
-                            <School size={28} />
-                          ) : (
-                            <img src={matchedParent ? matchedParent.profilePic : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'} alt={dropOffResult.log?.parentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          )}
-                        </div>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{dropOffResult.log?.parentName}</div>
-                        <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
-                          {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Compound' : 'Parent'}
-                        </div>
+                      <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+                        {dropOffResult.log?.parentName === 'N/A (Master QR)'
+                          ? `Campus arrival/departure verification code matched successfully.`
+                          : `Child identity release checks matches successfully. Release kids to guardian: ${dropOffResult.log?.parentName}.`}
+                      </p>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                        <strong>Audit Trail Details:</strong><br />
+                        • Verified Item: {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Wall Master QR Code' : `Released To: ${dropOffResult.log?.parentName}`}<br />
+                        • Passenger Group: {dropOffResult.log?.childName}<br />
+                        • Coordinates: {dropOffResult.log?.gps}
                       </div>
                     </div>
+                  ) : (
+                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid var(--accent-red)', padding: '2rem', borderRadius: '12px' }} id="dropoff-failed-screen">
+                      <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-red)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                        ✕
+                      </div>
+                      <h2 style={{ color: 'var(--accent-red)', marginBottom: '0.5rem' }}>RELEASE BLOCKED - UNVERIFIED</h2>
+                      <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+                        <strong>Warning:</strong> Code entered does not match parent authorization. Do not release children. Re-check code or contact the school office.
+                      </p>
+                    </div>
+                  )}
+                  
+                  <button 
+                    onClick={() => { setDropOffResult(null); setParentCodeInput(''); }} 
+                    className="btn btn-outline" 
+                    style={{ marginTop: '1.5rem' }}
+                    id="btn-reset-dropoff"
+                  >
+                    Scan Next Parent
+                  </button>
+                </>
+              )}
+            </div>
 
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                      {dropOffResult.log?.parentName === 'N/A (Master QR)'
-                        ? `Campus arrival/departure verification code matched successfully.`
-                        : `Child identity release checks matches successfully. Release kids to guardian: ${dropOffResult.log?.parentName}.`}
-                    </p>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                      <strong>Audit Trail Details:</strong><br />
-                      • Verified Item: {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Wall Master QR Code' : `Released To: ${dropOffResult.log?.parentName}`}<br />
-                      • Passenger Group: {dropOffResult.log?.childName}<br />
-                      • Coordinates: {dropOffResult.log?.gps}
-                    </div>
-                  </div>
-                ) : (
-                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid var(--accent-red)', padding: '2rem', borderRadius: '12px' }} id="dropoff-failed-screen">
-                    <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-red)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                      ✕
-                    </div>
-                    <h2 style={{ color: 'var(--accent-red)', marginBottom: '0.5rem' }}>RELEASE BLOCKED - UNVERIFIED</h2>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                      <strong>Warning:</strong> Code entered does not match parent authorization. Do not release children. Re-check code or contact the school office.
-                    </p>
-                  </div>
-                )}
-                
-                <button 
-                  onClick={() => { setDropOffResult(null); setParentCodeInput(''); }} 
-                  className="btn btn-outline" 
-                  style={{ marginTop: '1.5rem' }}
-                  id="btn-reset-dropoff"
-                >
-                  Scan Next Parent
-                </button>
+            {/* Active Scanner View */}
+            <div style={{ display: dropOffResult ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {/* Real-world Camera Scanner Container */}
+              <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
+                <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
+                <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
+                <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
+                <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
               </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                {/* Real-world Camera Scanner Container */}
-                <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                  <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
-                  <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
-                  <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
-                  <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
-                  <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
-                  <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
+
+              {/* Manual input form */}
+              <form onSubmit={handleSimulateDropOff} style={{ maxWidth: '400px', width: '100%' }}>
+                <div className="form-group" style={{ textAlign: 'center' }}>
+                  <label style={{ marginBottom: '0.5rem', display: 'block' }}>Or enter Parent OTP or Temporary Auth PIN:</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 582194"
+                    value={parentCodeInput}
+                    onChange={(e) => setParentCodeInput(e.target.value)}
+                    className="input-control"
+                    style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.2em' }}
+                    id="dropoff-code-box"
+                  />
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
+                    💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Parent Portal</strong> safety screen (or relative PIN).
+                  </div>
                 </div>
 
-                {/* Manual input form */}
-                <form onSubmit={handleSimulateDropOff} style={{ maxWidth: '400px', width: '100%' }}>
-                  <div className="form-group" style={{ textAlign: 'center' }}>
-                    <label style={{ marginBottom: '0.5rem', display: 'block' }}>Or enter Parent OTP or Temporary Auth PIN:</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 582194"
-                      value={parentCodeInput}
-                      onChange={(e) => setParentCodeInput(e.target.value)}
-                      className="input-control"
-                      style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.2em' }}
-                      id="dropoff-code-box"
-                    />
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
-                      💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Parent Portal</strong> safety screen (or relative PIN).
-                    </div>
-                  </div>
-
-                  <button type="submit" className="btn btn-success" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-dropoff-submit">
-                    Verify Release Authority
-                  </button>
-                </form>
-              </div>
-            )}
+                <button type="submit" className="btn btn-success" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-dropoff-submit">
+                  Verify Release Authority
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>

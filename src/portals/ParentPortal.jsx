@@ -368,11 +368,17 @@ export default function ParentPortal({ parentId, setParentId }) {
     setReportedAlert(true);
   };
 
-  const handleCreateTempAuth = (e) => {
+  const handleCreateTempAuth = async (e) => {
     e.preventDefault();
-    addTempAuthorization(currentParent.id, tempForm);
-    setTempForm({ name: '', phone: '', type: 'One-Time' });
-    setShowAddTemp(false);
+    try {
+      await addTempAuthorization(currentParent.id, tempForm);
+      setTempForm({ name: '', phone: '', type: 'One-Time' });
+      setShowAddTemp(false);
+      setActiveToast({ message: "Temporary access token generated successfully!", type: "success" });
+    } catch (err) {
+      console.error("Failed to generate temp auth:", err);
+      setActiveToast({ message: "Failed to generate auth token: " + err.message, type: "error" });
+    }
   };
 
   const handleLogoutClick = () => {
@@ -855,122 +861,126 @@ export default function ParentPortal({ parentId, setParentId }) {
               </p>
 
               {/* Simulation scanner box */}
-              {scanResult ? (
-                <div style={{ textAlign: 'center', padding: '1rem' }}>
-                  {scanResult.status === 'VERIFIED' ? (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1.5px solid var(--accent-green)', padding: '2rem', borderRadius: '12px' }} id="scan-success-screen">
-                      <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'var(--accent-green)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '2rem', fontWeight: 'bold' }}>
-                        ✓
-                      </div>
-                      <h2 style={{ color: 'var(--accent-green)', marginBottom: '0.5rem' }}>VERIFIED BUS GUARDIAN</h2>
-                      
-                      {/* Visual Verification Hand-off Profiles */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', marginTop: '1.25rem' }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-blue)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', margin: '0 auto 0.5rem' }}>
-                            <img src={currentParent.profilePic} alt={currentParent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              {/* Result view */}
+              <div style={{ display: scanResult ? 'block' : 'none', textAlign: 'center', padding: '1rem' }}>
+                {scanResult && (
+                  <>
+                    {scanResult.status === 'VERIFIED' ? (
+                      <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1.5px solid var(--accent-green)', padding: '2rem', borderRadius: '12px' }} id="scan-success-screen">
+                        <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'var(--accent-green)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '2rem', fontWeight: 'bold' }}>
+                          ✓
+                        </div>
+                        <h2 style={{ color: 'var(--accent-green)', marginBottom: '0.5rem' }}>VERIFIED BUS GUARDIAN</h2>
+                        
+                        {/* Visual Verification Hand-off Profiles */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', marginTop: '1.25rem' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-blue)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', margin: '0 auto 0.5rem' }}>
+                              <img src={currentParent.profilePic} alt={currentParent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{currentParent.name}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Parent</div>
                           </div>
-                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{currentParent.name}</div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Parent</div>
-                        </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--accent-green)' }}>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1' }}>↔</div>
-                          <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '9999px', marginTop: '4px' }}>SECURE MATCH</span>
-                        </div>
-
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-cyan)', boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)', margin: '0 auto 0.5rem' }}>
-                            <img src={matchedGuardian ? matchedGuardian.profilePic : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'} alt={scanResult.log?.guardianName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--accent-green)' }}>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1' }}>↔</div>
+                            <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '9999px', marginTop: '4px' }}>SECURE MATCH</span>
                           </div>
-                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{scanResult.log?.guardianName}</div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
-                        </div>
-                      </div>
 
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>
-                        Authorized pickup by school system. Greenwood Academy has logged this coordinate transfer.
-                      </p>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                        <strong>Pickup Event Details:</strong><br />
-                        • Bus Guardian Name: {scanResult.log?.guardianName}<br />
-                        • Time: {scanResult.log?.timestamp ? new Date(scanResult.log.timestamp).toLocaleTimeString() : 'N/A'}<br />
-                        • Coordinates: {scanResult.log?.gps}
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid var(--accent-red)', padding: '2rem', borderRadius: '12px' }} id="scan-failed-screen">
-                      <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'var(--accent-red)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                        ✕
-                      </div>
-                      <h2 style={{ color: 'var(--accent-red)', marginBottom: '0.5rem' }}>UNRECOGNIZED BUS GUARDIAN</h2>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>
-                        <strong>Warning:</strong> The credentials do not match this Bus Guardian! This could indicate an expired token, wrong guardian, or unauthorized pickup attempt.
-                      </p>
-                      
-                      {!reportedAlert ? (
-                        <button 
-                          onClick={handleReportUnrecognized}
-                          className="btn btn-danger animate-pulse"
-                          style={{ padding: '0.6rem 1.5rem', fontWeight: 'bold' }}
-                          id="btn-report-alert"
-                        >
-                          🚨 REPORT FRAUD / PANIC NOW
-                        </button>
-                      ) : (
-                        <div style={{ color: 'var(--accent-yellow)', fontWeight: 'bold', fontSize: '0.85rem' }}>
-                          ⚠️ FRAUD REPORT TRANSMITTED TO SCHOOL ADMINS
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-cyan)', boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)', margin: '0 auto 0.5rem' }}>
+                              <img src={matchedGuardian ? matchedGuardian.profilePic : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'} alt={scanResult.log?.guardianName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{scanResult.log?.guardianName}</div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  <button 
-                    onClick={() => { setScanResult(null); setGuardianCodeInput(''); }} 
-                    className="btn btn-outline" 
-                    style={{ marginTop: '1.5rem' }}
-                    id="btn-reset-scanner"
-                  >
-                    Reset Scanner View
-                  </button>
+
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                          Authorized pickup by school system. Greenwood Academy has logged this coordinate transfer.
+                        </p>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                          <strong>Pickup Event Details:</strong><br />
+                          • Bus Guardian Name: {scanResult.log?.guardianName}<br />
+                          • Time: {scanResult.log?.timestamp ? new Date(scanResult.log.timestamp).toLocaleTimeString() : 'N/A'}<br />
+                          • Coordinates: {scanResult.log?.gps}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid var(--accent-red)', padding: '2rem', borderRadius: '12px' }} id="scan-failed-screen">
+                        <div style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'var(--accent-red)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                          ✕
+                        </div>
+                        <h2 style={{ color: 'var(--accent-red)', marginBottom: '0.5rem' }}>UNRECOGNIZED BUS GUARDIAN</h2>
+                        <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                          <strong>Warning:</strong> The credentials do not match this Bus Guardian! This could indicate an expired token, wrong guardian, or unauthorized pickup attempt.
+                        </p>
+                        
+                        {!reportedAlert ? (
+                          <button 
+                            onClick={handleReportUnrecognized}
+                            className="btn btn-danger animate-pulse"
+                            style={{ padding: '0.6rem 1.5rem', fontWeight: 'bold' }}
+                            id="btn-report-alert"
+                          >
+                            🚨 REPORT FRAUD / PANIC NOW
+                          </button>
+                        ) : (
+                          <div style={{ color: 'var(--accent-yellow)', fontWeight: 'bold', fontSize: '0.85rem' }}>
+                            ⚠️ FRAUD REPORT TRANSMITTED TO SCHOOL ADMINS
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    <button 
+                      onClick={() => { setScanResult(null); setGuardianCodeInput(''); }} 
+                      className="btn btn-outline" 
+                      style={{ marginTop: '1.5rem' }}
+                      id="btn-reset-scanner"
+                    >
+                      Reset Scanner View
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Active Scanner View */}
+              <div style={{ display: scanResult ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                {/* Real-world Camera Scanner Container */}
+                <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                  <div id="parent-qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                  <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
+                  <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  {/* Real-world Camera Scanner Container */}
-                  <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                    <div id="parent-qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
-                    <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
-                    <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
-                    <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
-                    <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
-                    <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
+
+                {/* Manual input form */}
+                <form onSubmit={handleSimulateMorningScan} style={{ maxWidth: '400px', width: '100%' }}>
+                  <div className="form-group" style={{ textAlign: 'center' }}>
+                    <label style={{ marginBottom: '0.5rem', display: 'block' }}>Or enter 6-digit Code manually:</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. 582194"
+                      value={guardianCodeInput}
+                      onChange={(e) => setGuardianCodeInput(e.target.value)}
+                      className="input-control"
+                      style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.2em' }}
+                      id="sim-scan-code"
+                    />
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
+                      💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Bus Guardian Portal</strong> safety screen.
+                    </div>
                   </div>
 
-                  {/* Manual input form */}
-                  <form onSubmit={handleSimulateMorningScan} style={{ maxWidth: '400px', width: '100%' }}>
-                    <div className="form-group" style={{ textAlign: 'center' }}>
-                      <label style={{ marginBottom: '0.5rem', display: 'block' }}>Or enter 6-digit Code manually:</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. 582194"
-                        value={guardianCodeInput}
-                        onChange={(e) => setGuardianCodeInput(e.target.value)}
-                        className="input-control"
-                        style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.2em' }}
-                        id="sim-scan-code"
-                      />
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
-                        💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Bus Guardian Portal</strong> safety screen.
-                      </div>
-                    </div>
-
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-scan-submit">
-                      Submit Manual Code
-                    </button>
-                  </form>
-                </div>
-              )}
+                  <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-scan-submit">
+                    Submit Manual Code
+                  </button>
+                </form>
+              </div>
             </div>
           )}
 

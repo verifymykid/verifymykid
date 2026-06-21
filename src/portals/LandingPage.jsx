@@ -12,6 +12,18 @@ export default function LandingPage() {
 
   const handleContactSubmit = (e) => {
     e.preventDefault();
+    
+    const subject = encodeURIComponent(`VerifyMyKid Enquiry from ${formData.schoolName}`);
+    const body = encodeURIComponent(
+      `Name: ${formData.name}\n` +
+      `School: ${formData.schoolName}\n` +
+      `Phone: ${formData.phone}\n` +
+      `Email: ${formData.email}\n\n` +
+      `Message / Requirements:\n${formData.message}`
+    );
+    
+    window.location.href = `mailto:verifymykid@gmail.com?subject=${subject}&body=${body}`;
+    
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);

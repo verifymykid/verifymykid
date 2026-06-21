@@ -14,12 +14,30 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
   // Helper to check if current route matches
   const isActive = (path) => location.pathname === path;
 
-  const [theme, setTheme] = useState(() => localStorage.getItem('vmk_theme') || 'light');
+  const getThemeStorageKey = (pathname) => {
+    if (pathname.startsWith('/admin-portal')) return 'vmk_theme_super_admin';
+    if (pathname.startsWith('/school-admin')) return 'vmk_theme_school_admin';
+    if (pathname.startsWith('/parent')) return 'vmk_theme_parent';
+    if (pathname.startsWith('/bus-guardian')) return 'vmk_theme_guardian';
+    return 'vmk_theme_website';
+  };
 
+  const currentKey = getThemeStorageKey(location.pathname);
+  const [theme, setTheme] = useState(() => localStorage.getItem(currentKey) || 'light');
+
+  // Sync theme when location changes
   useEffect(() => {
+    const key = getThemeStorageKey(location.pathname);
+    const savedTheme = localStorage.getItem(key) || 'light';
+    setTheme(savedTheme);
+  }, [location.pathname]);
+
+  // Apply theme change to DOM and persist
+  useEffect(() => {
+    const key = getThemeStorageKey(location.pathname);
     document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('vmk_theme', theme);
-  }, [theme]);
+    localStorage.setItem(key, theme);
+  }, [theme, location.pathname]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
