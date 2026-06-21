@@ -110,7 +110,7 @@ export default function ParentPortal({ parentId, setParentId }) {
   // Simulation: We assume the approaching bus guardian is GDN-501 (Robert Vance)
   const targetGuardianId = 'GDN-501';
 
-  const matchedGuardian = scanResult ? guardians.find(g => g.name === scanResult.log.guardianName) : null;
+  const matchedGuardian = (scanResult && scanResult.log) ? guardians.find(g => g.name === scanResult.log.guardianName) : null;
 
   const handleQrCodeScanned = async (decodedText) => {
     // Stop scanner immediately to prevent double scans
@@ -370,8 +370,7 @@ export default function ParentPortal({ parentId, setParentId }) {
 
   const handleCreateTempAuth = (e) => {
     e.preventDefault();
-    if (!tempForm.name || !tempForm.phone) return;
-    addTempAuthorization(currentParent.id, tempForm.name, tempForm.phone, tempForm.type);
+    addTempAuthorization(currentParent.id, tempForm);
     setTempForm({ name: '', phone: '', type: 'One-Time' });
     setShowAddTemp(false);
   };
@@ -882,9 +881,9 @@ export default function ParentPortal({ parentId, setParentId }) {
 
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-cyan)', boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)', margin: '0 auto 0.5rem' }}>
-                            <img src={matchedGuardian ? matchedGuardian.profilePic : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'} alt={scanResult.log.guardianName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={matchedGuardian ? matchedGuardian.profilePic : 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'} alt={scanResult.log?.guardianName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           </div>
-                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{scanResult.log.guardianName}</div>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{scanResult.log?.guardianName}</div>
                           <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
                         </div>
                       </div>
@@ -894,9 +893,9 @@ export default function ParentPortal({ parentId, setParentId }) {
                       </p>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
                         <strong>Pickup Event Details:</strong><br />
-                        • Bus Guardian Name: {scanResult.log.guardianName}<br />
-                        • Time: {new Date(scanResult.log.timestamp).toLocaleTimeString()}<br />
-                        • Coordinates: {scanResult.log.gps}
+                        • Bus Guardian Name: {scanResult.log?.guardianName}<br />
+                        • Time: {scanResult.log?.timestamp ? new Date(scanResult.log.timestamp).toLocaleTimeString() : 'N/A'}<br />
+                        • Coordinates: {scanResult.log?.gps}
                       </div>
                     </div>
                   ) : (

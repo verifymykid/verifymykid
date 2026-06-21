@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Shield, ShieldAlert, Settings, ChevronUp, ChevronDown, RefreshCw, Menu, X } from 'lucide-react';
+import { Shield, ShieldAlert, Settings, ChevronUp, ChevronDown, RefreshCw, Menu, X, Sun, Moon } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 
 export default function Navbar({ parentId, setParentId, guardianId, setGuardianId, schoolId, setSchoolId }) {
@@ -13,6 +13,17 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
 
   // Helper to check if current route matches
   const isActive = (path) => location.pathname === path;
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('vmk_theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('vmk_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   // Stable click-outside listener to close the login dropdown
   useEffect(() => {
@@ -111,6 +122,28 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
               <span className="website-country-flag" />
               <span>NG</span>
             </div>
+
+            {/* Dark Mode Toggle Button */}
+            <button 
+              onClick={toggleTheme}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0.4rem',
+                borderRadius: '50%',
+                marginRight: '1rem',
+                transition: 'var(--transition-smooth)'
+              }}
+              title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+              id="btn-theme-toggle"
+            >
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
 
             <Link 
               to="/" 
@@ -280,6 +313,28 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
               Register School
             </Link>
             
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0.5rem 0' }}>
+              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '600' }}>Theme</span>
+              <button 
+                onClick={toggleTheme}
+                style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  color: '#fff',
+                  cursor: 'pointer',
+                  padding: '0.4rem 0.8rem',
+                  borderRadius: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.8rem'
+                }}
+                id="btn-theme-toggle-mobile"
+              >
+                {theme === 'light' ? <><Moon size={14} /> Dark</> : <><Sun size={14} /> Light</>}
+              </button>
+            </div>
+
             <div style={{ height: '1px', background: 'var(--glass-border)', margin: '0.25rem 0' }} />
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

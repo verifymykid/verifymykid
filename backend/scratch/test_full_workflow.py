@@ -271,7 +271,8 @@ def run_e2e_tests():
         "phone": "+234 801 111 5555",
         "address": "12 St. Jude Lane, Lekki, Lagos",
         "website": "www.stjudeacademy.edu",
-        "password": "newpassword123"
+        "password": "newpassword123",
+        "currentPassword": "stjudepassword"
     }
     res = requests.put(f"{BASE_URL}/api/schools/{school_id}", json=profile_update)
     assert res.status_code == 200, f"School profile update failed: {res.text}"
