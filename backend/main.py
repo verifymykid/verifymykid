@@ -114,7 +114,7 @@ class GuardianCreateRequest(BaseModel):
     driverName: str
     plateNumber: str
     assignedRoute: str
-    password: Optional[str] = "password123"
+    password: str
     profilePic: Optional[str] = ""
 
 
@@ -298,10 +298,7 @@ def school_login(data: LoginRequest, db: Session = Depends(get_db)):
     
     check_and_update_school_trial_status(school, db)
     
-    # Allow password123 default bypass for demo, otherwise check hash
-    is_valid = False
-    if data.password == "password123" or verify_password(data.password, school.password):
-        is_valid = True
+    is_valid = verify_password(data.password, school.password)
         
     if not is_valid:
         raise HTTPException(status_code=400, detail="Unrecognized school email or password.")
@@ -406,9 +403,7 @@ def parent_login(data: LoginRequest, db: Session = Depends(get_db)):
         if not parent:
             raise HTTPException(status_code=404, detail="Invalid Email/ID or Password.")
 
-    is_valid = False
-    if data.password == "password123" or verify_password(data.password, parent.password):
-        is_valid = True
+    is_valid = verify_password(data.password, parent.password)
         
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid Email/ID or Password.")
@@ -481,9 +476,7 @@ def guardian_login(data: GuardianLoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Invalid Bus Guardian name or password.")
 
         
-    is_valid = False
-    if data.password == "password123" or verify_password(data.password, g.password):
-        is_valid = True
+    is_valid = verify_password(data.password, g.password)
         
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid Bus Guardian credentials.")
@@ -983,7 +976,7 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
         name=data.name.strip(),
         email=f"{data.name.lower().strip().replace(' ', '')}@verifymykid.com",
         phone=data.phone.strip() if data.phone else None,
-        password=get_password_hash(data.password if (data.password and data.password.strip()) else "password123"),
+        password=get_password_hash(data.password.strip()),
         profilePic=data.profilePic if data.profilePic else "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
         busNumber=data.busNumber,
         driverName=data.driverName,
@@ -1153,6 +1146,7 @@ def verify_pickup_event(data: VerifyPickupRequest, db: Session = Depends(get_db)
         
     gps = data.scannedGps or f"{guardian.lat}, {guardian.lng}"
     
+    children_names = ", ".join([c.name for c in parent.children]) if parent.children else "N/A"
     log_id = f"LOG-{uuid.uuid4().hex[:4].upper()}"
     new_log = models.PickupLog(
         id=log_id,
@@ -1160,7 +1154,7 @@ def verify_pickup_event(data: VerifyPickupRequest, db: Session = Depends(get_db)
         timestamp=datetime.utcnow().isoformat(),
         schoolId=guardian.schoolId,
         parentName=parent.name,
-        childName="Emma Jenkins", # Default child demo name
+        childName=children_names,
         guardianName=guardian.name,
         status="VERIFIED",
         gps=gps,

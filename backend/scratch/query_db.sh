@@ -17,9 +17,7 @@ expect {
     }
 }
 
-send "echo '=== SYSTEMD SERVICE RECENT ERROR LOGS ==='\r"
-expect "*# "
-send "journalctl -u verifymykid-backend.service --no-pager | grep -i -E 'email|smtp|success|warning|error' | tail -n 100\r"
+send "python3 -c \"import sqlite3; conn = sqlite3.connect('/var/www/verifymykid-backend/backend/verifymykid.db'); c = conn.cursor(); c.execute('SELECT timestamp, type, details FROM system_logs'); print('=== SYSTEM LOGS ==='); \[print(row) for row in c.fetchall()\]; conn.close()\"\r"
 expect "*# "
 
 send "exit\r"

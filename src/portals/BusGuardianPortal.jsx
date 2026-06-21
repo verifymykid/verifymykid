@@ -72,7 +72,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   }, [guardianId]);
   const hasActivePanic = currentGuardian ? activeAlerts.some(a => a.guardianId === currentGuardian.id) : false;
 
-  const matchedParent = dropOffResult ? parents.find(p => p.name === dropOffResult.log.parentName) : null;
+  const matchedParent = (dropOffResult && dropOffResult.log) ? parents.find(p => p.name === dropOffResult.log.parentName) : null;
 
   const getDeviceString = () => {
     const ua = navigator.userAgent;
@@ -803,29 +803,29 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
 
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-blue)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', margin: '0 auto 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)' }}>
-                          {dropOffResult.log.parentName === 'N/A (Master QR)' ? (
+                          {dropOffResult.log?.parentName === 'N/A (Master QR)' ? (
                             <School size={28} />
                           ) : (
-                            <img src={matchedParent ? matchedParent.profilePic : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'} alt={dropOffResult.log.parentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={matchedParent ? matchedParent.profilePic : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'} alt={dropOffResult.log?.parentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           )}
                         </div>
-                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{dropOffResult.log.parentName}</div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{dropOffResult.log?.parentName}</div>
                         <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
-                          {dropOffResult.log.parentName === 'N/A (Master QR)' ? 'School Compound' : 'Parent'}
+                          {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Compound' : 'Parent'}
                         </div>
                       </div>
                     </div>
 
                     <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                      {dropOffResult.log.parentName === 'N/A (Master QR)'
+                      {dropOffResult.log?.parentName === 'N/A (Master QR)'
                         ? `Campus arrival/departure verification code matched successfully.`
-                        : `Child identity release checks matches successfully. Release kids to guardian: ${dropOffResult.log.parentName}.`}
+                        : `Child identity release checks matches successfully. Release kids to guardian: ${dropOffResult.log?.parentName}.`}
                     </p>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
                       <strong>Audit Trail Details:</strong><br />
-                      • Verified Item: {dropOffResult.log.parentName === 'N/A (Master QR)' ? 'School Wall Master QR Code' : `Released To: ${dropOffResult.log.parentName}`}<br />
-                      • Passenger Group: {dropOffResult.log.childName}<br />
-                      • Coordinates: {dropOffResult.log.gps}
+                      • Verified Item: {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Wall Master QR Code' : `Released To: ${dropOffResult.log?.parentName}`}<br />
+                      • Passenger Group: {dropOffResult.log?.childName}<br />
+                      • Coordinates: {dropOffResult.log?.gps}
                     </div>
                   </div>
                 ) : (

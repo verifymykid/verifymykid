@@ -17,9 +17,7 @@ expect {
     }
 }
 
-send "echo '=== SYSTEMD SERVICE RECENT ERROR LOGS ==='\r"
-expect "*# "
-send "journalctl -u verifymykid-backend.service --no-pager | grep -i -E 'email|smtp|success|warning|error' | tail -n 100\r"
+send "journalctl -u verifymykid-backend.service --since \"1 hour ago\" --no-pager | grep -E \"login|register|guardian|parent|POST|GET\" | tail -n 150\r"
 expect "*# "
 
 send "exit\r"

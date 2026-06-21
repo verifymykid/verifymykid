@@ -296,7 +296,11 @@ export default function SuperAdminPortal() {
   const pendingSchools = schools.filter(s => s.status === 'PENDING APPROVAL').length;
   const activeParentsList = parents.filter(p => p.status !== 'DELETED');
   const totalParents = activeParentsList.length;
-  const totalChildren = activeParentsList.reduce((acc, p) => acc + p.children.length, 0);
+  const totalChildren = activeParentsList.reduce((acc, p) => acc + (p.children ? p.children.length : 0), 0);
+  const approvedParentsList = parents.filter(p => p.status === 'APPROVED');
+  const approvedParents = approvedParentsList.length;
+  const approvedChildren = approvedParentsList.reduce((acc, p) => acc + (p.children ? p.children.length : 0), 0);
+  const pendingParents = parents.filter(p => p.status === 'PENDING' || p.status === 'PENDING_VERIFICATION').length;
   const totalGuardians = guardians.length;
   const totalVerifications = logs.filter(l => l.status === 'VERIFIED').length;
   const superAdminAlerts = activeAlerts.filter(a => !a.acknowledgedBySuperAdmin);
@@ -836,12 +840,12 @@ export default function SuperAdminPortal() {
           <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Parents & Kids</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-total-parents">{totalParents} / {totalChildren}</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-total-parents">{approvedParents} / {approvedChildren}</div>
             </div>
             <Users size={28} style={{ color: 'var(--accent-cyan)', opacity: 0.8 }} />
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-            Registered children under platform trust
+            {approvedParents} Active Parents | {pendingParents} Pending
           </div>
         </div>
 

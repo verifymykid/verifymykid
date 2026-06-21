@@ -384,9 +384,9 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0.75rem', marginBottom: '1rem' }}>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>BANK TRANSFER DETAILS:</div>
                         <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: '#fff', lineHeight: '1.5' }}>
-                          <div>Bank Name: <strong>Zenith Bank PLC</strong></div>
-                          <div>Account Name: <strong>VerifyMyKid Safety Technologies</strong></div>
-                          <div>Account Number: <strong>1022394859</strong></div>
+                          <div>Bank Name: <strong>StanbicIBTC</strong></div>
+                          <div>Account Name: <strong>Triang Technologies</strong></div>
+                          <div>Account Number: <strong>0084226773</strong></div>
                           <div style={{ color: 'var(--accent-yellow)', fontSize: '0.7rem', marginTop: '0.2rem' }}>Please transfer the exact amount and enter transfer reference below.</div>
                         </div>
                       </div>
@@ -446,10 +446,9 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     if (!guardianForm.name || !guardianForm.busNumber) return;
     
     try {
-      const newG = await addGuardian(schoolId, guardianForm);
       setGeneratedCreds({
         name: newG.name,
-        password: guardianForm.password || 'password123',
+        password: guardianForm.password,
         id: newG.id
       });
       
@@ -1990,9 +1989,9 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                           <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0.75rem', marginBottom: '1rem' }}>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>BANK TRANSFER DETAILS:</div>
                             <div style={{ marginTop: '0.4rem', fontSize: '0.8rem', color: '#fff', lineHeight: '1.5' }}>
-                              <div>Bank Name: <strong>Zenith Bank PLC</strong></div>
-                              <div>Account Name: <strong>VerifyMyKid Safety Technologies</strong></div>
-                              <div>Account Number: <strong>1022394859</strong></div>
+                              <div>Bank Name: <strong>StanbicIBTC</strong></div>
+                              <div>Account Name: <strong>Triang Technologies</strong></div>
+                              <div>Account Number: <strong>0084226773</strong></div>
                               <div style={{ color: 'var(--accent-yellow)', fontSize: '0.7rem', marginTop: '0.2rem' }}>Please transfer the exact amount and enter transfer reference below.</div>
                             </div>
                           </div>
