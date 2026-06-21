@@ -446,6 +446,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     if (!guardianForm.name || !guardianForm.busNumber) return;
     
     try {
+      const newG = await addGuardian(schoolId, guardianForm);
       setGeneratedCreds({
         name: newG.name,
         password: guardianForm.password,
