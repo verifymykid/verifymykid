@@ -130,6 +130,13 @@ class VerifyPickupRequest(BaseModel):
     isMorning: bool
     scannedGps: Optional[str] = None
 
+class ContactRequest(BaseModel):
+    name: str
+    schoolName: str
+    phone: str
+    email: str
+    message: str
+
 class NotificationRequest(BaseModel):
     senderId: Optional[str] = None
     senderName: Optional[str] = None
@@ -1232,6 +1239,26 @@ def create_system_log(type: str, details: str, schoolId: Optional[str] = None, p
     db.add(new_log)
     db.commit()
     return new_log
+
+@app.post("/api/contact")
+def send_contact_message(data: ContactRequest, db: Session = Depends(get_db)):
+    subject = f"VerifyMyKid Enquiry from {data.schoolName}"
+    message_body = (
+        f"Name: {data.name}\n"
+        f"School: {data.schoolName}\n"
+        f"Phone: {data.phone}\n"
+        f"Email: {data.email}\n\n"
+        f"Message / Requirements:\n{data.message}"
+    )
+    send_real_email("verifymykid@gmail.com", subject, message_body)
+    
+    # Log in SMTP logs
+    db.add(models.SmtpLog(
+        timestamp=datetime.utcnow().isoformat(),
+        text=f"CONTACT FORM INQUIRY: EMAIL TO: verifymykid@gmail.com | FROM: {data.email} | SUBJECT: {subject} | BODY: {message_body}"
+    ))
+    db.commit()
+    return {"status": "success", "message": "Your message was sent successfully."}
 
 
 # ----------------- SMTP LOGS ROUTER -----------------

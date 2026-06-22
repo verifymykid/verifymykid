@@ -757,9 +757,9 @@ export default function SuperAdminPortal() {
           </div>
         </div>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', overflow: 'hidden' }}>
           {/* Sub Navigation */}
-          <div style={{ display: 'flex', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '0.25rem', borderRadius: '10px' }}>
+          <div className="portal-tabs-container" style={{ flex: 1 }}>
             <button className={`role-tab ${activeSubTab === 'schools' ? 'active' : ''}`} onClick={() => handleTabChange('schools')}>Schools</button>
             <button className={`role-tab ${activeSubTab === 'map' ? 'active' : ''}`} onClick={() => handleTabChange('map')}>Global Map</button>
             <button className={`role-tab ${activeSubTab === 'alerts' ? 'active' : ''}`} onClick={() => handleTabChange('alerts')}>
@@ -1781,7 +1781,7 @@ export default function SuperAdminPortal() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {notifications.filter(n => n.recipientId === 'SUPER_ADMIN').map(n => (
+              {notifications.filter(n => n.recipientId === 'SUPER_ADMIN').slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(n => (
                 <div 
                   key={n.id} 
                   style={{ 

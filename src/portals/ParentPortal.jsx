@@ -797,7 +797,7 @@ export default function ParentPortal({ parentId, setParentId }) {
         </div>
 
         {/* Inner Tabs */}
-        <div style={{ display: 'flex', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '0.25rem', borderRadius: '10px', flexWrap: 'wrap' }}>
+        <div className="portal-tabs-container">
           <button className={`role-tab ${activeSubTab === 'otp' ? 'active' : ''}`} onClick={() => setActiveSubTab('otp')}>My Pickup Code</button>
           <button className={`role-tab ${activeSubTab === 'simulate' ? 'active' : ''}`} onClick={() => setActiveSubTab('simulate')}>Verify Bus Guardian</button>
           <button className={`role-tab ${activeSubTab === 'temp-auth' ? 'active' : ''}`} onClick={() => setActiveSubTab('temp-auth')}>Temporary Access</button>
@@ -1403,7 +1403,7 @@ export default function ParentPortal({ parentId, setParentId }) {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '320px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-                    {notifications.filter(n => n.recipientId === currentParent.id).map(n => (
+                    {notifications.filter(n => n.recipientId === currentParent.id).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(n => (
                       <div 
                         key={n.id} 
                         style={{ 

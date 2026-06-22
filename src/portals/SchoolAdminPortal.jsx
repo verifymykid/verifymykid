@@ -624,9 +624,9 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
         </div>
 
         {/* Sub Nav Header Wrapper */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', width: '100%', overflow: 'hidden' }}>
           {/* Sub Nav */}
-          <div style={{ display: 'flex', background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '0.25rem', borderRadius: '10px', flexWrap: 'wrap' }}>
+          <div className="portal-tabs-container" style={{ flex: 1 }}>
             <button className={`role-tab ${activeSubTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveSubTab('dashboard')}>Overview</button>
             <button className={`role-tab ${activeSubTab === 'fleet' ? 'active' : ''}`} onClick={() => setActiveSubTab('fleet')}>Fleet Management</button>
             <button className={`role-tab ${activeSubTab === 'master-qr' ? 'active' : ''}`} onClick={() => setActiveSubTab('master-qr')}>Master QR Desk</button>
@@ -1326,7 +1326,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {notifications.filter(n => n.recipientId === schoolId).map(n => (
+                    {notifications.filter(n => n.recipientId === schoolId).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(n => (
                       <div 
                         key={n.id} 
                         style={{ 

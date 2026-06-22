@@ -1029,7 +1029,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '320px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-                    {notifications.filter(n => n.recipientId === currentGuardian.id).map(n => (
+                    {notifications.filter(n => n.recipientId === currentGuardian.id).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(n => (
                       <div 
                         key={n.id} 
                         style={{ 

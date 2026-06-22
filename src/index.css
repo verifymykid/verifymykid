@@ -127,10 +127,10 @@ h1, h2, h3, h4, h5, h6 {
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 640px) {
-  .grid-4 { grid-template-columns: 1fr; }
-  .grid-3 { grid-template-columns: 1fr; }
-  .grid-2 { grid-template-columns: 1fr; }
+@media (max-width: 992px) {
+  .grid-4 { grid-template-columns: 1fr !important; }
+  .grid-3 { grid-template-columns: 1fr !important; }
+  .grid-2 { grid-template-columns: 1fr !important; }
 }
 
 /* Glassmorphism Cards */
@@ -350,11 +350,34 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-secondary);
   border: none;
   background: transparent;
+  flex-shrink: 0;
 }
 
 .role-tab.active {
   background: var(--accent-blue);
   color: #fff;
+}
+
+.portal-tabs-container {
+  display: flex;
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  padding: 0.25rem;
+  border-radius: 10px;
+  overflow-x: auto;
+  white-space: nowrap;
+  flex-wrap: nowrap !important;
+  gap: 0.25rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.portal-tabs-container::-webkit-scrollbar {
+  display: none;
+}
+
+.portal-tabs-container {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Animations */
@@ -970,7 +993,7 @@ input:checked + .slider:before {
 .col-span-2 { grid-column: span 2 / span 2; }
 .col-span-3 { grid-column: span 3 / span 3; }
 
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .col-span-1, .col-span-2, .col-span-3 {
     grid-column: 1 / -1 !important;
   }

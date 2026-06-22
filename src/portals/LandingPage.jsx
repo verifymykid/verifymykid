@@ -9,26 +9,36 @@ import {
 export default function LandingPage() {
   const [formData, setFormData] = useState({ name: '', schoolName: '', phone: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  const handleContactSubmit = (e) => {
+  const handleContactSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError('');
     
-    const subject = encodeURIComponent(`VerifyMyKid Enquiry from ${formData.schoolName}`);
-    const body = encodeURIComponent(
-      `Name: ${formData.name}\n` +
-      `School: ${formData.schoolName}\n` +
-      `Phone: ${formData.phone}\n` +
-      `Email: ${formData.email}\n\n` +
-      `Message / Requirements:\n${formData.message}`
-    );
-    
-    window.location.href = `mailto:verifymykid@gmail.com?subject=${subject}&body=${body}`;
-    
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
+    try {
+      const base = localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000';
+      const res = await fetch(`${base}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      
+      if (!res.ok) {
+        throw new Error("Failed to send inquiry. Please check your network connection.");
+      }
+      
+      setSubmitted(true);
       setFormData({ name: '', schoolName: '', phone: '', email: '', message: '' });
-    }, 4000);
+      setTimeout(() => {
+        setSubmitted(false);
+      }, 5000);
+    } catch (err) {
+      setSubmitError(err.message || "An error occurred while sending the message.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -508,6 +518,11 @@ export default function LandingPage() {
                 </div>
               ) : (
                 <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {submitError && (
+                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-red)', color: 'var(--accent-red)', padding: '0.6rem', borderRadius: '6px', fontSize: '0.8rem' }}>
+                      {submitError}
+                    </div>
+                  )}
                   <div className="form-group">
                     <label style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>Your Name *</label>
                     <input 
@@ -579,8 +594,8 @@ export default function LandingPage() {
                     />
                   </div>
 
-                  <button type="submit" className="btn btn-primary" style={{ padding: '0.8rem', width: '100%', marginTop: '0.5rem' }} id="btn-submit-contact">
-                    Submit Inquiry Message
+                  <button type="submit" disabled={isSubmitting} className="btn btn-primary" style={{ padding: '0.8rem', width: '100%', marginTop: '0.5rem' }} id="btn-submit-contact">
+                    {isSubmitting ? "Sending Inquiry..." : "Submit Inquiry Message"}
                   </button>
                 </form>
               )}
