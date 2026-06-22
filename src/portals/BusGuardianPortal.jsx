@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bus, Key, ShieldAlert, CheckCircle2, Navigation, AlertTriangle, AlertOctagon, ScanLine, Lock, Eye, EyeOff, Bell, Send, LogOut, School, RefreshCw } from 'lucide-react';
+import { Bus, Key, ShieldAlert, CheckCircle2, Navigation, AlertTriangle, AlertOctagon, ScanLine, Lock, Eye, EyeOff, Bell, Send, LogOut, School, RefreshCw, QrCode, User, Settings, Camera } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
 import { Html5Qrcode } from 'html5-qrcode';
 import DynamicCode from '../components/DynamicCode';
@@ -54,6 +54,25 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const [composeSubject, setComposeSubject] = useState('');
   const [composeMessage, setComposeMessage] = useState('');
   const [confirmDialog, setConfirmDialog] = useState(null);
+
+  const [deviceType, setDeviceType] = useState('desktop'); // 'mobile' | 'tablet' | 'desktop'
+  const [activeTab, setActiveTab] = useState('dropoff'); // 'dropoff' | 'morning-qr' | 'inbox'
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w <= 768) {
+        setDeviceType('mobile');
+      } else if (w <= 1024) {
+        setDeviceType('tablet');
+      } else {
+        setDeviceType('desktop');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Fetch current guardian details
   const currentGuardian = guardians.find(g => g.id === guardianId);
@@ -488,7 +507,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         }
       };
     }
-  }, [guardianId, dropOffResult]);
+  }, [guardianId, dropOffResult, activeTab]);
 
   const runMasterQrCheck = async (lat, lng) => {
     const res = await scanMasterQrCode(currentGuardian.id, lat, lng);
@@ -662,11 +681,11 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     );
   }
 
-      // Header Info
-      const unreadCount = notifications.filter(n => n.recipientId === currentGuardian?.id && !(n.read || n.isRead)).length;
+  // Header Info
+  const unreadCount = notifications.filter(n => n.recipientId === currentGuardian?.id && !(n.read || n.isRead)).length;
 
-      return (
-        <main className="container" style={{ padding: '2rem 1.5rem', minHeight: 'calc(100vh - 70px)' }}>
+  return (
+    <main className="container" style={{ padding: deviceType === 'mobile' ? '1rem 0.75rem 90px 0.75rem' : '2rem 1.5rem', minHeight: 'calc(100vh - 70px)' }}>
           {/* Active Panic Alert Indicator overlay */}
           {hasActivePanic && (
             <div className="pulse-emergency" style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--accent-red)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justify: 'between' }}>
@@ -682,232 +701,451 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               </button>
             </div>
           )}
-    
-          {/* Header Info */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--accent-cyan)' }}>
-                <img src={currentGuardian.profilePic} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div>
-                <h1 style={{ fontSize: '1.5rem' }}>{currentGuardian.name}</h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                  Terminal: <strong>{currentGuardian.busNumber}</strong> | Vehicle: {currentGuardian.plateNumber}
-                </p>
-              </div>
-            </div>
-    
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              {/* Notification Bell Icon */}
-              <button 
-                onClick={() => setShowNotificationsModal(true)} 
-                className="btn btn-outline"
-                style={{ 
-                  position: 'relative', 
-                  padding: '0.6rem', 
-                  borderRadius: '50%', 
-                  minWidth: '42px', 
-                  height: '42px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                id="guardian-notifications-bell"
-              >
-                <Bell size={20} />
-                {unreadCount > 0 && (
-                  <span style={{ 
-                    position: 'absolute', 
-                    top: '-4px', 
-                    right: '-4px', 
-                    background: 'var(--accent-red)', 
-                    color: 'white', 
-                    borderRadius: '50%', 
-                    width: '18px', 
-                    height: '18px', 
-                    fontSize: '0.65rem', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    fontWeight: 'bold'
-                  }}>
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
 
-              <button 
-                onClick={() => setShowPanicModal(true)} 
-                disabled={hasActivePanic}
-                className="btn btn-danger" 
-                style={{ fontWeight: 'bold' }}
-                id="btn-trigger-panic"
-              >
-                🚨 SOS EMERGENCY PANIC
-              </button>
-              
-              <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.5rem 1rem' }} id="btn-guardian-logout">
-                Logout
-              </button>
-            </div>
-          </div>
-
-      <div className="grid-3">
-        {/* Route Details Card */}
-        <div className="col-span-1">
-          <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '0.95rem', color: 'var(--accent-cyan)', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.25rem' }}>
-              Bus Guardian Profile Information
-            </h3>
-            
-            {/* Bus Guardian Profile Pic & Name */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-              <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--accent-blue)', flexShrink: 0 }}>
-                <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentGuardian.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              <div><strong>School Name:</strong> {schoolName}</div>
-              <div><strong>Bus / Plate Number:</strong> {currentGuardian.busNumber} / {currentGuardian.plateNumber}</div>
-              <div><strong>Driver Name:</strong> {currentGuardian.driverName}</div>
-            </div>
-          </div>
-
-          {/* Dynamic Code for Parent morning scan verification */}
-          <DynamicCode uniqueId={currentGuardian.id} title="Bus Guardian Verification QR" />
-        </div>
-
-        {/* Afternoon release verification portal */}
-        <div className="col-span-2">
-          <div className="glass-card" style={{ height: '100%' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <CheckCircle2 style={{ color: 'var(--accent-green)' }} /> Afternoon Release Terminal (Drop-off Scanner)
-            </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              Verify parent authorization before releasing a student at their drop-off point. Scan their dynamic QR code or type their OTP PIN below.
-            </p>
-
-            {/* Result view */}
-            <div style={{ display: dropOffResult ? 'block' : 'none', textAlign: 'center', padding: '1rem' }}>
-              {dropOffResult && (
-                <>
-                  {dropOffResult.status === 'VERIFIED' ? (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1.5px solid var(--accent-green)', padding: '2rem', borderRadius: '12px' }} id="dropoff-success-screen">
-                      <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-green)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.8rem', fontWeight: 'bold' }}>
-                        ✓
-                      </div>
-                      <h2 style={{ color: 'var(--accent-green)', marginBottom: '0.5rem' }}>RELEASE AUTHORIZED</h2>
-                      
-                      {/* Visual Verification Hand-off Profiles */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', marginTop: '1.25rem' }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-cyan)', boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)', margin: '0 auto 0.5rem' }}>
-                            <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          </div>
-                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{currentGuardian.name}</div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
-                        </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--accent-green)' }}>
-                          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1' }}>↔</div>
-                          <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '9999px', marginTop: '4px' }}>SECURE MATCH</span>
-                        </div>
-
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-blue)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', margin: '0 auto 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)' }}>
-                            {dropOffResult.log?.parentName === 'N/A (Master QR)' ? (
-                              <School size={28} />
-                            ) : (
-                              <img src={matchedParent ? matchedParent.profilePic : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'} alt={dropOffResult.log?.parentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            )}
-                          </div>
-                          <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{dropOffResult.log?.parentName}</div>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
-                            {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Compound' : 'Parent'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                        {dropOffResult.log?.parentName === 'N/A (Master QR)'
-                          ? `Campus arrival/departure verification code matched successfully.`
-                          : `Child identity release checks matches successfully. Release kids to guardian: ${dropOffResult.log?.parentName}.`}
-                      </p>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                        <strong>Audit Trail Details:</strong><br />
-                        • Verified Item: {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Wall Master QR Code' : `Released To: ${dropOffResult.log?.parentName}`}<br />
-                        • Passenger Group: {dropOffResult.log?.childName}<br />
-                        • Coordinates: {dropOffResult.log?.gps}
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid var(--accent-red)', padding: '2rem', borderRadius: '12px' }} id="dropoff-failed-screen">
-                      <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-red)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                        ✕
-                      </div>
-                      <h2 style={{ color: 'var(--accent-red)', marginBottom: '0.5rem' }}>RELEASE BLOCKED - UNVERIFIED</h2>
-                      <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
-                        <strong>Warning:</strong> Code entered does not match parent authorization. Do not release children. Re-check code or contact the school office.
-                      </p>
-                    </div>
-                  )}
-                  
-                  <button 
-                    onClick={() => { setDropOffResult(null); setParentCodeInput(''); }} 
-                    className="btn btn-outline" 
-                    style={{ marginTop: '1.5rem' }}
-                    id="btn-reset-dropoff"
-                  >
-                    Scan Next Parent
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Active Scanner View */}
-            <div style={{ display: dropOffResult ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {/* Real-world Camera Scanner Container */}
-              <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
-                <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
-                <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
-                <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
-                <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
-                <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
-                <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
-              </div>
-
-              {/* Manual input form */}
-              <form onSubmit={handleSimulateDropOff} style={{ maxWidth: '400px', width: '100%' }}>
-                <div className="form-group" style={{ textAlign: 'center' }}>
-                  <label style={{ marginBottom: '0.5rem', display: 'block' }}>Or enter Parent OTP or Temporary Auth PIN:</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 582194"
-                    value={parentCodeInput}
-                    onChange={(e) => setParentCodeInput(e.target.value)}
-                    className="input-control"
-                    style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.2em' }}
-                    id="dropoff-code-box"
-                  />
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
-                    💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Parent Portal</strong> safety screen (or relative PIN).
+          {deviceType === 'mobile' ? (
+            /* Mobile Viewports Layout */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Clean Mobile Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.75rem', marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--accent-cyan)' }}>
+                    <img src={currentGuardian.profilePic} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div>
+                    <h2 style={{ fontSize: '1rem', margin: 0, fontWeight: '700' }}>{currentGuardian.name}</h2>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Terminal: <strong>{currentGuardian.busNumber}</strong></div>
                   </div>
                 </div>
-
-                <button type="submit" className="btn btn-success" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-dropoff-submit">
-                  Verify Release Authority
+                
+                <button 
+                  onClick={() => setShowPanicModal(true)} 
+                  disabled={hasActivePanic}
+                  className="btn btn-danger" 
+                  style={{ fontWeight: 'bold', fontSize: '0.75rem', padding: '0.45rem 0.9rem', borderRadius: '8px' }}
+                  id="btn-trigger-panic-mobile"
+                >
+                  🚨 SOS
                 </button>
-              </form>
+              </div>
+
+              {/* Mobile Tab Views */}
+              {activeTab === 'dropoff' && (
+                <div className="glass-card" style={{ padding: '1.25rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <CheckCircle2 style={{ color: 'var(--accent-green)' }} /> Afternoon Drop-off Scanner
+                  </h3>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>
+                    Verify parent authorization before releasing kids. Scan their dynamic QR code or type their OTP PIN below.
+                  </p>
+
+                  {/* Result view */}
+                  <div style={{ display: dropOffResult ? 'block' : 'none', textAlign: 'center' }}>
+                    {dropOffResult && (
+                      <>
+                        {dropOffResult.status === 'VERIFIED' ? (
+                          <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1.5px solid var(--accent-green)', padding: '1.5rem 1rem', borderRadius: '12px' }} id="dropoff-success-screen-mobile">
+                            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'var(--accent-green)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 0.75rem auto', fontSize: '1.4rem', fontWeight: 'bold' }}>
+                              ✓
+                            </div>
+                            <h3 style={{ color: 'var(--accent-green)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>RELEASE AUTHORIZED</h3>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.25rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', margin: '0 auto 0.25rem' }}>
+                                  <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>{currentGuardian.name}</div>
+                              </div>
+
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--accent-green)' }}>
+                                <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>↔</span>
+                              </div>
+
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-blue)', margin: '0 auto 0.25rem', display: 'flex', alignItems: 'center', justify: 'center', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)' }}>
+                                  {dropOffResult.log?.parentName === 'N/A (Master QR)' ? (
+                                    <School size={22} />
+                                  ) : (
+                                    <img src={matchedParent ? matchedParent.profilePic : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'} alt={dropOffResult.log?.parentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  )}
+                                </div>
+                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>{dropOffResult.log?.parentName}</div>
+                              </div>
+                            </div>
+
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>
+                              {dropOffResult.log?.parentName === 'N/A (Master QR)'
+                                ? `Arrival/departure matches successfully.`
+                                : `Identity matches successfully: ${dropOffResult.log?.parentName}.`}
+                            </p>
+                          </div>
+                        ) : (
+                          <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid var(--accent-red)', padding: '1.5rem 1rem', borderRadius: '12px' }} id="dropoff-failed-screen-mobile">
+                            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'var(--accent-red)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 0.75rem auto', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                              ✕
+                            </div>
+                            <h3 style={{ color: 'var(--accent-red)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>RELEASE BLOCKED</h3>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>
+                              Warning: Code entered does not match parent authorization.
+                            </p>
+                          </div>
+                        )}
+                        
+                        <button 
+                          onClick={() => { setDropOffResult(null); setParentCodeInput(''); }} 
+                          className="btn btn-outline" 
+                          style={{ marginTop: '1rem', width: '100%' }}
+                          id="btn-reset-dropoff-mobile"
+                        >
+                          Scan Next Parent
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Active Scanner View */}
+                  <div style={{ display: dropOffResult ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div className="qr-scanner-mock" style={{ marginBottom: '1.25rem', width: '220px', height: '220px', position: 'relative' }}>
+                      <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                      <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
+                      <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
+                      <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
+                      <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
+                      <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
+                    </div>
+
+                    <form onSubmit={handleSimulateDropOff} style={{ width: '100%' }}>
+                      <div className="form-group" style={{ textAlign: 'center' }}>
+                        <label style={{ marginBottom: '0.5rem', display: 'block', fontSize: '0.8rem' }}>Or enter OTP or Temp Auth PIN:</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 582194"
+                          value={parentCodeInput}
+                          onChange={(e) => setParentCodeInput(e.target.value)}
+                          className="input-control"
+                          style={{ fontSize: '1.15rem', textAlign: 'center', letterSpacing: '0.15em' }}
+                          id="dropoff-code-box-mobile"
+                        />
+                      </div>
+
+                      <button type="submit" className="btn btn-success" style={{ width: '100%' }} id="btn-dropoff-submit-mobile">
+                        Verify Release Authority
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'morning-qr' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div className="glass-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                      <h3 style={{ fontSize: '0.95rem', color: 'var(--accent-cyan)', textTransform: 'uppercase', margin: 0, fontWeight: '700' }}>
+                        Bus Guardian Profile
+                      </h3>
+                      <button onClick={handleLogout} className="btn btn-danger" style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', borderRadius: '8px' }} id="btn-guardian-mobile-logout">
+                        Logout
+                      </button>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                      <div style={{ width: '54px', height: '54px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--accent-blue)', flexShrink: 0 }}>
+                        <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentGuardian.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Bus Guardian • {schoolName}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                      <div><strong>Bus Number:</strong> {currentGuardian.busNumber}</div>
+                      <div><strong>Plate Number:</strong> {currentGuardian.plateNumber}</div>
+                      <div><strong>Driver Name:</strong> {currentGuardian.driverName}</div>
+                    </div>
+                  </div>
+
+                  <DynamicCode uniqueId={currentGuardian.id} title="Bus Guardian Verification QR" />
+                </div>
+              )}
+
+              {activeTab === 'inbox' && (
+                <div className="glass-card" style={{ padding: '1.25rem' }}>
+                  <h3 style={{ fontSize: '1rem', color: 'var(--accent-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', marginBottom: '1rem', fontWeight: '700' }}>
+                    Safety Inbox
+                  </h3>
+                  
+                  {notifications.filter(n => n.recipientId === currentGuardian.id).length === 0 ? (
+                    <div style={{ padding: '2rem 0', color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center' }}>
+                      No messages from school admin.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {notifications.filter(n => n.recipientId === currentGuardian.id).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(n => (
+                        <div 
+                          key={n.id} 
+                          style={{ 
+                            background: (n.read || n.isRead) ? 'var(--bg-secondary)' : 'rgba(6, 182, 212, 0.15)', 
+                            border: (n.read || n.isRead) ? '1px solid var(--glass-border)' : '1px solid var(--accent-cyan)', 
+                            padding: '0.75rem', 
+                            borderRadius: '8px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                            <span>{n.title}</span>
+                            {!(n.read || n.isRead) && (
+                              <button 
+                                onClick={() => markNotificationRead(n.id)}
+                                style={{ background: 'none', border: 'none', color: 'var(--accent-green)', cursor: 'pointer', fontSize: '0.7rem', textDecoration: 'underline' }}
+                              >
+                                Mark Read
+                              </button>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                            {n.message}
+                          </div>
+                          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                            {new Date(n.timestamp).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        </div>
-      </div>
+          ) : (
+            /* Original Desktop/Tablet View */
+            <>
+              {/* Header Info */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--accent-cyan)' }}>
+                    <img src={currentGuardian.profilePic} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div>
+                    <h1 style={{ fontSize: '1.5rem' }}>{currentGuardian.name}</h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+                      Terminal: <strong>{currentGuardian.busNumber}</strong> | Vehicle: {currentGuardian.plateNumber}
+                    </p>
+                  </div>
+                </div>
+        
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  {/* Notification Bell Icon */}
+                  <button 
+                    onClick={() => setShowNotificationsModal(true)} 
+                    className="btn btn-outline"
+                    style={{ 
+                      position: 'relative', 
+                      padding: '0.6rem', 
+                      borderRadius: '50%', 
+                      minWidth: '42px', 
+                      height: '42px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    id="guardian-notifications-bell"
+                  >
+                    <Bell size={20} />
+                    {unreadCount > 0 && (
+                      <span style={{ 
+                        position: 'absolute', 
+                        top: '-4px', 
+                        right: '-4px', 
+                        background: 'var(--accent-red)', 
+                        color: 'white', 
+                        borderRadius: '50%', 
+                        width: '18px', 
+                        height: '18px', 
+                        fontSize: '0.65rem', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        fontWeight: 'bold'
+                      }}>
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  <button 
+                    onClick={() => setShowPanicModal(true)} 
+                    disabled={hasActivePanic}
+                    className="btn btn-danger" 
+                    style={{ fontWeight: 'bold' }}
+                    id="btn-trigger-panic"
+                  >
+                    🚨 SOS EMERGENCY PANIC
+                  </button>
+                  
+                  <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '0.5rem 1rem' }} id="btn-guardian-logout">
+                    Logout
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid-3">
+                {/* Route Details Card */}
+                <div className="col-span-1">
+                  <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '0.95rem', color: 'var(--accent-cyan)', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.25rem' }}>
+                      Bus Guardian Profile Information
+                    </h3>
+                    
+                    {/* Bus Guardian Profile Pic & Name */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
+                      <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--accent-blue)', flexShrink: 0 }}>
+                        <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentGuardian.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      <div><strong>School Name:</strong> {schoolName}</div>
+                      <div><strong>Bus / Plate Number:</strong> {currentGuardian.busNumber} / {currentGuardian.plateNumber}</div>
+                      <div><strong>Driver Name:</strong> {currentGuardian.driverName}</div>
+                    </div>
+                  </div>
+
+                  {/* Dynamic Code for Parent morning scan verification */}
+                  <DynamicCode uniqueId={currentGuardian.id} title="Bus Guardian Verification QR" />
+                </div>
+
+                {/* Afternoon release verification portal */}
+                <div className="col-span-2">
+                  <div className="glass-card" style={{ height: '100%' }}>
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <CheckCircle2 style={{ color: 'var(--accent-green)' }} /> Afternoon Release Terminal (Drop-off Scanner)
+                    </h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                      Verify parent authorization before releasing a student at their drop-off point. Scan their dynamic QR code or type their OTP PIN below.
+                    </p>
+
+                    {/* Result view */}
+                    <div style={{ display: dropOffResult ? 'block' : 'none', textAlign: 'center', padding: '1rem' }}>
+                      {dropOffResult && (
+                        <>
+                          {dropOffResult.status === 'VERIFIED' ? (
+                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1.5px solid var(--accent-green)', padding: '2rem', borderRadius: '12px' }} id="dropoff-success-screen">
+                              <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-green)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.8rem', fontWeight: 'bold' }}>
+                                ✓
+                              </div>
+                              <h2 style={{ color: 'var(--accent-green)', marginBottom: '0.5rem' }}>RELEASE AUTHORIZED</h2>
+                              
+                              {/* Visual Verification Hand-off Profiles */}
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', marginTop: '1.25rem' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-cyan)', boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)', margin: '0 auto 0.5rem' }}>
+                                    <img src={currentGuardian.profilePic} alt={currentGuardian.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  </div>
+                                  <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{currentGuardian.name}</div>
+                                  <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--accent-green)' }}>
+                                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', lineHeight: '1' }}>↔</div>
+                                  <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 'bold', background: 'rgba(16, 185, 129, 0.2)', padding: '2px 8px', borderRadius: '9999px', marginTop: '4px' }}>SECURE MATCH</span>
+                                </div>
+
+                                <div style={{ textAlign: 'center' }}>
+                                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', border: '3px solid var(--accent-blue)', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)', margin: '0 auto 0.5rem', display: 'flex', alignItems: 'center', justify: 'center', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)' }}>
+                                    {dropOffResult.log?.parentName === 'N/A (Master QR)' ? (
+                                      <School size={28} />
+                                    ) : (
+                                      <img src={matchedParent ? matchedParent.profilePic : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150'} alt={dropOffResult.log?.parentName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{dropOffResult.log?.parentName}</div>
+                                  <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>
+                                    {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Compound' : 'Parent'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+                                {dropOffResult.log?.parentName === 'N/A (Master QR)'
+                                  ? `Campus arrival/departure verification code matched successfully.`
+                                  : `Child identity release checks matches successfully. Release kids to guardian: ${dropOffResult.log?.parentName}.`}
+                              </p>
+                              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                                <strong>Audit Trail Details:</strong><br />
+                                • Verified Item: {dropOffResult.log?.parentName === 'N/A (Master QR)' ? 'School Wall Master QR Code' : `Released To: ${dropOffResult.log?.parentName}`}<br />
+                                • Passenger Group: {dropOffResult.log?.childName}<br />
+                                • Coordinates: {dropOffResult.log?.gps}
+                              </div>
+                            </div>
+                          ) : (
+                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1.5px solid var(--accent-red)', padding: '2rem', borderRadius: '12px' }} id="dropoff-failed-screen">
+                              <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'var(--accent-red)', color: 'white', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto', fontSize: '1.5rem', fontWeight: 'bold' }}>
+                                ✕
+                              </div>
+                              <h2 style={{ color: 'var(--accent-red)', marginBottom: '0.5rem' }}>RELEASE BLOCKED - UNVERIFIED</h2>
+                              <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1.5rem' }}>
+                                <strong>Warning:</strong> Code entered does not match parent authorization. Do not release children. Re-check code or contact the school office.
+                              </p>
+                            </div>
+                          )}
+                          
+                          <button 
+                            onClick={() => { setDropOffResult(null); setParentCodeInput(''); }} 
+                            className="btn btn-outline" 
+                            style={{ marginTop: '1.5rem' }}
+                            id="btn-reset-dropoff"
+                          >
+                            Scan Next Parent
+                          </button>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Active Scanner View */}
+                    <div style={{ display: dropOffResult ? 'none' : 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      {/* Real-world Camera Scanner Container */}
+                      <div className="qr-scanner-mock" style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                        <div id="qr-reader-container" style={{ width: '100%', height: '100%', borderRadius: '14px', overflow: 'hidden' }}></div>
+                        <div className="qr-scanner-line" style={{ pointerEvents: 'none' }} />
+                        <div className="qr-corner qr-corner-tl" style={{ pointerEvents: 'none' }} />
+                        <div className="qr-corner qr-corner-tr" style={{ pointerEvents: 'none' }} />
+                        <div className="qr-corner qr-corner-bl" style={{ pointerEvents: 'none' }} />
+                        <div className="qr-corner qr-corner-br" style={{ pointerEvents: 'none' }} />
+                      </div>
+
+                      {/* Manual input form */}
+                      <form onSubmit={handleSimulateDropOff} style={{ maxWidth: '400px', width: '100%' }}>
+                        <div className="form-group" style={{ textAlign: 'center' }}>
+                          <label style={{ marginBottom: '0.5rem', display: 'block' }}>Or enter Parent OTP or Temporary Auth PIN:</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 582194"
+                            value={parentCodeInput}
+                            onChange={(e) => setParentCodeInput(e.target.value)}
+                            className="input-control"
+                            style={{ fontSize: '1.2rem', textAlign: 'center', letterSpacing: '0.2em' }}
+                            id="dropoff-code-box"
+                          />
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.5rem', lineHeight: '1.4' }}>
+                            💡 <strong>Manual verification:</strong> You can enter the 6-digit OTP showing on the <strong>Parent Portal</strong> safety screen (or relative PIN).
+                          </div>
+                        </div>
+
+                        <button type="submit" className="btn btn-success" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-dropoff-submit">
+                          Verify Release Authority
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
       {/* Emergency Panic Modal */}
       {showPanicModal && (
@@ -1152,6 +1390,54 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Floating Glassmorphic Bottom Nav for Mobile viewports */}
+      {deviceType === 'mobile' && (
+        <div className="mobile-bottom-nav">
+          <button 
+            className={`mobile-bottom-nav-item ${activeTab === 'dropoff' ? 'active-green' : ''}`}
+            onClick={() => setActiveTab('dropoff')}
+          >
+            <Camera size={20} />
+            <span>Drop-off</span>
+          </button>
+          <button 
+            className={`mobile-bottom-nav-item ${activeTab === 'morning-qr' ? 'active-cyan' : ''}`}
+            onClick={() => setActiveTab('morning-qr')}
+          >
+            <QrCode size={20} />
+            <span>Morning QR</span>
+          </button>
+          <button 
+            className={`mobile-bottom-nav-item ${activeTab === 'inbox' ? 'active' : ''}`}
+            onClick={() => setActiveTab('inbox')}
+          >
+            <div style={{ position: 'relative' }}>
+              <Bell size={20} />
+              {unreadCount > 0 && (
+                <span style={{ 
+                  position: 'absolute', 
+                  top: '-4px', 
+                  right: '-4px', 
+                  background: 'var(--accent-red)', 
+                  color: 'white', 
+                  borderRadius: '50%', 
+                  width: '14px', 
+                  height: '14px', 
+                  fontSize: '0.55rem', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  fontWeight: 'bold'
+                }}>
+                  {unreadCount}
+                </span>
+              )}
+            </div>
+            <span>Inbox</span>
+          </button>
         </div>
       )}
     </main>

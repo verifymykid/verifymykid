@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { School, ShieldAlert, Users, Bus, AlertCircle, Plus, Search, FileText, LogOut, Bell, MessageSquare, Send, CreditCard } from 'lucide-react';
+import { School, ShieldAlert, Users, Bus, AlertCircle, Plus, Search, FileText, LogOut, Bell, MessageSquare, Send, CreditCard, RefreshCw } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 import GoogleMapView from '../components/GoogleMapView';
 
@@ -190,6 +190,15 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   };
 
   // Verify school exists and is approved
+  if (schoolId && schools.length === 0) {
+    return (
+      <div className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)' }}>
+        <RefreshCw className="animate-spin" size={48} style={{ color: 'var(--accent-blue)' }} />
+        <p style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Synchronizing your secure session...</p>
+      </div>
+    );
+  }
+
   const currentSchool = schools.find(s => s.id === schoolId);
   if (!currentSchool) {
     return (

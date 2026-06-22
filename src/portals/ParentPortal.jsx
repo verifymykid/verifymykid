@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School, RefreshCw } from 'lucide-react';
+import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School, RefreshCw, QrCode, Clock, Settings, Camera, Key, User } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
 import DynamicCode from '../components/DynamicCode';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -44,6 +44,24 @@ export default function ParentPortal({ parentId, setParentId }) {
   const lastNotifIdRef = useRef('');
   const isMountedRef = useRef(false);
   const html5QrcodeRef = useRef(null);
+
+  const [deviceType, setDeviceType] = useState('desktop'); // 'mobile' | 'tablet' | 'desktop'
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      if (w <= 768) {
+        setDeviceType('mobile');
+      } else if (w <= 1024) {
+        setDeviceType('tablet');
+      } else {
+        setDeviceType('desktop');
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Fetch current parent details
   const currentParent = parents.find(p => p.id === parentId);
@@ -786,14 +804,16 @@ export default function ParentPortal({ parentId, setParentId }) {
           </button>
 
           {/* Logout Button */}
-          <button 
-            onClick={handleLogoutClick} 
-            className="btn btn-outline" 
-            style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }} 
-            id="btn-parent-logout"
-          >
-            <LogOut size={16} /> Logout
-          </button>
+          {deviceType !== 'mobile' && (
+            <button 
+              onClick={handleLogoutClick} 
+              className="btn btn-outline" 
+              style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }} 
+              id="btn-parent-logout"
+            >
+              <LogOut size={16} /> Logout
+            </button>
+          )}
         </div>
 
         {/* Inner Tabs */}
@@ -807,56 +827,58 @@ export default function ParentPortal({ parentId, setParentId }) {
       </div>
 
       <div className="grid-3">
-        {/* Left column: Family details & Children list */}
-        <div className="col-span-1">
-          <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1rem', color: 'var(--accent-blue)', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.25rem' }}>
-              Pickup Account Information
-            </h3>
-            
-            {/* Primary Parent */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-blue)', flexShrink: 0 }}>
-                <img src={currentParent.profilePic} alt={currentParent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentParent.name}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Parent</div>
-              </div>
-            </div>
-
-            {/* Spouse / Secondary Parent */}
-            {!currentParent.singleParent && currentParent.spouseName ? (
+        {/* Left column: Family details & Children list (Desktop/Tablet only) */}
+        {deviceType !== 'mobile' && (
+          <div className="col-span-1">
+            <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
+              <h3 style={{ fontSize: '1rem', color: 'var(--accent-blue)', textTransform: 'uppercase', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.25rem' }}>
+                Pickup Account Information
+              </h3>
+              
+              {/* Primary Parent */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', flexShrink: 0 }}>
-                   <img src={currentParent.spouseProfilePic || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentParent.spouseName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-blue)', flexShrink: 0 }}>
+                  <img src={currentParent.profilePic} alt={currentParent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentParent.spouseName}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Spouse</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentParent.name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Parent</div>
                 </div>
               </div>
-            ) : null}
 
-            {/* Enrolled Children */}
-            <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1rem', marginTop: '1rem' }}>
-              <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                Enrolled Children
-              </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {currentParent.children.map((c, i) => (
-                  <div key={i} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '0.6rem 0.8rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)' }} />
-                    <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{c.name}</span>
+              {/* Spouse / Secondary Parent */}
+              {!currentParent.singleParent && currentParent.spouseName ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', flexShrink: 0 }}>
+                     <img src={currentParent.spouseProfilePic || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentParent.spouseName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
-                ))}
+                  <div>
+                    <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentParent.spouseName}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Spouse</div>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Enrolled Children */}
+              <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1rem', marginTop: '1rem' }}>
+                <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                  Enrolled Children
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {currentParent.children.map((c, i) => (
+                    <div key={i} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '0.6rem 0.8rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--accent-green)' }} />
+                      <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Right Columns: Dynamic tabs */}
-        <div className="col-span-2">
+        <div className={deviceType === 'mobile' ? "col-span-3" : "col-span-2"}>
           {activeSubTab === 'otp' && (
             <div style={{ maxWidth: '400px', margin: '0 auto' }}>
               <DynamicCode uniqueId={currentParent.id} title="My Rotating Pickup QR" />
@@ -1152,7 +1174,67 @@ export default function ParentPortal({ parentId, setParentId }) {
           )}
 
           {activeSubTab === 'settings' && (
-            <div className="glass-card">
+            <div>
+              {deviceType === 'mobile' && (
+                <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1rem', color: 'var(--accent-blue)', textTransform: 'uppercase', margin: 0 }}>
+                      Pickup Account Profile
+                    </h3>
+                    <button 
+                      onClick={handleLogoutClick} 
+                      className="btn btn-danger" 
+                      style={{ padding: '0.35rem 0.75rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }} 
+                      id="btn-parent-mobile-logout"
+                    >
+                      <LogOut size={14} /> Logout
+                    </button>
+                  </div>
+                  
+                  {/* Parent info & children list */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                    <div style={{ width: '54px', height: '54px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-blue)', flexShrink: 0 }}>
+                      <img src={currentParent.profilePic} alt={currentParent.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '1rem', fontWeight: 'bold' }}>{currentParent.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                        Status: <span className="badge badge-success">Active</span> • School: {schoolName}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Spouse / Secondary Parent */}
+                  {!currentParent.singleParent && currentParent.spouseName ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', flexShrink: 0 }}>
+                         <img src={currentParent.spouseProfilePic || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentParent.spouseName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{currentParent.spouseName}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Spouse</div>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Enrolled Children */}
+                  <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '0.75rem', marginTop: '0.75rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                      Enrolled Children
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {currentParent.children.map((c, i) => (
+                        <div key={i} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--glass-border)', padding: '0.4rem 0.6rem', borderRadius: '6px', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-green)' }} />
+                          <span style={{ fontSize: '0.8rem', fontWeight: '500' }}>{c.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="glass-card">
               <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-blue)' }}>
                 Security Settings & Password Update
               </h3>
@@ -1360,7 +1442,8 @@ export default function ParentPortal({ parentId, setParentId }) {
                 </button>
               </div>
             </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
 
@@ -1569,6 +1652,47 @@ export default function ParentPortal({ parentId, setParentId }) {
             id="btn-close-toast"
           >
             ×
+          </button>
+        </div>
+      )}
+
+      {/* Floating Glassmorphic Bottom Nav for Mobile viewports */}
+      {deviceType === 'mobile' && (
+        <div className="mobile-bottom-nav">
+          <button 
+            className={`mobile-bottom-nav-item ${activeSubTab === 'otp' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('otp')}
+          >
+            <QrCode size={20} />
+            <span>My Code</span>
+          </button>
+          <button 
+            className={`mobile-bottom-nav-item ${activeSubTab === 'simulate' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('simulate')}
+          >
+            <ShieldAlert size={20} />
+            <span>Scan Bus</span>
+          </button>
+          <button 
+            className={`mobile-bottom-nav-item ${activeSubTab === 'temp-auth' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('temp-auth')}
+          >
+            <Key size={20} />
+            <span>Temp Auth</span>
+          </button>
+          <button 
+            className={`mobile-bottom-nav-item ${activeSubTab === 'history' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('history')}
+          >
+            <Clock size={20} />
+            <span>History</span>
+          </button>
+          <button 
+            className={`mobile-bottom-nav-item ${activeSubTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveSubTab('settings')}
+          >
+            <User size={20} />
+            <span>Settings</span>
           </button>
         </div>
       )}
