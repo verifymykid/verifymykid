@@ -45,7 +45,12 @@ export default function ParentPortal({ parentId, setParentId }) {
   const isMountedRef = useRef(false);
   const html5QrcodeRef = useRef(null);
 
-  const [deviceType, setDeviceType] = useState('desktop'); // 'mobile' | 'tablet' | 'desktop'
+  const [deviceType, setDeviceType] = useState(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    if (w <= 768) return 'mobile';
+    if (w <= 1024) return 'tablet';
+    return 'desktop';
+  });
 
   useEffect(() => {
     const handleResize = () => {

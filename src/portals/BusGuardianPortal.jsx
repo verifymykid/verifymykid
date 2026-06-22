@@ -55,7 +55,12 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const [composeMessage, setComposeMessage] = useState('');
   const [confirmDialog, setConfirmDialog] = useState(null);
 
-  const [deviceType, setDeviceType] = useState('desktop'); // 'mobile' | 'tablet' | 'desktop'
+  const [deviceType, setDeviceType] = useState(() => {
+    const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
+    if (w <= 768) return 'mobile';
+    if (w <= 1024) return 'tablet';
+    return 'desktop';
+  });
   const [activeTab, setActiveTab] = useState('dropoff'); // 'dropoff' | 'morning-qr' | 'inbox'
 
   useEffect(() => {
