@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School, RefreshCw, QrCode, Clock, Settings, Camera, Key, User } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
 import DynamicCode from '../components/DynamicCode';
@@ -11,6 +12,7 @@ export default function ParentPortal({ parentId, setParentId }) {
     setParentOnlineStatus
   } = useStore();
 
+  const navigate = useNavigate();
   const [activeSubTab, setActiveSubTab] = useState('otp'); // 'otp' | 'simulate' | 'temp-auth' | 'history' | 'settings'
   const [showAddTemp, setShowAddTemp] = useState(false);
 
@@ -44,6 +46,7 @@ export default function ParentPortal({ parentId, setParentId }) {
   const lastNotifIdRef = useRef('');
   const isMountedRef = useRef(false);
   const html5QrcodeRef = useRef(null);
+  const onlineStatusInitializedRef = useRef(false);
 
   const [deviceType, setDeviceType] = useState(() => {
     const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
@@ -96,12 +99,15 @@ export default function ParentPortal({ parentId, setParentId }) {
   }, [notifications, currentParent]);
 
   useEffect(() => {
-    if (parentId) {
+    if (parentId && parents.length > 0 && !onlineStatusInitializedRef.current) {
       const p = parents.find(x => x.id === parentId);
-      const coords = p ? { lat: p.lat, lng: p.lng } : null;
-      setParentOnlineStatus(parentId, true, coords);
+      if (p) {
+        onlineStatusInitializedRef.current = true;
+        const coords = { lat: p.lat, lng: p.lng };
+        setParentOnlineStatus(parentId, true, coords);
+      }
     }
-  }, [parentId]);
+  }, [parentId, parents]);
   
   useEffect(() => {
     if (currentParent && currentParent.status === 'SUSPENDED') {
@@ -116,6 +122,15 @@ export default function ParentPortal({ parentId, setParentId }) {
       setParentId('');
     }
   }, [parents, parentId, currentParent?.status]);
+
+  useEffect(() => {
+    if (parentId && parents.length > 0 && !currentParent) {
+      localStorage.removeItem('vmk_logged_parent_id');
+      localStorage.removeItem('vmk_token');
+      setParentId('');
+      navigate('/parent-signin');
+    }
+  }, [parentId, parents, currentParent, setParentId, navigate]);
 
   if (parentId && parents.length === 0) {
     return (

@@ -52,6 +52,13 @@ export default function ParentSignin({ setParentId }) {
     }
   }, []);
 
+  useEffect(() => {
+    const parentId = localStorage.getItem('vmk_logged_parent_id');
+    if (parentId) {
+      navigate('/parent');
+    }
+  }, [navigate]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');

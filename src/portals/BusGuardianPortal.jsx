@@ -48,6 +48,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const [gpsPermissionStatus, setGpsPermissionStatus] = useState('prompt'); // 'prompt' | 'granted' | 'denied'
   const watchIdRef = useRef(null);
   const html5QrcodeRef = useRef(null);
+  const gpsInitializedRef = useRef(false);
 
   // Compose & Inbox states
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
@@ -85,15 +86,35 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const schoolName = school ? school.name : 'Unknown School';
 
   useEffect(() => {
-    if (currentGuardian) {
+    if (guardianId && guardians.length > 0 && !currentGuardian) {
+      localStorage.removeItem('vmk_current_guardian_id');
+      localStorage.removeItem('vmk_logged_guardian_id');
+      localStorage.removeItem('vmk_token');
+      setGuardianId('');
+      navigate('/bus-guardian-signin');
+    }
+  }, [guardianId, guardians, currentGuardian, setGuardianId, navigate]);
+
+  useEffect(() => {
+    if (currentGuardian && !gpsInitializedRef.current) {
+      gpsInitializedRef.current = true;
       requestGpsAccessAndLogin(currentGuardian);
     }
+  }, [currentGuardian]);
+
+  useEffect(() => {
+    if (currentGuardian && window.location.pathname === '/bus-guardian-signin') {
+      navigate('/bus-guardian');
+    }
+  }, [currentGuardian, navigate]);
+
+  useEffect(() => {
     return () => {
       if (watchIdRef.current) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
     };
-  }, [guardianId]);
+  }, []);
   const hasActivePanic = currentGuardian ? activeAlerts.some(a => a.guardianId === currentGuardian.id) : false;
 
   const matchedParent = (dropOffResult && dropOffResult.log) ? parents.find(p => p.name === dropOffResult.log.parentName) : null;
@@ -145,6 +166,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       setNameInput('');
       setPasswordInput('');
       setGpsPermissionStatus('prompt');
+      gpsInitializedRef.current = false;
       setLoginError("Your bus guardian account has been suspended by the school administrator.");
       localStorage.setItem('guardian_login_error', "Your bus guardian account has been suspended by the school administrator.");
     }
@@ -275,6 +297,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         setNameInput('');
         setPasswordInput('');
         setGpsPermissionStatus('prompt');
+        gpsInitializedRef.current = false;
       }
     });
   };
@@ -869,6 +892,15 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                       <div><strong>Plate Number:</strong> {currentGuardian.plateNumber}</div>
                       <div><strong>Driver Name:</strong> {currentGuardian.driverName}</div>
                     </div>
+
+                    <button 
+                      onClick={() => setActiveTab('inbox')} 
+                      className="btn btn-outline" 
+                      style={{ width: '100%', marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', padding: '0.5rem' }}
+                      id="btn-profile-send-message-mobile"
+                    >
+                      <Send size={14} /> Send Message to School Admin
+                    </button>
                   </div>
 
                   <DynamicCode uniqueId={currentGuardian.id} title="Bus Guardian Verification QR" />
@@ -876,49 +908,98 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               )}
 
               {activeTab === 'inbox' && (
-                <div className="glass-card" style={{ padding: '1.25rem' }}>
-                  <h3 style={{ fontSize: '1rem', color: 'var(--accent-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', marginBottom: '1rem', fontWeight: '700' }}>
-                    Safety Inbox
-                  </h3>
-                  
-                  {notifications.filter(n => n.recipientId === currentGuardian.id).length === 0 ? (
-                    <div style={{ padding: '2rem 0', color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center' }}>
-                      No messages from school admin.
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {notifications.filter(n => n.recipientId === currentGuardian.id).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(n => (
-                        <div 
-                          key={n.id} 
-                          style={{ 
-                            background: (n.read || n.isRead) ? 'var(--bg-secondary)' : 'rgba(6, 182, 212, 0.15)', 
-                            border: (n.read || n.isRead) ? '1px solid var(--glass-border)' : '1px solid var(--accent-cyan)', 
-                            padding: '0.75rem', 
-                            borderRadius: '8px'
-                          }}
+                <>
+                  <div className="glass-card" style={{ padding: '1.25rem', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1rem', color: 'var(--accent-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', marginBottom: '1rem', fontWeight: '700' }}>
+                      Safety Inbox
+                    </h3>
+                    
+                    {notifications.filter(n => n.recipientId === currentGuardian.id).length === 0 ? (
+                      <div style={{ padding: '2rem 0', color: 'var(--text-muted)', fontSize: '0.8rem', textAlign: 'center' }}>
+                        No messages from school admin.
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        {notifications.filter(n => n.recipientId === currentGuardian.id).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(n => (
+                          <div 
+                            key={n.id} 
+                            style={{ 
+                              background: (n.read || n.isRead) ? 'var(--bg-secondary)' : 'rgba(6, 182, 212, 0.15)', 
+                              border: (n.read || n.isRead) ? '1px solid var(--glass-border)' : '1px solid var(--accent-cyan)', 
+                              padding: '0.75rem', 
+                              borderRadius: '8px'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                              <span>{n.title}</span>
+                              {!(n.read || n.isRead) && (
+                                <button 
+                                  onClick={() => markNotificationRead(n.id)}
+                                  style={{ background: 'none', border: 'none', color: 'var(--accent-green)', cursor: 'pointer', fontSize: '0.7rem', textDecoration: 'underline' }}
+                                >
+                                  Mark Read
+                                </button>
+                              )}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                              {n.message}
+                            </div>
+                            <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+                              {new Date(n.timestamp).toLocaleString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="glass-card" style={{ padding: '1.25rem' }}>
+                    <h3 style={{ fontSize: '1rem', color: 'var(--accent-cyan)', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.5rem', marginBottom: '1rem', fontWeight: '700' }}>
+                      Send Message to School
+                    </h3>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!composeSubject || !composeMessage) return;
+                      sendNotification(currentGuardian.id, currentGuardian.name, currentGuardian.schoolId, composeSubject, composeMessage);
+                      setComposeSubject('');
+                      setComposeMessage('');
+                      alert("Your dispatch message has been sent to Greenwood Academy HQ desk.");
+                    }}>
+                      <div className="form-group">
+                        <label>Report Topic *</label>
+                        <select
+                          required
+                          value={composeSubject}
+                          onChange={(e) => setComposeSubject(e.target.value)}
+                          className="input-control"
+                          id="guardian-compose-subject-mobile"
                         >
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                            <span>{n.title}</span>
-                            {!(n.read || n.isRead) && (
-                              <button 
-                                onClick={() => markNotificationRead(n.id)}
-                                style={{ background: 'none', border: 'none', color: 'var(--accent-green)', cursor: 'pointer', fontSize: '0.7rem', textDecoration: 'underline' }}
-                              >
-                                Mark Read
-                              </button>
-                            )}
-                          </div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                            {n.message}
-                          </div>
-                          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
-                            {new Date(n.timestamp).toLocaleString()}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                          <option value="">-- Choose Classification --</option>
+                          <option value="Heavy Traffic Delay">Traffic Congestion</option>
+                          <option value="Mechanical Delay">Vehicle Issue / Break</option>
+                          <option value="Route Change Notification">Route Diversion</option>
+                          <option value="Student Absentee Alert">Student Absence</option>
+                          <option value="General Check-in / Telemetry Status">Routine Update</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Message Details *</label>
+                        <textarea 
+                          required 
+                          placeholder="Type delay/update details for safety controllers..."
+                          value={composeMessage}
+                          onChange={(e) => setComposeMessage(e.target.value)}
+                          className="input-control"
+                          style={{ minHeight: '100px', resize: 'none' }}
+                          id="guardian-compose-message-mobile"
+                        />
+                      </div>
+                      <button type="submit" className="btn btn-primary" style={{ width: '100%' }} id="btn-guardian-send-mobile">
+                        Transmit Status
+                      </button>
+                    </form>
+                  </div>
+                </>
               )}
             </div>
           ) : (
@@ -1017,6 +1098,15 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                       <div><strong>Bus / Plate Number:</strong> {currentGuardian.busNumber} / {currentGuardian.plateNumber}</div>
                       <div><strong>Driver Name:</strong> {currentGuardian.driverName}</div>
                     </div>
+
+                    <button 
+                      onClick={() => setShowNotificationsModal(true)} 
+                      className="btn btn-outline" 
+                      style={{ width: '100%', marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.8rem', padding: '0.5rem' }}
+                      id="btn-profile-send-message-desktop"
+                    >
+                      <Send size={14} /> Send Message to School Admin
+                    </button>
                   </div>
 
                   {/* Dynamic Code for Parent morning scan verification */}
