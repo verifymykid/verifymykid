@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Shield, Bus, MapPin, Bell, Route, Users, BarChart3, 
@@ -11,6 +11,24 @@ export default function LandingPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  
+  const [typedText, setTypedText] = useState('');
+  const [typingComplete, setTypingComplete] = useState(false);
+
+  useEffect(() => {
+    const fullText = "Track School Runs in Real Time";
+    let index = 0;
+    setTypedText("");
+    const interval = setInterval(() => {
+      setTypedText((prev) => prev + fullText[index]);
+      index++;
+      if (index >= fullText.length) {
+        clearInterval(interval);
+        setTypingComplete(true);
+      }
+    }, 60);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleContactSubmit = async (e) => {
     e.preventDefault();
@@ -42,7 +60,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div style={{ background: '#ffffff', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
       {/* Hero Section */}
       <section className="bg-hero-gradient relative flex flex-col justify-center overflow-hidden" style={{ padding: '6rem 0' }}>
@@ -51,31 +69,38 @@ export default function LandingPage() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <h1 className="hero-title">
-                <span className="text-gradient" style={{ position: 'relative' }}>Track School Runs</span><br />
-                in <span className="text-gradient">Real Time</span>
+              <h1 className="hero-title" style={{ minHeight: '110px' }}>
+                <span className="text-gradient" style={{ position: 'relative' }}>{typedText}</span>
+                {!typingComplete && <span className="typewriter-cursor">|</span>}
               </h1>
-              <p style={{ fontSize: '1.15rem', color: 'rgba(255, 255, 255, 0.7)', lineHeight: '1.6', maxWidth: '520px' }}>
-                Give parents peace of mind. Give administrators complete control of their fleet live GPS, parent alerts, and powerful analytics. Starting completely free.
-              </p>
+              
+              {typingComplete && (
+                <div className="reveal-anim" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <p style={{ fontSize: '1.15rem', color: 'rgba(255, 255, 255, 0.7)', lineHeight: '1.6', maxWidth: '520px', margin: 0 }}>
+                    Give parents peace of mind. Give administrators complete control of their fleet live GPS, parent alerts, and powerful analytics. Starting completely free.
+                  </p>
+                  
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <Link to="/school-register" className="btn-primary-lg shadow-glow-blue animate-pulse-green">
+                      Start for free — no card required <ArrowRight size={18} />
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <Link to="/school-register" className="btn-primary-lg shadow-glow-blue animate-pulse-green">
-                Start for free — no card required <ArrowRight size={18} />
-              </Link>
-            </div>
-
-            <div style={{ display: 'flex', gap: '3rem', paddingTop: '1rem', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>Students</span>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>tracked safely</span>
+            {typingComplete && (
+              <div className="reveal-anim" style={{ display: 'flex', gap: '3rem', paddingTop: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>Students</span>
+                  <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>tracked safely</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>99.9% Uptime</span>
+                  <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>guaranteed</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: '800' }}>99.9% Uptime</span>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)' }}>guaranteed</span>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Replica CSS/SVG Snapshot Mockup */}
@@ -205,9 +230,9 @@ export default function LandingPage() {
       </section>
 
       {/* Trust Tape Header Section */}
-      <section style={{ background: '#ffffff', borderBottom: '1px solid #f1f5f9', padding: '5rem 0', textAlign: 'center' }}>
+      <section style={{ background: 'var(--glass-bg)', borderBottom: '1px solid var(--glass-border)', padding: '5rem 0', textAlign: 'center', backdropFilter: 'var(--backdrop-blur)', WebkitBackdropFilter: 'var(--backdrop-blur)' }}>
         <div className="container">
-          <p style={{ color: '#1e3a8a', fontSize: '1.8rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+          <p style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
             Trusted by forward-thinking Nigerian schools
           </p>
         </div>
@@ -299,14 +324,14 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="section" id="how-it-works" style={{ background: '#f8fafc', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}>
+      <section className="section" id="how-it-works" style={{ background: 'var(--glass-bg)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)', backdropFilter: 'var(--backdrop-blur)', WebkitBackdropFilter: 'var(--backdrop-blur)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Operational Flow</span>
-            <h2 className="landing-section-h2" style={{ color: '#0f172a' }}>
+            <h2 className="landing-section-h2" style={{ color: 'var(--text-primary)' }}>
               Up and running in <span className="text-gradient">minutes</span>
             </h2>
-            <p style={{ color: '#475569', fontSize: '1.1rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
               No proprietary GPS hardware required. Simply Signup, and go.
             </p>
           </div>

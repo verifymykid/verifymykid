@@ -286,7 +286,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
               to="/" 
               onClick={() => setMobileMenuOpen(false)}
               style={{
-                color: isActive('/') ? 'var(--accent-blue)' : '#fff',
+                color: isActive('/') ? 'var(--accent-blue)' : 'var(--text-primary)',
                 textDecoration: 'none',
                 fontSize: '1rem',
                 fontWeight: '600'
@@ -298,7 +298,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
               href="#testimonials" 
               onClick={() => setMobileMenuOpen(false)}
               style={{
-                color: '#fff',
+                color: 'var(--text-primary)',
                 textDecoration: 'none',
                 fontSize: '1rem',
                 fontWeight: '600'
@@ -310,7 +310,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
               href="#prices" 
               onClick={() => setMobileMenuOpen(false)}
               style={{
-                color: '#fff',
+                color: 'var(--text-primary)',
                 textDecoration: 'none',
                 fontSize: '1rem',
                 fontWeight: '600'
@@ -322,7 +322,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
               to="/school-register" 
               onClick={() => setMobileMenuOpen(false)}
               style={{
-                color: isActive('/school-register') ? 'var(--accent-blue)' : '#fff',
+                color: isActive('/school-register') ? 'var(--accent-blue)' : 'var(--text-primary)',
                 textDecoration: 'none',
                 fontSize: '1rem',
                 fontWeight: '600'
@@ -332,16 +332,16 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
             </Link>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', padding: '0.5rem 0' }}>
-              <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: '600' }}>Theme</span>
+              <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: '600' }}>Theme</span>
               <button 
                 onClick={toggleTheme}
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  color: '#fff',
+                  background: 'var(--bg-tertiary)',
+                  border: '1px solid var(--glass-border)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   padding: '0.4rem 0.8rem',
-                  borderRadius: '6px',
+                  borderRadius: '9999px',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.4rem',
@@ -361,7 +361,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
                 to="/school-signin" 
                 onClick={() => setMobileMenuOpen(false)}
                 style={{
-                  color: isActive('/school-signin') ? 'var(--accent-blue)' : '#94a3b8',
+                  color: isActive('/school-signin') ? 'var(--accent-blue)' : 'var(--text-secondary)',
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: '500'
@@ -373,7 +373,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
                 to="/parent-signin" 
                 onClick={() => setMobileMenuOpen(false)}
                 style={{
-                  color: isActive('/parent-signin') ? 'var(--accent-blue)' : '#94a3b8',
+                  color: isActive('/parent-signin') ? 'var(--accent-blue)' : 'var(--text-secondary)',
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: '500'
@@ -385,7 +385,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
                 to="/bus-guardian-signin" 
                 onClick={() => setMobileMenuOpen(false)}
                 style={{
-                  color: isActive('/bus-guardian-signin') ? 'var(--accent-blue)' : '#94a3b8',
+                  color: isActive('/bus-guardian-signin') ? 'var(--accent-blue)' : 'var(--text-secondary)',
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: '500'
