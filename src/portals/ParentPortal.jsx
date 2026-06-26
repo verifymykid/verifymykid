@@ -625,8 +625,14 @@ export default function ParentPortal({ parentId, setParentId }) {
             justifyContent: 'center',
             padding: '1.5rem'
           }}>
-            <div className="glass-card" style={{ maxWidth: '400px', width: '100%', border: '1px solid var(--accent-blue)', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.2)' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: '#fff' }}>{confirmDialog.title}</h3>
+            <div className="glass-card" style={{ 
+              maxWidth: '400px', 
+              width: '100%', 
+              background: 'var(--bg-primary)', 
+              border: '1px solid var(--glass-border)', 
+              boxShadow: 'var(--glass-shadow)' 
+            }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>{confirmDialog.title}</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
                 {confirmDialog.message}
               </p>
@@ -725,8 +731,14 @@ export default function ParentPortal({ parentId, setParentId }) {
             justifyContent: 'center',
             padding: '1.5rem'
           }}>
-            <div className="glass-card" style={{ maxWidth: '400px', width: '100%', border: '1px solid var(--accent-blue)', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.2)' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: '#fff' }}>{confirmDialog.title}</h3>
+            <div className="glass-card" style={{ 
+              maxWidth: '400px', 
+              width: '100%', 
+              background: 'var(--bg-primary)', 
+              border: '1px solid var(--glass-border)', 
+              boxShadow: 'var(--glass-shadow)' 
+            }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>{confirmDialog.title}</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
                 {confirmDialog.message}
               </p>
@@ -1598,8 +1610,14 @@ export default function ParentPortal({ parentId, setParentId }) {
           justifyContent: 'center',
           padding: '1.5rem'
         }}>
-          <div className="glass-card" style={{ maxWidth: '400px', width: '100%', border: '1px solid var(--accent-blue)', boxShadow: '0 10px 30px rgba(59, 130, 246, 0.2)' }}>
-            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: '#fff' }}>{confirmDialog.title}</h3>
+          <div className="glass-card" style={{ 
+            maxWidth: '400px', 
+            width: '100%', 
+            background: 'var(--bg-primary)', 
+            border: '1px solid var(--glass-border)', 
+            boxShadow: 'var(--glass-shadow)' 
+          }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--text-primary)' }}>{confirmDialog.title}</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
               {confirmDialog.message}
             </p>

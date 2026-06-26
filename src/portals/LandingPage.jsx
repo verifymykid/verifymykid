@@ -20,8 +20,10 @@ export default function LandingPage() {
     let index = 0;
     setTypedText("");
     const interval = setInterval(() => {
-      setTypedText((prev) => prev + fullText[index]);
-      index++;
+      if (index < fullText.length) {
+        setTypedText(fullText.substring(0, index + 1));
+        index++;
+      }
       if (index >= fullText.length) {
         clearInterval(interval);
         setTypingComplete(true);
@@ -243,10 +245,10 @@ export default function LandingPage() {
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Platform Features</span>
-            <h2 className="landing-section-h2" style={{ color: '#0f172a', letterSpacing: '-0.02em' }}>
+            <h2 className="landing-section-h2" style={{ color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               Everything you need to run a <span className="text-gradient">safer school fleet</span>
             </h2>
-            <p style={{ color: '#475569', fontSize: '1.1rem', lineHeight: '1.6' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', lineHeight: '1.6' }}>
               From a single campus school with 1 bus to a large fleet of 50 — VerifyMyKid scales with your administrative safety requirements.
             </p>
           </div>
@@ -258,8 +260,8 @@ export default function LandingPage() {
               <span className="icon-box" style={{ background: '#dbeafe', color: '#2563eb' }}>
                 <MapPin size={20} />
               </span>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Live GPS Tracking</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Live GPS Tracking</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 See every transit bus on an interactive Lagos map in real time. Know exactly where your fleet is — always.
               </p>
             </div>
@@ -269,8 +271,8 @@ export default function LandingPage() {
               <span className="icon-box" style={{ background: '#dbeafe', color: '#2563eb' }}>
                 <Bell size={20} />
               </span>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Instant Parent Alerts</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Instant Parent Alerts</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Parents get WhatsApp-style push notifications and SMS receipts the moment their child boards or alights.
               </p>
             </div>
@@ -280,8 +282,8 @@ export default function LandingPage() {
               <span className="icon-box" style={{ background: '#dbeafe', color: '#2563eb' }}>
                 <Route size={20} />
               </span>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Smart Route Planning</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Smart Route Planning</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Plan and manage multiple route directions, allocate guardians, and optimize student pick-up points.
               </p>
             </div>
@@ -291,8 +293,8 @@ export default function LandingPage() {
               <span className="icon-box" style={{ background: '#dbeafe', color: '#2563eb' }}>
                 <BarChart3 size={20} />
               </span>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Analytics Dashboard</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Analytics Dashboard</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Track route times, driver speeds, verification delays, and download compliance audits instantly.
               </p>
             </div>
@@ -302,8 +304,8 @@ export default function LandingPage() {
               <span className="icon-box" style={{ background: '#fee2e2', color: '#ef4444' }}>
                 <AlertTriangle size={20} />
               </span>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginTop: '1.25rem', marginBottom: '0.5rem' }}>SOS Incident Dispatch</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '1.25rem', marginBottom: '0.5rem' }}>SOS Incident Dispatch</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Bus escorts trigger panic alerts in traffic jams, breakdowns, or threats, streaming GPS data to the office.
               </p>
             </div>
@@ -313,8 +315,8 @@ export default function LandingPage() {
               <span className="icon-box" style={{ background: '#dbeafe', color: '#2563eb' }}>
                 <Smartphone size={20} />
               </span>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Parent Mobile Portal</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '1.25rem', marginBottom: '0.5rem' }}>Parent Mobile Portal</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Beautiful client interface for parents to monitor active ETAs, copy relative OTP tokens, and track logs.
               </p>
             </div>
@@ -344,8 +346,8 @@ export default function LandingPage() {
                 <span style={{ fontSize: '2rem' }}>🏫</span>
                 <span style={{ color: '#2563eb', fontFamily: 'monospace', fontWeight: '900', fontSize: '0.9rem' }}>STEP 01</span>
               </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.5rem' }}>School Registers Fleet</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>School Registers Fleet</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Create a school admin profile, input active bus details, build transit routes, and auto-generate guardian credentials.
               </p>
             </div>
@@ -356,8 +358,8 @@ export default function LandingPage() {
                 <span style={{ fontSize: '2rem' }}>🚌</span>
                 <span style={{ color: '#2563eb', fontFamily: 'monospace', fontWeight: '900', fontSize: '0.9rem' }}>STEP 02</span>
               </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.5rem' }}>Bus Guardian Starts Trip</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Bus Guardian Starts Trip</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 The bus escort logs in on their mobile terminal, clicks "Start Route", and their device streams coordinate telemetry.
               </p>
             </div>
@@ -368,8 +370,8 @@ export default function LandingPage() {
                 <span style={{ fontSize: '2rem' }}>📱</span>
                 <span style={{ color: '#2563eb', fontFamily: 'monospace', fontWeight: '900', fontSize: '0.9rem' }}>STEP 03</span>
               </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.5rem' }}>Parents Track Safely</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Parents Track Safely</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Parents see live bus positions on Google Maps, receive boarding alerts, and read out secure rotating OTP codes.
               </p>
             </div>
@@ -380,8 +382,8 @@ export default function LandingPage() {
                 <span style={{ fontSize: '2rem' }}>📊</span>
                 <span style={{ color: '#2563eb', fontFamily: 'monospace', fontWeight: '900', fontSize: '0.9rem' }}>STEP 04</span>
               </div>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.5rem' }}>Admins Audit History</h3>
-              <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Admins Audit History</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
                 Audit trip speed thresholds, attendance timestamps, parent check-ins, and compile safety compliance records.
               </p>
             </div>
@@ -397,65 +399,65 @@ export default function LandingPage() {
           <div className="grid-2" style={{ marginBottom: '5rem', maxWidth: '600px', margin: '0 auto 5rem auto' }}>
             <div className="card" style={{ textAlign: 'center', padding: '1.5rem 1rem' }}>
               <span style={{ fontSize: '1.75rem', marginBottom: '0.25rem', display: 'block' }}>🆓</span>
-              <p style={{ fontSize: '2rem', fontWeight: '800', color: '#0f172a', margin: '0.25rem 0' }}>₦0</p>
-              <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>Minimum to start</p>
+              <p style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-primary)', margin: '0.25rem 0' }}>₦0</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Minimum to start</p>
             </div>
             <div className="card" style={{ textAlign: 'center', padding: '1.5rem 1rem' }}>
               <span style={{ fontSize: '1.75rem', marginBottom: '0.25rem', display: 'block' }}>⚡</span>
-              <p style={{ fontSize: '2rem', fontWeight: '800', color: '#0f172a', margin: '0.25rem 0' }}>99.9%</p>
-              <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>Platform uptime</p>
+              <p style={{ fontSize: '2rem', fontWeight: '800', color: 'var(--text-primary)', margin: '0.25rem 0' }}>99.9%</p>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0 }}>Platform uptime</p>
             </div>
           </div>
 
           <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 3rem auto' }}>
             <span className="section-label">Testimonials</span>
-            <h2 className="landing-section-h2" style={{ color: '#0f172a', marginBottom: '0.5rem' }}>
+            <h2 className="landing-section-h2" style={{ color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
               What Nigerian school administrators say
             </h2>
           </div>
 
           <div className="grid-3">
             <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <p style={{ fontStyle: 'italic', fontSize: '0.9rem', lineHeight: '1.6', color: '#475569', marginBottom: '1.5rem' }}>
+              <p style={{ fontStyle: 'italic', fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                 "VerifyMyKid has transformed school runs at our primary school. Parent pickup anxieties have dropped to zero. The rotating 3-minute QR scan takes less than 3 seconds to verify at the gate!"
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem', marginTop: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid var(--glass-border)', paddingTop: '0.75rem', marginTop: 'auto' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem' }}>
                   CA
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#0f172a' }}>Mrs. Constance Anyaegbu</div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Stancee Educational • Lagos.</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Mrs. Constance Anyaegbu</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Stancee Educational • Lagos.</div>
                 </div>
               </div>
             </div>
 
             <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <p style={{ fontStyle: 'italic', fontSize: '0.9rem', lineHeight: '1.6', color: '#475569', marginBottom: '1.5rem' }}>
+              <p style={{ fontStyle: 'italic', fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                 "In Lagos traffic, timings are complicated. The Temporary Pickup Code is a lifesaver. I can easily generate a one-off authorization PIN for our driver or relative, knowing my kid is safe."
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem', marginTop: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid var(--glass-border)', paddingTop: '0.75rem', marginTop: 'auto' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem' }}>
                   HA
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#0f172a' }}>Mrs. Hadessa</div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748b' }}>Parent • Lekki</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Mrs. Hadessa</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Parent • Lekki</div>
                 </div>
               </div>
             </div>
 
             <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <p style={{ fontStyle: 'italic', fontSize: '0.9rem', lineHeight: '1.6', color: '#475569', marginBottom: '1.5rem' }}>
+              <p style={{ fontStyle: 'italic', fontSize: '0.9rem', lineHeight: '1.6', color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
                 "The fleet dashboard is exceptionally easy to manage. Adding guardians, tracking route locations on Google Maps, and receiving instantaneous SOS alerts provides total operational control."
               </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.75rem', marginTop: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid var(--glass-border)', paddingTop: '0.75rem', marginTop: 'auto' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem' }}>
                   TN
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#0f172a' }}>Mr Timothy Nwachukwu</div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748b' }}>School Head Staff</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>Mr Timothy Nwachukwu</div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>School Head Staff</div>
                 </div>
               </div>
             </div>
@@ -464,14 +466,14 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Teaser replaced with Contact Us Section */}
-      <section className="section" id="prices" style={{ background: '#f8fafc', borderTop: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9' }}>
+      <section className="section" id="prices" style={{ background: 'var(--bg-primary)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Pricing Inquiry</span>
-            <h2 className="landing-section-h2" style={{ color: '#0f172a' }}>
+            <h2 className="landing-section-h2" style={{ color: 'var(--text-primary)' }}>
               Start free, scale as you grow
             </h2>
-            <p style={{ color: '#475569', fontSize: '1.1rem' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
               We support custom deployments based on student enrollment. Reach out to get a custom quote.
             </p>
           </div>
@@ -480,49 +482,49 @@ export default function LandingPage() {
             {/* Left Column: Direct Inquiry */}
             <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '2rem', height: '100%', justifyContent: 'center' }}>
               <div>
-                <h3 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#0f172a', marginBottom: '0.5rem' }}>Contact Sales Team</h3>
-                <p style={{ color: '#475569', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>Contact Sales Team</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.5' }}>
                   Have questions about setup, fleet hardware, pricing models, or integration timelines? Our representative is standing by.
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <a href="mailto:hello@verifymykid.com" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#475569', fontSize: '0.9rem' }}>
+                <a href="mailto:hello@verifymykid.com" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                   <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Mail size={18} />
                   </span>
                   <div>
-                    <strong style={{ display: 'block', color: '#0f172a' }}>Send Email Enquiry</strong>
+                    <strong style={{ display: 'block', color: 'var(--text-primary)' }}>Send Email Enquiry</strong>
                     <span>hello@verifymykid.com</span>
                   </div>
                 </a>
 
-                <a href="tel:+2349159185081" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#475569', fontSize: '0.9rem' }}>
+                <a href="tel:+2349159185081" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                   <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Phone size={18} />
                   </span>
                   <div>
-                    <strong style={{ display: 'block', color: '#0f172a' }}>Direct Phone Call</strong>
+                    <strong style={{ display: 'block', color: 'var(--text-primary)' }}>Direct Phone Call</strong>
                     <span>+234 9159185081</span>
                   </div>
                 </a>
 
-                <a href="https://wa.me/2349159185081" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: '#475569', fontSize: '0.9rem' }}>
+                <a href="https://wa.me/2349159185081" target="_blank" rel="noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                   <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eafaf1', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <MessageSquare size={18} />
                   </span>
                   <div>
-                    <strong style={{ display: 'block', color: '#0f172a' }}>WhatsApp Fleet Support</strong>
+                    <strong style={{ display: 'block', color: 'var(--text-primary)' }}>WhatsApp Fleet Support</strong>
                     <span>Click to chat instantly</span>
                   </div>
                 </a>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: '#475569', fontSize: '0.9rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                   <span style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <MapPin size={18} />
                   </span>
                   <div>
-                    <strong style={{ display: 'block', color: '#0f172a' }}>Office HQ Location</strong>
+                    <strong style={{ display: 'block', color: 'var(--text-primary)' }}>Office HQ Location</strong>
                     <span>Bar Beach Towers, Victoria Island, Lagos</span>
                   </div>
                 </div>
@@ -531,7 +533,7 @@ export default function LandingPage() {
 
             {/* Right Column: Inquiry Form */}
             <div className="card">
-              <h3 style={{ fontSize: '1.3rem', fontWeight: '700', color: '#0f172a', marginBottom: '1.25rem' }}>Send Us a Message</h3>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '1.25rem' }}>Send Us a Message</h3>
               
               {submitted ? (
                 <div style={{ background: '#eafaf1', border: '1px solid #10b981', color: '#047857', padding: '1.5rem', borderRadius: '12px', textAlign: 'center' }}>
@@ -549,7 +551,7 @@ export default function LandingPage() {
                     </div>
                   )}
                   <div className="form-group">
-                    <label style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>Your Name *</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Your Name *</label>
                     <input 
                       type="text" 
                       required 
@@ -557,13 +559,13 @@ export default function LandingPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="input-control" 
-                      style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1' }}
+                      style={{ color: 'var(--text-primary)' }}
                       id="contact-form-name"
                     />
                   </div>
 
                   <div className="form-group">
-                    <label style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>School Name *</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>School Name *</label>
                     <input 
                       type="text" 
                       required 
@@ -571,14 +573,14 @@ export default function LandingPage() {
                       value={formData.schoolName}
                       onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
                       className="input-control" 
-                      style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1' }}
+                      style={{ color: 'var(--text-primary)' }}
                       id="contact-form-school"
                     />
                   </div>
 
                   <div className="grid-2">
                     <div className="form-group">
-                      <label style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>Phone Number *</label>
+                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Phone Number *</label>
                       <input 
                         type="tel" 
                         required 
@@ -586,12 +588,12 @@ export default function LandingPage() {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         className="input-control" 
-                        style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1' }}
+                        style={{ color: 'var(--text-primary)' }}
                         id="contact-form-phone"
                       />
                     </div>
                     <div className="form-group">
-                      <label style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>Email Address *</label>
+                      <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Email Address *</label>
                       <input 
                         type="email" 
                         required 
@@ -599,14 +601,14 @@ export default function LandingPage() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         className="input-control" 
-                        style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1' }}
+                        style={{ color: 'var(--text-primary)' }}
                         id="contact-form-email"
                       />
                     </div>
                   </div>
 
                   <div className="form-group">
-                    <label style={{ fontSize: '0.8rem', color: '#475569', fontWeight: '600' }}>Message / Requirements *</label>
+                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: '600' }}>Message / Requirements *</label>
                     <textarea 
                       rows={3} 
                       required 
@@ -614,7 +616,7 @@ export default function LandingPage() {
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       className="input-control" 
-                      style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', resize: 'none' }}
+                      style={{ color: 'var(--text-primary)', resize: 'none' }}
                       id="contact-form-message"
                     />
                   </div>
