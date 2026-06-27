@@ -406,12 +406,20 @@ def parent_register(data: ParentSignupRequest, background_tasks: BackgroundTasks
 
 @app.post("/api/auth/parent/login")
 def parent_login(data: LoginRequest, db: Session = Depends(get_db)):
-    parent = db.query(models.Parent).filter(func.lower(models.Parent.email) == data.email.lower()).first()
+    email_val = data.email.lower().strip()
+    parent = db.query(models.Parent).filter(func.lower(models.Parent.email) == email_val).first()
     if not parent:
         # Fallback to search by Unique ID as email input
-        parent = db.query(models.Parent).filter(models.Parent.id == data.email.upper()).first()
-        if not parent:
-            raise HTTPException(status_code=404, detail="Invalid Email/ID or Password.")
+        parent = db.query(models.Parent).filter(models.Parent.id == data.email.upper().strip()).first()
+    if not parent:
+        # Fallback to search by Name (exact match)
+        parent = db.query(models.Parent).filter(func.lower(models.Parent.name) == email_val).first()
+    if not parent:
+        # Fallback to search by Name prefix (e.g. 'Peters' matches 'Peters John')
+        parent = db.query(models.Parent).filter(func.lower(models.Parent.name).like(f"{email_val}%")).first()
+        
+    if not parent:
+        raise HTTPException(status_code=404, detail="Invalid Email/ID or Password.")
 
     is_valid = verify_password(data.password, parent.password)
         
