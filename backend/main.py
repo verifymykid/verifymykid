@@ -238,7 +238,7 @@ def school_register(data: SchoolRegisterRequest, background_tasks: BackgroundTas
     if existing:
         raise HTTPException(status_code=400, detail="School email address already registered.")
     
-    school_id = f"SCH-{uuid.uuid4().hex[:6].upper()}"
+    school_id = f"SCH-{uuid.uuid4().hex[:8].upper()}"
     new_school = models.School(
         id=school_id,
         name=data.name.strip(),
@@ -282,7 +282,7 @@ def school_register(data: SchoolRegisterRequest, background_tasks: BackgroundTas
     
     # Log in System logs
     db.add(models.SystemLog(
-        id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SYSLOG-{uuid.uuid4().hex[:8].upper()}",
         type="School Verification OTP Sent",
         timestamp=datetime.utcnow().isoformat(),
         schoolId=new_school.id,
@@ -337,7 +337,7 @@ def parent_register(data: ParentSignupRequest, background_tasks: BackgroundTasks
         else:
             raise HTTPException(status_code=400, detail="Parent email address already registered.")
         
-    parent_id = f"PAR-{uuid.uuid4().hex[:6].upper()}"
+    parent_id = f"PAR-{uuid.uuid4().hex[:8].upper()}"
     new_parent = models.Parent(
         id=parent_id,
         name=data.name.strip(),
@@ -388,7 +388,7 @@ def parent_register(data: ParentSignupRequest, background_tasks: BackgroundTasks
     school_name = school.name if school else "Unknown School"
 
     db_log = models.SystemLog(
-        id=f"SLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SLOG-{uuid.uuid4().hex[:8].upper()}",
         type="Parent Registered",
         timestamp=datetime.utcnow().isoformat(),
         schoolId=new_parent.schoolId,
@@ -591,7 +591,7 @@ def super_admin_forgot_password(data: SuperAdminForgotPasswordRequest, backgroun
     
     # Log in system logs as well
     db.add(models.SystemLog(
-        id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SYSLOG-{uuid.uuid4().hex[:8].upper()}",
         type="Super Admin Password Reset Code Requested",
         timestamp=datetime.utcnow().isoformat(),
         schoolId="N/A",
@@ -624,7 +624,7 @@ def super_admin_reset_password(data: SuperAdminResetPasswordRequest, db: Session
     
     # Log in system logs
     db.add(models.SystemLog(
-        id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SYSLOG-{uuid.uuid4().hex[:8].upper()}",
         type="Super Admin Password Reset Complete",
         timestamp=datetime.utcnow().isoformat(),
         schoolId="N/A",
@@ -690,7 +690,7 @@ def verify_school_otp(school_id: str, data: VerifyOtpRequest, db: Session = Depe
     
     # Log in system logs
     db.add(models.SystemLog(
-        id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SYSLOG-{uuid.uuid4().hex[:8].upper()}",
         type="School Email Verified",
         timestamp=datetime.utcnow().isoformat(),
         schoolId=school_id,
@@ -738,7 +738,7 @@ def pay_school_licenses(school_id: str, amount: float, children: int, db: Sessio
     
     # Save PaymentRecord
     record = models.PaymentRecord(
-        id=f"TXN-{uuid.uuid4().hex[:6].upper()}",
+        id=f"TXN-{uuid.uuid4().hex[:8].upper()}",
         schoolId=school_id,
         amount=amount,
         childrenCount=children,
@@ -758,7 +758,7 @@ def request_qr_lock(school_id: str, location_name: str, db: Session = Depends(ge
         
     reqs = list(s.masterQrRequests) if s.masterQrRequests else []
     reqs.append({
-        "id": f"QR-REQ-{uuid.uuid4().hex[:4].upper()}",
+        "id": f"QR-REQ-{uuid.uuid4().hex[:8].upper()}",
         "location": location_name,
         "status": "PENDING",
         "timestamp": datetime.utcnow().isoformat()
@@ -937,7 +937,7 @@ def verify_parent_otp(parent_id: str, data: VerifyOtpRequest, db: Session = Depe
     
     # Log in system logs
     db.add(models.SystemLog(
-        id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SYSLOG-{uuid.uuid4().hex[:8].upper()}",
         type="Parent Email Verified",
         timestamp=datetime.utcnow().isoformat(),
         schoolId=p.schoolId,
@@ -988,7 +988,7 @@ def add_temp_auth(parent_id: str, data: TempAuthRequest, db: Session = Depends(g
     if not p:
         raise HTTPException(status_code=404, detail="Parent not found")
         
-    auth_id = f"TA-{uuid.uuid4().hex[:6].upper()}"
+    auth_id = f"TA-{uuid.uuid4().hex[:8].upper()}"
     new_auth = models.TemporaryAuthorization(
         id=auth_id,
         parentId=parent_id,
@@ -1023,7 +1023,7 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
     school_lat = school.lat if (school and school.lat is not None) else 6.5244
     school_lng = school.lng if (school and school.lng is not None) else 3.3792
 
-    g_id = f"GDN-{uuid.uuid4().hex[:6].upper()}"
+    g_id = f"GDN-{uuid.uuid4().hex[:8].upper()}"
     new_g = models.Guardian(
         id=g_id,
         name=data.name.strip(),
@@ -1049,7 +1049,7 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
     school_name = school.name if school else "Unknown School"
     
     db_log = models.SystemLog(
-        id=f"SLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SLOG-{uuid.uuid4().hex[:8].upper()}",
         type="Bus Guardian Onboarded",
         timestamp=datetime.utcnow().isoformat(),
         schoolId=schoolId,
@@ -1103,7 +1103,7 @@ def list_alerts(db: Session = Depends(get_db)):
 
 @app.post("/api/alerts/panic")
 def trigger_panic(data: PanicRequest, db: Session = Depends(get_db)):
-    alert_id = f"ALT-{uuid.uuid4().hex[:4].upper()}"
+    alert_id = f"ALT-{uuid.uuid4().hex[:8].upper()}"
     g = db.query(models.Guardian).filter(func.lower(models.Guardian.id) == data.guardianId.lower()).first()
     g_name = g.name if g else "Unknown Guardian"
     g_bus = g.busNumber if g else "Unknown Bus"
@@ -1155,7 +1155,7 @@ def list_notifications(recipientId: Optional[str] = None, db: Session = Depends(
 
 @app.post("/api/notifications")
 def create_notification(data: NotificationRequest, db: Session = Depends(get_db)):
-    n_id = f"NTF-{uuid.uuid4().hex[:5].upper()}"
+    n_id = f"NTF-{uuid.uuid4().hex[:8].upper()}"
     new_n = models.Notification(
         id=n_id,
         senderId=data.senderId,
@@ -1236,7 +1236,7 @@ def verify_pickup_event(data: VerifyPickupRequest, db: Session = Depends(get_db)
     gps = data.scannedGps or f"{guardian.lat}, {guardian.lng}"
     
     children_names = ", ".join([c.name for c in parent.children]) if parent.children else "N/A"
-    log_id = f"LOG-{uuid.uuid4().hex[:4].upper()}"
+    log_id = f"LOG-{uuid.uuid4().hex[:8].upper()}"
     new_log = models.PickupLog(
         id=log_id,
         type="Morning Pickup" if data.isMorning else "Afternoon Drop-Off",
@@ -1271,7 +1271,7 @@ def list_system_logs(schoolId: Optional[str] = None, db: Session = Depends(get_d
 
 @app.post("/api/logs/system")
 def create_system_log(type: str, details: str, schoolId: Optional[str] = None, parentName: Optional[str] = None, gps: Optional[str] = None, device: Optional[str] = None, db: Session = Depends(get_db)):
-    log_id = f"SLOG-{uuid.uuid4().hex[:4].upper()}"
+    log_id = f"SLOG-{uuid.uuid4().hex[:8].upper()}"
     new_log = models.SystemLog(
         id=log_id,
         type=type,
@@ -1345,7 +1345,7 @@ def create_session(data: SessionRequest, db: Session = Depends(get_db)):
         db.refresh(existing)
         return existing
 
-    s_id = f"SES-{uuid.uuid4().hex[:4].upper()}"
+    s_id = f"SES-{uuid.uuid4().hex[:8].upper()}"
     new_sess = models.UserSession(
         id=s_id,
         userId=data.userId,
@@ -1408,7 +1408,7 @@ def approve_school(school_id: str, background_tasks: BackgroundTasks, db: Sessio
     
     # Save in-app notification for the school admin
     db_notif = models.Notification(
-        id=f"NOTIF-{uuid.uuid4().hex[:4].upper()}",
+        id=f"NOTIF-{uuid.uuid4().hex[:8].upper()}",
         senderId="SUPER_ADMIN",
         senderName="Super Admin",
         recipientId=s.id,
@@ -1582,7 +1582,7 @@ def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, background_tasks:
     if not match:
         # Log security violation
         violation_log = models.SystemLog(
-            id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+            id=f"SYSLOG-{uuid.uuid4().hex[:8].upper()}",
             type="Security Violation",
             timestamp=datetime.utcnow().isoformat(),
             schoolId=school.id,
@@ -1615,7 +1615,7 @@ def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, background_tasks:
         
     # Log the successful scan in SystemLog
     success_log = models.SystemLog(
-        id=f"SYSLOG-{uuid.uuid4().hex[:4].upper()}",
+        id=f"SYSLOG-{uuid.uuid4().hex[:8].upper()}",
         type=scan_type,
         timestamp=datetime.utcnow().isoformat(),
         schoolId=school.id,
