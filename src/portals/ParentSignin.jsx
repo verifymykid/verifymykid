@@ -174,16 +174,16 @@ export default function ParentSignin({ setParentId }) {
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: 'calc(100vh - 70px)', padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ maxWidth: '420px', width: '100%' }}>
-        <div className="glass-card">
+        <div className="premium-login-card">
           {!showForgot ? (
             <div>
               {/* Sign In Form View */}
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto' }}>
-                  <Key size={24} />
+                  <Key size={24} style={{ color: 'var(--accent-blue)' }} />
                 </div>
                 <h2>Parent Sign-in</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
                   Enter credentials to access child pickup safety dashboard.
                 </p>
               </div>
@@ -209,9 +209,10 @@ export default function ParentSignin({ setParentId }) {
                     placeholder="parent@email.com"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
-                    className="input-control"
+                    className="input-underline"
                     id="parent-signin-email"
                   />
+                  <Mail className="input-icon" size={18} />
                 </div>
 
                 <div className="form-group" style={{ position: 'relative' }}>
@@ -222,15 +223,15 @@ export default function ParentSignin({ setParentId }) {
                     placeholder="Enter password"
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
-                    className="input-control"
+                    className="input-underline"
                     id="parent-signin-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    style={{ position: 'absolute', right: '12px', top: '35px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                    className="input-action-btn"
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
 
@@ -251,14 +252,12 @@ export default function ParentSignin({ setParentId }) {
                   </button>
                 </div>
 
-                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-parent-login-submit" disabled={isLoggingIn}>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem', borderRadius: '9999px' }} id="btn-parent-login-submit" disabled={isLoggingIn}>
                   {isLoggingIn ? "Authorizing Secure GPS Login..." : "Access Dashboard"}
                 </button>
               </form>
 
-              {/* Demo Autologin removed for Live deployment */}
-
-              <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem' }}>
+              <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)' }}>
                 Don't have an account? <Link to="/parent-signup" style={{ color: 'var(--accent-blue)', textDecoration: 'none', fontWeight: '600' }}>Register here</Link>
               </div>
             </div>
@@ -267,15 +266,13 @@ export default function ParentSignin({ setParentId }) {
               {/* Forgot Password View */}
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto' }}>
-                  <Mail size={24} />
+                  <Mail size={24} style={{ color: 'var(--accent-blue)' }} />
                 </div>
                 <h2>Reset Password</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', marginTop: '0.25rem' }}>
                   {forgotStep === 1 ? 'Enter your registered email to request security reset code.' : 'Enter the code and set your new password.'}
                 </p>
               </div>
-
-              {/* Reset Code Dispatched - Console Logged */}
 
               {forgotError && (
                 <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--accent-red)', color: 'var(--accent-red)', padding: '0.6rem', borderRadius: '6px', fontSize: '0.8rem', marginBottom: '1rem', textAlign: 'center' }}>
@@ -293,9 +290,10 @@ export default function ParentSignin({ setParentId }) {
                       placeholder="parent@email.com"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
-                      className="input-control"
+                      className="input-underline"
                       id="forgot-email-box"
                     />
+                    <Mail className="input-icon" size={18} />
                   </div>
                   
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
@@ -303,14 +301,14 @@ export default function ParentSignin({ setParentId }) {
                       type="button"
                       onClick={() => setShowForgot(false)}
                       className="btn btn-outline"
-                      style={{ flex: 1, padding: '0.5rem' }}
+                      style={{ flex: 1, padding: '0.5rem', borderRadius: '9999px' }}
                     >
                       Back
                     </button>
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      style={{ flex: 2, padding: '0.5rem' }}
+                      style={{ flex: 2, padding: '0.5rem', borderRadius: '9999px' }}
                       id="btn-send-reset"
                     >
                       Send Reset Code
@@ -328,10 +326,11 @@ export default function ParentSignin({ setParentId }) {
                       placeholder="e.g. 123456"
                       value={codeInput}
                       onChange={(e) => setCodeInput(e.target.value.replace(/\D/g, ''))}
-                      className="input-control"
+                      className="input-underline"
                       style={{ letterSpacing: '0.25em', textAlign: 'center', fontWeight: 'bold' }}
                       id="forgot-code-box"
                     />
+                    <Key className="input-icon" size={18} />
                   </div>
 
                   <div className="form-group">
@@ -342,9 +341,10 @@ export default function ParentSignin({ setParentId }) {
                       placeholder="Min 6 characters"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className="input-control"
+                      className="input-underline"
                       id="forgot-newpass-box"
                     />
+                    <Lock className="input-icon" size={18} />
                   </div>
 
                   <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
@@ -352,14 +352,14 @@ export default function ParentSignin({ setParentId }) {
                       type="button"
                       onClick={() => setForgotStep(1)}
                       className="btn btn-outline"
-                      style={{ flex: 1, padding: '0.5rem' }}
+                      style={{ flex: 1, padding: '0.5rem', borderRadius: '9999px' }}
                     >
                       Back
                     </button>
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      style={{ flex: 2, padding: '0.5rem' }}
+                      style={{ flex: 2, padding: '0.5rem', borderRadius: '9999px' }}
                       id="btn-submit-newpass"
                     >
                       Reset Password

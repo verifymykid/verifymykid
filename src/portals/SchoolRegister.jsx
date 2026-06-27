@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { School, Mail, CheckCircle2 } from 'lucide-react';
+import { School, Mail, CheckCircle2, Phone, MapPin, Lock, Globe, Key } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 
 export default function SchoolRegister() {
@@ -96,11 +96,11 @@ export default function SchoolRegister() {
     <div style={{ background: 'var(--bg-primary)', minHeight: 'calc(100vh - 70px)', padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ maxWidth: '550px', width: '100%' }}>
         {!otpSent ? (
-          <div className="glass-card">
-            <h2 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <School style={{ color: 'var(--accent-blue)' }} /> School Registration Portal
+          <div className="premium-login-card">
+            <h2 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+              <School style={{ color: 'var(--accent-blue)' }} /> School Registration
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', marginBottom: '1.5rem', textAlign: 'center' }}>
               Create a school profile to manage your fleet and student authorizations.
             </p>
             
@@ -113,9 +113,10 @@ export default function SchoolRegister() {
                   placeholder="e.g. Greenwood Academy VI"
                   value={schoolForm.name}
                   onChange={(e) => setSchoolForm({ ...schoolForm, name: e.target.value })}
-                  className="input-control"
+                  className="input-underline"
                   id="reg-school-name"
                 />
+                <School className="input-icon" size={18} />
               </div>
               
               <div className="form-group">
@@ -126,9 +127,10 @@ export default function SchoolRegister() {
                   placeholder="Plot, Street, Victoria Island/Ikeja, Lagos"
                   value={schoolForm.address}
                   onChange={(e) => setSchoolForm({ ...schoolForm, address: e.target.value })}
-                  className="input-control"
+                  className="input-underline"
                   id="reg-school-address"
                 />
+                <MapPin className="input-icon" size={18} />
               </div>
 
               <div className="grid-2">
@@ -181,9 +183,10 @@ export default function SchoolRegister() {
                       setSchoolForm({ ...schoolForm, email: e.target.value });
                       setEmailError('');
                     }}
-                    className="input-control"
+                    className="input-underline"
                     id="reg-school-email"
                   />
+                  <Mail className="input-icon" size={18} />
                   {emailError && (
                     <div style={{ color: 'var(--accent-red)', fontSize: '0.7rem', marginTop: '0.25rem', fontWeight: 'bold' }}>
                       ⚠️ {emailError}
@@ -198,9 +201,10 @@ export default function SchoolRegister() {
                     placeholder="+234 xxxx xxxx"
                     value={schoolForm.phone}
                     onChange={(e) => setSchoolForm({ ...schoolForm, phone: e.target.value })}
-                    className="input-control"
+                    className="input-underline"
                     id="reg-school-phone"
                   />
+                  <Phone className="input-icon" size={18} />
                 </div>
               </div>
 
@@ -212,16 +216,17 @@ export default function SchoolRegister() {
                     placeholder="www.school.edu.ng"
                     value={schoolForm.website}
                     onChange={(e) => setSchoolForm({ ...schoolForm, website: e.target.value })}
-                    className="input-control"
+                    className="input-underline"
                     id="reg-school-website"
                   />
+                  <Globe className="input-icon" size={18} />
                 </div>
                 <div className="form-group">
                   <label>School Type *</label>
                   <select
                     value={schoolForm.type}
                     onChange={(e) => setSchoolForm({ ...schoolForm, type: e.target.value })}
-                    className="input-control"
+                    className="input-underline"
                     id="reg-school-type"
                   >
                     <option value="Primary">Primary</option>
@@ -243,9 +248,10 @@ export default function SchoolRegister() {
                       setPasswordInput(e.target.value);
                       setPasswordError('');
                     }}
-                    className="input-control"
+                    className="input-underline"
                     id="reg-school-pass"
                   />
+                  <Lock className="input-icon" size={18} />
                 </div>
                 <div className="form-group">
                   <label>Verify Password *</label>
@@ -258,9 +264,10 @@ export default function SchoolRegister() {
                       setConfirmPasswordInput(e.target.value);
                       setPasswordError('');
                     }}
-                    className="input-control"
+                    className="input-underline"
                     id="reg-school-verify-pass"
                   />
+                  <Lock className="input-icon" size={18} />
                 </div>
               </div>
               {passwordError && (
@@ -269,22 +276,20 @@ export default function SchoolRegister() {
                 </div>
               )}
 
-              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} id="btn-submit-school-reg">
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', borderRadius: '9999px' }} id="btn-submit-school-reg">
                 Proceed to Email Verification
               </button>
             </form>
           </div>
         ) : !schoolVerified ? (
-          <div className="glass-card" style={{ textAlign: 'center' }}>
+          <div className="premium-login-card" style={{ textAlign: 'center' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
-              <Mail size={32} />
+              <Mail size={32} style={{ color: 'var(--accent-yellow)' }} />
             </div>
-            <h2 style={{ marginBottom: '0.5rem' }}>Email Verification</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+            <h2>Email Verification</h2>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               We've sent a 6-digit verification code to <strong>{schoolForm.email}</strong>. Please enter the OTP below.
             </p>
-            
-            {/* OTP Dispatched - Console Logged */}
 
             <form onSubmit={handleVerifySchoolOtp} style={{ maxWidth: '300px', margin: '0 auto' }}>
               <div className="form-group">
@@ -292,22 +297,22 @@ export default function SchoolRegister() {
                   type="text"
                   maxLength={6}
                   required
-                  placeholder="Enter 6-Digit OTP"
+                  placeholder="Enter OTP"
                   value={otpInput}
                   onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-                  className="input-control"
-                  style={{ textAlign: 'center', letterSpacing: '0.4em', fontSize: '1.3rem' }}
+                  className="input-underline"
+                  style={{ textAlign: 'center', letterSpacing: '0.4em', fontSize: '1.3rem', paddingRight: '0 !important' }}
                   id="otp-input-box"
                 />
               </div>
-              <button type="submit" className="btn btn-warning" style={{ width: '100%' }} id="btn-verify-otp">
+              <button type="submit" className="btn btn-warning" style={{ width: '100%', borderRadius: '9999px' }} id="btn-verify-otp">
                 Verify & Register
               </button>
               <button 
                 type="button" 
                 onClick={handleResendOtp} 
                 className="btn btn-outline" 
-                style={{ width: '100%', marginTop: '0.5rem', borderColor: 'var(--accent-yellow)', color: 'var(--accent-yellow)' }}
+                style={{ width: '100%', marginTop: '0.5rem', borderColor: 'var(--accent-yellow)', color: 'var(--accent-yellow)', borderRadius: '9999px' }}
                 id="btn-resend-otp"
               >
                 Resend Verification Code
@@ -315,12 +320,12 @@ export default function SchoolRegister() {
             </form>
           </div>
         ) : (
-          <div className="glass-card" style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
+          <div className="premium-login-card" style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
-              <CheckCircle2 size={32} />
+              <CheckCircle2 size={32} style={{ color: 'var(--accent-green)' }} />
             </div>
-            <h2 style={{ marginBottom: '0.5rem' }}>Registration Received!</h2>
-            <div className="badge badge-warning" style={{ fontSize: '0.9rem', padding: '0.4rem 1rem' }}>
+            <h2>Registration Received!</h2>
+            <div className="badge badge-warning" style={{ fontSize: '0.9rem', padding: '0.4rem 1rem', borderRadius: '9999px' }}>
               STATUS: PENDING APPROVAL
             </div>
           </div>

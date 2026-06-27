@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Shield, School, Users, AlertOctagon, Bell, ListTodo, Map, Play, Activity, Lock, Unlock, Eye, EyeOff, ShieldAlert, CornerUpLeft, CreditCard } from 'lucide-react';
+import { Shield, School, Users, AlertOctagon, Bell, ListTodo, Map, Play, Activity, Lock, Unlock, Eye, EyeOff, ShieldAlert, CornerUpLeft, CreditCard, Mail, Key } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 import GoogleMapView from '../components/GoogleMapView';
 
@@ -485,16 +484,12 @@ export default function SuperAdminPortal() {
   if (!isLoggedIn) {
     return (
       <main className="container" style={{ padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', minHeight: 'calc(100vh - 70px)' }}>
-        <div className="glass-card" style={{ maxWidth: '400px', width: '100%', alignSelf: 'center', border: '1px solid rgba(239, 68, 68, 0.25)' }}>
+        <div className="premium-login-card">
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto' }}>
-              <Lock size={26} />
+              <Lock size={26} style={{ color: 'var(--accent-red)' }} />
             </div>
             <h2>Super Admin Portal</h2>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.2rem 0.5rem', borderRadius: '9999px', fontSize: '0.65rem', color: '#10b981', fontWeight: 'bold', marginTop: '0.5rem' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
-              ENCRYPTED CHANNEL SECURED
-            </div>
           </div>
 
           {resetSuccessMessage && (
@@ -525,32 +520,30 @@ export default function SuperAdminPortal() {
                   placeholder="admin@verifymykid.com"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
-                  className="input-control"
+                  className="input-underline"
                   id="admin-login-email"
                 />
+                <Mail className="input-icon" size={18} />
               </div>
 
               <div className="form-group">
                 <label>Secure Master Password</label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    placeholder="••••••••"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    className="input-control"
-                    style={{ paddingRight: '2.5rem' }}
-                    id="admin-login-pass"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="••••••••"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className="input-underline"
+                  id="admin-login-pass"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="input-action-btn"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
                 {capsLockActive && (
                   <div style={{ fontSize: '0.7rem', color: 'var(--accent-yellow)', marginTop: '0.25rem', fontWeight: 'bold' }}>
                     ⚠️ Warning: Caps Lock is ON
@@ -571,27 +564,29 @@ export default function SuperAdminPortal() {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-danger" style={{ width: '100%', marginTop: '0.5rem', background: 'var(--accent-red)', borderColor: 'var(--accent-red)' }} id="btn-admin-login">
+              <button type="submit" className="btn btn-danger" style={{ width: '100%', marginTop: '0.5rem', background: 'var(--accent-red)', borderColor: 'var(--accent-red)', borderRadius: '9999px' }} id="btn-admin-login">
                 Request Security Clearance
               </button>
             </form>
           ) : loginStep === 2 ? (
             <form onSubmit={handleTwoFactorSubmit}>
               <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 1rem 0' }}>
+                <p style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)', margin: '0 0 1rem 0' }}>
                   Two-Factor Authentication (2FA) Required. Enter the 6-digit key from your Authenticator app.
                 </p>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. 000000"
-                  maxLength={6}
-                  value={twoFactorInput}
-                  onChange={(e) => setTwoFactorInput(e.target.value)}
-                  className="input-control"
-                  style={{ fontSize: '1.4rem', textAlign: 'center', letterSpacing: '0.2em' }}
-                  id="admin-2fa-input"
-                />
+                <div className="form-group">
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 000000"
+                    maxLength={6}
+                    value={twoFactorInput}
+                    onChange={(e) => setTwoFactorInput(e.target.value)}
+                    className="input-underline"
+                    style={{ fontSize: '1.4rem', textAlign: 'center', letterSpacing: '0.2em', paddingRight: '0 !important' }}
+                    id="admin-2fa-input"
+                  />
+                </div>
               </div>
 
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -604,11 +599,11 @@ export default function SuperAdminPortal() {
                     setResetSuccessMessage('');
                   }}
                   className="btn btn-outline"
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, borderRadius: '9999px' }}
                 >
                   Back
                 </button>
-                <button type="submit" className="btn btn-danger" style={{ flex: 2, background: 'var(--accent-red)', borderColor: 'var(--accent-red)' }} id="btn-2fa-submit">
+                <button type="submit" className="btn btn-danger" style={{ flex: 2, background: 'var(--accent-red)', borderColor: 'var(--accent-red)', borderRadius: '9999px' }} id="btn-2fa-submit">
                   Verify Key & Unlock
                 </button>
               </div>
@@ -616,7 +611,7 @@ export default function SuperAdminPortal() {
           ) : loginStep === 3 ? (
             <form onSubmit={handleForgotPasswordSubmit}>
               <div style={{ marginBottom: '1.25rem' }}>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 1rem 0', textAlign: 'center', lineHeight: '1.4' }}>
+                <p style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)', margin: '0 0 1rem 0', textAlign: 'center', lineHeight: '1.4' }}>
                   Enter your Administrator work email to request a secure 6-digit verification code.
                 </p>
                 <div className="form-group">
@@ -627,9 +622,10 @@ export default function SuperAdminPortal() {
                     placeholder="admin@verifymykid.com"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
-                    className="input-control"
+                    className="input-underline"
                     id="admin-reset-email"
                   />
+                  <Mail className="input-icon" size={18} />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -641,11 +637,11 @@ export default function SuperAdminPortal() {
                     setResetSuccessMessage('');
                   }}
                   className="btn btn-outline"
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, borderRadius: '9999px' }}
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-danger" style={{ flex: 2, background: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}>
+                <button type="submit" className="btn btn-danger" style={{ flex: 2, background: 'var(--accent-red)', borderColor: 'var(--accent-red)', borderRadius: '9999px' }}>
                   Send Reset Code
                 </button>
               </div>
@@ -653,7 +649,7 @@ export default function SuperAdminPortal() {
           ) : (
             <form onSubmit={handleResetPasswordSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.25rem' }}>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0 0 0.5rem 0', textAlign: 'center', lineHeight: '1.4' }}>
+                <p style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)', margin: '0 0 0.5rem 0', textAlign: 'center', lineHeight: '1.4' }}>
                   Input the 6-digit code sent to your email and select your new Master password.
                 </p>
                 <div className="form-group">
@@ -665,8 +661,8 @@ export default function SuperAdminPortal() {
                     maxLength={6}
                     value={resetCodeInput}
                     onChange={(e) => setResetCodeInput(e.target.value)}
-                    className="input-control"
-                    style={{ textAlign: 'center', letterSpacing: '0.1em' }}
+                    className="input-underline"
+                    style={{ textAlign: 'center', letterSpacing: '0.15em', paddingRight: '0 !important' }}
                   />
                 </div>
                 <div className="form-group">
@@ -677,8 +673,9 @@ export default function SuperAdminPortal() {
                     placeholder="••••••••"
                     value={newPasswordInput}
                     onChange={(e) => setNewPasswordInput(e.target.value)}
-                    className="input-control"
+                    className="input-underline"
                   />
+                  <Lock className="input-icon" size={18} />
                 </div>
                 <div className="form-group">
                   <label>Confirm New Password</label>
@@ -688,8 +685,9 @@ export default function SuperAdminPortal() {
                     placeholder="••••••••"
                     value={confirmNewPasswordInput}
                     onChange={(e) => setConfirmNewPasswordInput(e.target.value)}
-                    className="input-control"
+                    className="input-underline"
                   />
+                  <Lock className="input-icon" size={18} />
                 </div>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -701,18 +699,18 @@ export default function SuperAdminPortal() {
                     setResetSuccessMessage('');
                   }}
                   className="btn btn-outline"
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, borderRadius: '9999px' }}
                 >
                   Back
                 </button>
-                <button type="submit" className="btn btn-success" style={{ flex: 2, background: 'var(--accent-green)', borderColor: 'var(--accent-green)', color: '#000', fontWeight: 'bold' }}>
+                <button type="submit" className="btn btn-success" style={{ flex: 2, background: 'var(--accent-green)', borderColor: 'var(--accent-green)', color: '#000', fontWeight: 'bold', borderRadius: '9999px' }}>
                   Reset & Login
                 </button>
               </div>
             </form>
           )}
 
-          <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '1.5rem', paddingTop: '1rem', fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+          <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '1.5rem', paddingTop: '1rem', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.4' }}>
             <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center' }}>
               ⚠️ Cryptographic audit ledger is active. Unauthorized entry coordinates are reported.
             </div>

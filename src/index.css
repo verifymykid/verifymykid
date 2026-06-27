@@ -1112,9 +1112,9 @@ input:checked + .slider:before {
 .mobile-menu-overlay {
   display: flex;
   flex-direction: column;
-  background: var(--glass-bg);
-  backdrop-filter: var(--backdrop-blur);
-  -webkit-backdrop-filter: var(--backdrop-blur);
+  background: var(--bg-primary) !important; /* Opaque background to prevent homepage text overlay */
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
@@ -1346,5 +1346,150 @@ input:checked + .slider:before {
     transform: translateY(0);
   }
 }
+
+/* --- PREMIUM LOGIN & REGISTER CARDS (Apple Liquid Glass style) --- */
+.premium-login-card {
+  background: rgba(10, 15, 30, 0.7) !important;
+  backdrop-filter: blur(30px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(210%) !important;
+  border: 2px solid var(--accent-blue) !important; /* Glowing blue border */
+  border-radius: 24px !important;
+  padding: 2.5rem 2.25rem !important;
+  box-shadow: 0 24px 64px rgba(0, 113, 227, 0.2), 
+              0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
+  width: 100%;
+  transition: var(--transition-smooth);
+}
+
+[data-theme='dark'] .premium-login-card {
+  background: rgba(5, 7, 12, 0.8) !important;
+  box-shadow: 0 24px 64px rgba(0, 113, 227, 0.3), 
+              0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+}
+
+.premium-login-card h2 {
+  font-family: var(--font-display) !important;
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  text-align: center !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.premium-login-card p {
+  color: rgba(255, 255, 255, 0.6) !important;
+  text-align: center;
+  font-size: 0.85rem;
+  margin-bottom: 1.75rem;
+}
+
+.premium-login-card .form-group {
+  margin-bottom: 1.5rem !important;
+  position: relative !important;
+}
+
+.premium-login-card .form-group label {
+  display: block !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  margin-bottom: 0.4rem !important;
+  text-transform: none !important;
+}
+
+/* Minimalist Underline Inputs */
+.premium-login-card .input-underline {
+  width: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 0 !important;
+  padding: 0.6rem 2.5rem 0.6rem 0 !important;
+  color: #ffffff !important;
+  font-family: var(--font-primary) !important;
+  font-size: 0.95rem !important;
+  transition: border-color 0.3s ease !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.premium-login-card .input-underline:focus {
+  border-bottom-color: var(--accent-blue) !important;
+  outline: none !important;
+}
+
+.premium-login-card .input-icon {
+  position: absolute !important;
+  right: 0 !important;
+  bottom: 8px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  pointer-events: none !important;
+}
+
+.premium-login-card .input-action-btn {
+  position: absolute !important;
+  right: 0 !important;
+  bottom: 6px !important;
+  background: none !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.premium-login-card .input-action-btn:hover {
+  color: #ffffff !important;
+}
+
+.premium-login-card select.input-underline {
+  appearance: none !important;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba%28255%2C255%2C255%2C0.6%29' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 4px center !important;
+}
+
+.premium-login-card select.input-underline option {
+  background: #0d1321 !important;
+  color: #ffffff !important;
+}
+
+.premium-login-card .checkbox-label {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.8rem !important;
+}
+
+.premium-login-card .footer-text {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 0.8rem !important;
+  text-align: center !important;
+  margin-top: 1.5rem !important;
+}
+
+.premium-login-card .footer-text a {
+  color: var(--accent-blue) !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+}
+
+.premium-login-card .footer-text a:hover {
+  text-decoration: underline !important;
+}
+
+/* Scroll Reveal animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 
 

@@ -881,12 +881,9 @@ export default function ParentPortal({ parentId, setParentId }) {
               {/* Spouse / Secondary Parent */}
               {!currentParent.singleParent && currentParent.spouseName ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', flexShrink: 0 }}>
-                     <img src={currentParent.spouseProfilePic || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentParent.spouseName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
                   <div>
                     <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentParent.spouseName}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Spouse</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Spouse {currentParent.spousePhone ? `(${currentParent.spousePhone})` : ''}</div>
                   </div>
                 </div>
               ) : null}
@@ -1239,12 +1236,9 @@ export default function ParentPortal({ parentId, setParentId }) {
                   {/* Spouse / Secondary Parent */}
                   {!currentParent.singleParent && currentParent.spouseName ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', flexShrink: 0 }}>
-                         <img src={currentParent.spouseProfilePic || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'} alt={currentParent.spouseName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
                       <div>
                         <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{currentParent.spouseName}</div>
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Spouse</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Spouse {currentParent.spousePhone ? `(${currentParent.spousePhone})` : ''}</div>
                       </div>
                     </div>
                   ) : null}

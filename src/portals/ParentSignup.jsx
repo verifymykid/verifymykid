@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { UserPlus, CheckCircle2, Mail } from 'lucide-react';
+import { UserPlus, CheckCircle2, Mail, Phone, MapPin, Lock, User, Key } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 
 export default function ParentSignup() {
@@ -92,11 +92,11 @@ export default function ParentSignup() {
     <div style={{ background: 'var(--bg-primary)', minHeight: 'calc(100vh - 70px)', padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ maxWidth: '600px', width: '100%' }}>
         {!otpSent ? (
-          <div className="glass-card">
-            <h2 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="premium-login-card">
+            <h2 style={{ marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
               <UserPlus style={{ color: 'var(--accent-blue)' }} /> Parent Sign Up Portal
             </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', marginBottom: '1.5rem', textAlign: 'center' }}>
               Register child profiles and authorized pickup arrangements.
             </p>
 
@@ -113,9 +113,10 @@ export default function ParentSignup() {
                   placeholder="Parent Full Name"
                   value={parentForm.name}
                   onChange={(e) => setParentForm({ ...parentForm, name: e.target.value })}
-                  className="input-control"
+                  className="input-underline"
                   id="parent-reg-name"
                 />
+                <User className="input-icon" size={18} />
               </div>
 
               <div className="grid-2">
@@ -127,9 +128,10 @@ export default function ParentSignup() {
                     placeholder="parent@email.com"
                     value={parentForm.email}
                     onChange={(e) => setParentForm({ ...parentForm, email: e.target.value })}
-                    className="input-control"
+                    className="input-underline"
                     id="parent-reg-email"
                   />
+                  <Mail className="input-icon" size={18} />
                 </div>
                 <div className="form-group">
                   <label>Mobile Number *</label>
@@ -139,9 +141,10 @@ export default function ParentSignup() {
                     placeholder="+234 xxxx xxxx"
                     value={parentForm.phone}
                     onChange={(e) => setParentForm({ ...parentForm, phone: e.target.value })}
-                    className="input-control"
+                    className="input-underline"
                     id="parent-reg-phone"
                   />
+                  <Phone className="input-icon" size={18} />
                 </div>
               </div>
 
@@ -153,9 +156,10 @@ export default function ParentSignup() {
                   placeholder="Street address, Lagos"
                   value={parentForm.address}
                   onChange={(e) => setParentForm({ ...parentForm, address: e.target.value })}
-                  className="input-control"
+                  className="input-underline"
                   id="parent-reg-address"
                 />
+                <MapPin className="input-icon" size={18} />
               </div>
 
               <div className="form-group">
@@ -166,9 +170,10 @@ export default function ParentSignup() {
                   placeholder="Set account password"
                   value={parentForm.password}
                   onChange={(e) => setParentForm({ ...parentForm, password: e.target.value })}
-                  className="input-control"
+                  className="input-underline"
                   id="parent-reg-password"
                 />
+                <Lock className="input-icon" size={18} />
               </div>
 
               <div className="form-group">
@@ -177,7 +182,7 @@ export default function ParentSignup() {
                   value={parentForm.schoolId}
                   onChange={(e) => setParentForm({ ...parentForm, schoolId: e.target.value })}
                   required
-                  className="input-control"
+                  className="input-underline"
                   id="parent-reg-school-select"
                 >
                   <option value="">-- Choose Registered School --</option>
@@ -213,9 +218,10 @@ export default function ParentSignup() {
                       placeholder="Spouse Name"
                       value={parentForm.spouseName}
                       onChange={(e) => setParentForm({ ...parentForm, spouseName: e.target.value })}
-                      className="input-control"
+                      className="input-underline"
                       id="parent-reg-spousename"
                     />
+                    <User className="input-icon" size={18} />
                   </div>
                   <div className="form-group">
                     <label>Spouse Phone Number</label>
@@ -224,9 +230,10 @@ export default function ParentSignup() {
                       placeholder="Spouse Mobile"
                       value={parentForm.spousePhone}
                       onChange={(e) => setParentForm({ ...parentForm, spousePhone: e.target.value })}
-                      className="input-control"
+                      className="input-underline"
                       id="parent-reg-spousephone"
                     />
+                    <Phone className="input-icon" size={18} />
                   </div>
                 </div>
               )}
@@ -245,9 +252,10 @@ export default function ParentSignup() {
                       placeholder="Child's Full Name"
                       value={child.name}
                       onChange={(e) => handleChildChange(index, 'name', e.target.value)}
-                      className="input-control"
+                      className="input-underline"
                       id={`child-name-${index}`}
                     />
+                    <User className="input-icon" size={18} />
                   </div>
                   <div className="form-group">
                     <label>Child #{index + 1} Age *</label>
@@ -257,7 +265,7 @@ export default function ParentSignup() {
                       placeholder="Age"
                       value={child.age}
                       onChange={(e) => handleChildChange(index, 'age', e.target.value)}
-                      className="input-control"
+                      className="input-underline"
                       id={`child-age-${index}`}
                     />
                   </div>
@@ -268,24 +276,24 @@ export default function ParentSignup() {
                 type="button" 
                 onClick={addMoreChildren} 
                 className="btn btn-outline" 
-                style={{ width: '100%', padding: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem' }}
+                style={{ width: '100%', padding: '0.5rem', marginBottom: '1.5rem', fontSize: '0.85rem', borderRadius: '9999px' }}
                 id="btn-add-child"
               >
                 + Add Another Child
               </button>
 
-              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} id="btn-parent-submit">
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', borderRadius: '9999px' }} id="btn-parent-submit">
                 Register & Verify Email
               </button>
             </form>
           </div>
         ) : !signupSuccess ? (
-          <div className="glass-card" style={{ textAlign: 'center' }}>
+          <div className="premium-login-card" style={{ textAlign: 'center' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--accent-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
-              <Mail size={32} />
+              <Mail size={32} style={{ color: 'var(--accent-yellow)' }} />
             </div>
-            <h2 style={{ marginBottom: '0.5rem' }}>Verify Your Email</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+            <h2>Verify Your Email</h2>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               We've sent a 6-digit verification code to <strong>{parentForm.email}</strong>. Please check your inbox and enter the OTP below.
             </p>
 
@@ -301,22 +309,22 @@ export default function ParentSignup() {
                   type="text"
                   maxLength={6}
                   required
-                  placeholder="Enter 6-Digit OTP"
+                  placeholder="Enter OTP"
                   value={otpInput}
                   onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
-                  className="input-control"
-                  style={{ textAlign: 'center', letterSpacing: '0.4em', fontSize: '1.3rem' }}
+                  className="input-underline"
+                  style={{ textAlign: 'center', letterSpacing: '0.4em', fontSize: '1.3rem', paddingRight: '0 !important' }}
                   id="parent-otp-input-box"
                 />
               </div>
-              <button type="submit" className="btn btn-warning" style={{ width: '100%', fontWeight: 'bold' }} id="btn-verify-parent-otp">
+              <button type="submit" className="btn btn-warning" style={{ width: '100%', fontWeight: 'bold', borderRadius: '9999px' }} id="btn-verify-parent-otp">
                 Verify Email Address
               </button>
               <button 
                 type="button" 
                 onClick={handleResendParentOtp} 
                 className="btn btn-outline" 
-                style={{ width: '100%', marginTop: '0.5rem', borderColor: 'var(--accent-yellow)', color: 'var(--accent-yellow)' }}
+                style={{ width: '100%', marginTop: '0.5rem', borderColor: 'var(--accent-yellow)', color: 'var(--accent-yellow)', borderRadius: '9999px' }}
                 id="btn-resend-parent-otp"
               >
                 Resend Verification Code
@@ -324,12 +332,12 @@ export default function ParentSignup() {
             </form>
           </div>
         ) : (
-          <div className="glass-card" style={{ textAlign: 'center' }}>
+          <div className="premium-login-card" style={{ textAlign: 'center' }}>
             <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: 'var(--accent-green)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem auto' }}>
-              <CheckCircle2 size={32} />
+              <CheckCircle2 size={32} style={{ color: 'var(--accent-green)' }} />
             </div>
-            <h2 style={{ marginBottom: '0.5rem' }}>Account Registered!</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+            <h2>Account Registered!</h2>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
               Your generated Parent Unique ID for sign-in is:
             </p>
             <div style={{
@@ -348,13 +356,14 @@ export default function ParentSignup() {
               {newParentId}
             </div>
             
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '2rem' }}>
               Save this ID safely! You need it to access your pickup codes. Your account is currently <strong>PENDING</strong> school admin approval. You will be able to sign in once the school administration approves your access profile.
             </p>
 
             <button 
               onClick={() => navigate(`/parent-signin?id=${newParentId}`)} 
               className="btn btn-primary"
+              style={{ borderRadius: '9999px', width: '100%' }}
               id="btn-goto-signin"
             >
               Proceed to Parent Sign-in

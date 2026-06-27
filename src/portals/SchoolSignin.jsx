@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { School, Key } from 'lucide-react';
+import { School, Key, Mail, Lock } from 'lucide-react';
 import { useStore, hashPassword } from '../data/mockStore';
 
 export default function SchoolSignin({ setSchoolId }) {
@@ -103,13 +103,13 @@ export default function SchoolSignin({ setSchoolId }) {
   return (
     <div style={{ background: 'var(--bg-primary)', minHeight: 'calc(100vh - 70px)', padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <div style={{ maxWidth: '400px', width: '100%' }}>
-        <div className="glass-card">
+        <div className="premium-login-card">
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto' }}>
-              <School size={24} />
+              <School size={24} style={{ color: 'var(--accent-blue)' }} />
             </div>
             <h2>School Admin Sign-in</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem' }}>
               Access your school dashboard, active routes and guardian management.
             </p>
           </div>
@@ -129,9 +129,10 @@ export default function SchoolSignin({ setSchoolId }) {
                 placeholder="admin@school.edu.ng"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
-                className="input-control"
+                className="input-underline"
                 id="school-signin-email"
               />
+              <Mail className="input-icon" size={18} />
             </div>
 
             <div className="form-group">
@@ -142,19 +143,18 @@ export default function SchoolSignin({ setSchoolId }) {
                 placeholder="••••••••"
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
-                className="input-control"
+                className="input-underline"
                 id="school-signin-pass"
               />
+              <Lock className="input-icon" size={18} />
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-school-login-submit">
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem', borderRadius: '9999px' }} id="btn-school-login-submit">
               Access Workspace
             </button>
           </form>
 
-          {/* Demo Credentials removed for Live deployment */}
-
-          <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem' }}>
+          <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.6)' }}>
             Don't have a registered school? <Link to="/school-register" style={{ color: 'var(--accent-blue)', textDecoration: 'none', fontWeight: '600' }}>Register here</Link>
           </div>
         </div>

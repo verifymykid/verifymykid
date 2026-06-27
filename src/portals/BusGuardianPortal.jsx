@@ -628,11 +628,11 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   if (!currentGuardian) {
     return (
       <main className="container" style={{ padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', minHeight: 'calc(100vh - 70px)' }}>
-        <div className="glass-card" style={{ maxWidth: '400px', width: '100%', alignSelf: 'center', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+        <div className="premium-login-card">
           
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto' }}>
-              <Lock size={26} />
+              <Lock size={26} style={{ color: 'var(--accent-blue)' }} />
             </div>
             <h2>Bus Guardian Terminal</h2>
           </div>
@@ -658,32 +658,30 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                 placeholder="e.g. Robert Vance"
                 value={nameInput}
                 onChange={(e) => setNameInput(e.target.value)}
-                className="input-control"
+                className="input-underline"
                 id="guardian-login-name"
               />
+              <User className="input-icon" size={18} />
             </div>
 
             <div className="form-group">
               <label>Access Password</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  required
-                  placeholder="••••••••"
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  className="input-control"
-                  style={{ paddingRight: '2.5rem' }}
-                  id="guardian-login-pass"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                placeholder="••••••••"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                className="input-underline"
+                id="guardian-login-pass"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="input-action-btn"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
               {capsLockActive && (
                 <div style={{ fontSize: '0.7rem', color: 'var(--accent-yellow)', marginTop: '0.25rem', fontWeight: 'bold' }}>
                   ⚠️ Warning: Caps Lock is ON
@@ -691,7 +689,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               )}
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} id="btn-guardian-login">
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem', borderRadius: '9999px' }} id="btn-guardian-login">
               Log in
             </button>
           </form>

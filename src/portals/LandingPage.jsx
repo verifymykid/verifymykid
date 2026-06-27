@@ -32,6 +32,23 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('active');
+        }
+      });
+    }, { threshold: 0.05 });
+
+    const elements = document.querySelectorAll('.scroll-reveal');
+    elements.forEach(el => observer.observe(el));
+
+    return () => {
+      elements.forEach(el => observer.unobserve(el));
+    };
+  }, []);
+
   const handleContactSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -232,7 +249,7 @@ export default function LandingPage() {
       </section>
 
       {/* Trust Tape Header Section */}
-      <section style={{ background: 'var(--glass-bg)', borderBottom: '1px solid var(--glass-border)', padding: '5rem 0', textAlign: 'center', backdropFilter: 'var(--backdrop-blur)', WebkitBackdropFilter: 'var(--backdrop-blur)' }}>
+      <section className="scroll-reveal" style={{ background: 'var(--glass-bg)', borderBottom: '1px solid var(--glass-border)', padding: '5rem 0', textAlign: 'center', backdropFilter: 'var(--backdrop-blur)', WebkitBackdropFilter: 'var(--backdrop-blur)' }}>
         <div className="container">
           <p style={{ color: 'var(--text-primary)', fontSize: '1.8rem', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
             Trusted by forward-thinking Nigerian schools
@@ -241,7 +258,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Grid Section */}
-      <section className="section" id="features">
+      <section className="section scroll-reveal" id="features">
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Platform Features</span>
@@ -326,7 +343,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="section" id="how-it-works" style={{ background: 'var(--glass-bg)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)', backdropFilter: 'var(--backdrop-blur)', WebkitBackdropFilter: 'var(--backdrop-blur)' }}>
+      <section className="section scroll-reveal" id="how-it-works" style={{ background: 'var(--glass-bg)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)', backdropFilter: 'var(--backdrop-blur)', WebkitBackdropFilter: 'var(--backdrop-blur)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Operational Flow</span>
@@ -393,7 +410,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials & Stats Section */}
-      <section className="section" id="testimonials">
+      <section className="section scroll-reveal" id="testimonials">
         <div className="container">
           
           <div className="grid-2" style={{ marginBottom: '5rem', maxWidth: '600px', margin: '0 auto 5rem auto' }}>
@@ -466,7 +483,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Teaser replaced with Contact Us Section */}
-      <section className="section" id="prices" style={{ background: 'var(--bg-primary)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)' }}>
+      <section className="section scroll-reveal" id="prices" style={{ background: 'var(--bg-primary)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 4rem auto' }}>
             <span className="section-label">Pricing Inquiry</span>
@@ -633,7 +650,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-hero-gradient relative overflow-hidden" style={{ padding: '5rem 0', textAlign: 'center' }}>
+      <section className="bg-hero-gradient relative overflow-hidden scroll-reveal" style={{ padding: '5rem 0', textAlign: 'center' }}>
         <div className="absolute inset-0 dot-grid opacity-30 pointer-events-none"></div>
         <div className="container" style={{ position: 'relative', zIndex: 10, maxWidth: '680px' }}>
           <span style={{ 
