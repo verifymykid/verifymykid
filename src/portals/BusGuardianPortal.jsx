@@ -631,8 +631,8 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
         <div className="premium-login-card">
           
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto' }}>
-              <Lock size={26} style={{ color: 'var(--accent-blue)' }} />
+            <div style={{ width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 1rem auto', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+              <img src="/logo.jpg" alt="VerifyMyKid Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <h2>Bus Guardian Terminal</h2>
           </div>

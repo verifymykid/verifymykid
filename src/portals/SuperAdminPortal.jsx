@@ -98,8 +98,6 @@ export default function SuperAdminPortal() {
         setLoginError(err.detail || 'Invalid Administrator credentials.');
         return;
       }
-      const data = await res.json();
-      localStorage.setItem('vmk_token', data.token);
       setLoginStep(2); // Proceed to 2FA verification
     } catch (err) {
       setLoginError('Server connection failed. Make sure backend is running.');
@@ -108,7 +106,21 @@ export default function SuperAdminPortal() {
 
   const handleTwoFactorSubmit = async (e) => {
     e.preventDefault();
-    if (twoFactorInput.trim() === '999999') {
+    setLoginError('');
+    try {
+      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/superadmin/verify-2fa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: twoFactorInput.trim() })
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setLoginError(err.detail || 'Incorrect 6-digit Security Authorization Key.');
+        return;
+      }
+      const data = await res.json();
+      localStorage.setItem('vmk_token', data.token);
+
       const ua = navigator.userAgent;
       let os = "Unknown OS";
       if (ua.indexOf("Win") !== -1) os = "Windows";
@@ -146,8 +158,9 @@ export default function SuperAdminPortal() {
 
       setLoginError('');
       setLoginStep(1);
-    } else {
-      setLoginError('Incorrect 6-digit Security Authorization Key. Hint: enter 999999');
+      setTwoFactorInput('');
+    } catch (err) {
+      setLoginError('Server connection failed. Make sure backend is running.');
     }
   };
 
@@ -486,8 +499,8 @@ export default function SuperAdminPortal() {
       <main className="container" style={{ padding: '4rem 1.5rem', display: 'flex', justifyContent: 'center', minHeight: 'calc(100vh - 70px)' }}>
         <div className="premium-login-card">
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--accent-red)', display: 'flex', alignItems: 'center', justify: 'center', margin: '0 auto 1rem auto' }}>
-              <Lock size={26} style={{ color: 'var(--accent-red)' }} />
+            <div style={{ width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 1rem auto', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+              <img src="/logo.jpg" alt="VerifyMyKid Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </div>
             <h2>Super Admin Portal</h2>
           </div>
@@ -517,7 +530,7 @@ export default function SuperAdminPortal() {
                 <input
                   type="email"
                   required
-                  placeholder="admin@verifymykid.com"
+                  placeholder="verifymykid@gmail.com"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   className="input-underline"
@@ -619,7 +632,7 @@ export default function SuperAdminPortal() {
                   <input
                     type="email"
                     required
-                    placeholder="admin@verifymykid.com"
+                    placeholder="verifymykid@gmail.com"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     className="input-underline"
@@ -715,8 +728,8 @@ export default function SuperAdminPortal() {
               ⚠️ Cryptographic audit ledger is active. Unauthorized entry coordinates are reported.
             </div>
 
-            {/* Simulated Local SMTP Outbox Console (Visible during Password Reset simulation) */}
-            {(loginStep === 3 || loginStep === 4) && (
+            {/* Simulated Local SMTP Outbox Console (Visible during login, password reset and 2FA simulation) */}
+            {(loginStep === 1 || loginStep === 2 || loginStep === 3 || loginStep === 4) && (
               <div style={{ marginTop: '1rem', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '0.75rem' }}>
                 <div style={{ fontWeight: 'bold', color: 'var(--accent-cyan)', marginBottom: '0.5rem', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span>📬 Simulated SMTP Server Outbox</span>

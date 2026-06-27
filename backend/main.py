@@ -52,6 +52,9 @@ class SuperAdminResetPasswordRequest(BaseModel):
     code: str
     password: str
 
+class SuperAdminVerify2faRequest(BaseModel):
+    code: str
+
 class GuardianLoginRequest(BaseModel):
     name: str
     password: str
@@ -502,8 +505,8 @@ def guardian_login(data: GuardianLoginRequest, db: Session = Depends(get_db)):
     return {"token": token, "role": "BUS_GUARDIAN", "id": g.id, "name": g.name, "schoolId": g.schoolId}
 
 @app.post("/api/auth/superadmin/login")
-def super_admin_login(data: LoginRequest, db: Session = Depends(get_db)):
-    if data.email.lower() != "admin@verifymykid.com":
+def super_admin_login(data: LoginRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    if data.email.lower() != "verifymykid@gmail.com":
         raise HTTPException(status_code=400, detail="Invalid super administrator credentials.")
         
     stored_password = db.query(models.SystemSettings).filter(models.SystemSettings.key == "super_admin_password").first()
@@ -519,12 +522,42 @@ def super_admin_login(data: LoginRequest, db: Session = Depends(get_db)):
     if not is_valid:
         raise HTTPException(status_code=400, detail="Invalid super administrator credentials.")
         
+    # Generate 6-digit 2FA code
+    two_fa_code = str(uuid.uuid4().int)[:6]
+    stored_2fa = db.query(models.SystemSettings).filter(models.SystemSettings.key == "super_admin_2fa_code").first()
+    if stored_2fa:
+        stored_2fa.value = two_fa_code
+    else:
+        db.add(models.SystemSettings(key="super_admin_2fa_code", value=two_fa_code))
+    db.commit()
+    
+    # Send email
+    subject = "VerifyMyKid - Super Admin 2FA Code"
+    body = f"Your secure 6-digit Super Admin 2FA authorization code is: {two_fa_code}\n\nIf you did not request this login, please change your password immediately."
+    background_tasks.add_task(send_real_email, "verifymykid@gmail.com", subject, body)
+    
+    # Log in SMTP logs
+    db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=f"EMAIL TO: verifymykid@gmail.com | SUBJECT: {subject} | MESSAGE: {body}"))
+    db.commit()
+    
+    return {"message": "2FA code sent to email."}
+
+@app.post("/api/auth/superadmin/verify-2fa")
+def super_admin_verify_2fa(data: SuperAdminVerify2faRequest, db: Session = Depends(get_db)):
+    stored_2fa = db.query(models.SystemSettings).filter(models.SystemSettings.key == "super_admin_2fa_code").first()
+    if not stored_2fa or stored_2fa.value != data.code.strip():
+        raise HTTPException(status_code=400, detail="Incorrect 6-digit Security Authorization Key.")
+        
+    # Remove 2FA code after successful verification to make it one-time use
+    db.delete(stored_2fa)
+    db.commit()
+    
     token = create_access_token({"sub": "SUPER_ADMIN", "role": "SUPER_ADMIN"})
     return {"token": token, "role": "SUPER_ADMIN", "id": "SUPER_ADMIN", "name": "Global Super Administrator"}
 
 @app.post("/api/auth/superadmin/forgot-password")
 def super_admin_forgot_password(data: SuperAdminForgotPasswordRequest, db: Session = Depends(get_db)):
-    if data.email.lower() != "admin@verifymykid.com":
+    if data.email.lower() != "verifymykid@gmail.com":
         raise HTTPException(status_code=400, detail="Invalid email address.")
         
     # Generate 6 digit reset code
@@ -540,7 +573,7 @@ def super_admin_forgot_password(data: SuperAdminForgotPasswordRequest, db: Sessi
     db.commit()
     
     # Simulate SMTP email dispatch
-    log_text = f"EMAIL TO: admin@verifymykid.com | SUBJECT: VerifyMyKid Super Admin Password Reset | MESSAGE: Your secure 6-digit password reset code is: {reset_code}"
+    log_text = f"EMAIL TO: verifymykid@gmail.com | SUBJECT: VerifyMyKid Super Admin Password Reset | MESSAGE: Your secure 6-digit password reset code is: {reset_code}"
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=log_text))
     
     # Log in system logs as well

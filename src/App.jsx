@@ -85,7 +85,7 @@ function AppContent() {
         color: 'var(--text-muted)' 
       }}>
         <div className="container">
-          &copy; {new Date().getFullYear()} VerifyMyKid safety. All rights reserved. • Nigerian School Transportation Trust & Security SaaS.
+          &copy; {new Date().getFullYear()} VerifyMyKid safety. All rights reserved.
         </div>
       </footer>
     </div>

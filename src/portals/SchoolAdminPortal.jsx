@@ -2252,7 +2252,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                                   <div style="font-family: monospace; font-size: 0.9rem; color: #444; margin-top: 5px;">ID: ${currentSchool.id}</div>
                                 </div>
                                 <div class="footer">
-                                  Nigerian School Transportation Trust • Secure QR cryptographic verification
+                                  Secure QR cryptographic verification
                                 </div>
                                 <script>
                                   setTimeout(function() {
