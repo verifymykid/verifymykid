@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { School, ShieldAlert, Users, Bus, AlertCircle, Plus, Search, FileText, LogOut, Bell, MessageSquare, Send, CreditCard, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { School, ShieldAlert, Users, Bus, AlertCircle, Plus, Search, FileText, LogOut, Bell, MessageSquare, Send, CreditCard, RefreshCw, Sun, Moon } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 import GoogleMapView from '../components/GoogleMapView';
 
@@ -23,6 +23,17 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     profilePic: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150'
   });
   const [generatedCreds, setGeneratedCreds] = useState(null);
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('vmk_theme_school_admin') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('vmk_theme_school_admin', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   // Parent directory search
   const [parentSearch, setParentSearch] = useState('');
@@ -235,8 +246,9 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   const schoolLogs = logs.filter(l => l.schoolId === schoolId);
   const schoolAlerts = activeAlerts.filter(a => a.schoolId === schoolId && !a.acknowledgedBySchoolAdmin);
   
+  const todayStr = new Date().toDateString();
   const todayPickups = schoolLogs.filter(l => {
-    return l.status === 'VERIFIED';
+    return l.status === 'VERIFIED' && new Date(l.timestamp).toDateString() === todayStr;
   }).length;
 
   const isRead = (n) => (n.readBy && n.readBy.includes(schoolId)) || n.read || n.isRead;
@@ -714,6 +726,27 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                 {unreadCount}
               </span>
             )}
+          </button>
+
+          {/* Theme Toggle Button */}
+          <button 
+            onClick={toggleTheme}
+            className="btn btn-outline"
+            style={{ 
+              padding: '0.6rem', 
+              borderRadius: '50%', 
+              minWidth: '42px', 
+              height: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: 'var(--glass-border)',
+              marginRight: '0.5rem'
+            }}
+            title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            id="btn-portal-theme-toggle"
+          >
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
 
           {/* Logout Button */}

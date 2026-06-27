@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Shield, School, Users, AlertOctagon, Bell, ListTodo, Map, Play, Activity, Lock, Unlock, Eye, EyeOff, ShieldAlert, CornerUpLeft, CreditCard, Mail, Key } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, School, Users, AlertOctagon, Bell, ListTodo, Map, Play, Activity, Lock, Unlock, Eye, EyeOff, ShieldAlert, CornerUpLeft, CreditCard, Mail, Key, Sun, Moon } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 import GoogleMapView from '../components/GoogleMapView';
 
@@ -198,6 +198,18 @@ export default function SuperAdminPortal() {
   const [replyingToId, setReplyingToId] = useState(null);
   const [replyMessage, setReplyMessage] = useState('');
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [selectedSchoolStats, setSelectedSchoolStats] = useState(null);
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('vmk_theme_super_admin') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('vmk_theme_super_admin', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
   const [trialMonths, setTrialMonths] = useState(1);
   const [extendDays, setExtendDays] = useState(7);
   const currentSessionId = localStorage.getItem('vmk_current_session_id');
@@ -325,7 +337,28 @@ export default function SuperAdminPortal() {
   const approvedChildren = approvedParentsList.reduce((acc, p) => acc + (p.children ? p.children.length : 0), 0);
   const pendingParents = parents.filter(p => p.status === 'PENDING' || p.status === 'PENDING_VERIFICATION').length;
   const totalGuardians = guardians.length;
+  const todayStr = new Date().toDateString();
+  const dailyVerifications = logs.filter(l => l.status === 'VERIFIED' && new Date(l.timestamp).toDateString() === todayStr).length;
   const totalVerifications = logs.filter(l => l.status === 'VERIFIED').length;
+
+  const schoolActivity = schools.map(s => {
+    const schoolVerifiedLogs = logs.filter(l => l.schoolId === s.id && l.status === 'VERIFIED');
+    let days = 1;
+    if (s.registeredAt) {
+      const onboardDate = new Date(s.registeredAt);
+      const today = new Date();
+      const diffTime = Math.abs(today - onboardDate);
+      days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+    }
+    const cumulativeScans = schoolVerifiedLogs.length;
+    const avgDailyScans = parseFloat((cumulativeScans / days).toFixed(2));
+    return {
+      ...s,
+      cumulativeScans,
+      avgDailyScans
+    };
+  });
+  const sortedSchools = [...schoolActivity].sort((a, b) => b.cumulativeScans - a.cumulativeScans);
   const superAdminAlerts = activeAlerts.filter(a => !a.acknowledgedBySuperAdmin);
   const activeAlertCount = superAdminAlerts.length;
 
@@ -806,6 +839,27 @@ export default function SuperAdminPortal() {
             )}
           </button>
 
+          {/* Theme Toggle Button */}
+          <button 
+            onClick={toggleTheme}
+            className="btn btn-outline"
+            style={{ 
+              padding: '0.5rem', 
+              borderRadius: '50%', 
+              minWidth: '40px', 
+              height: '40px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: 'var(--glass-border)',
+              marginRight: '0.5rem'
+            }}
+            title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            id="btn-portal-theme-toggle"
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
+
           <button 
             onClick={handleLogout} 
             className="btn btn-outline" 
@@ -849,12 +903,25 @@ export default function SuperAdminPortal() {
           <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily Verifications</div>
-              <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-total-verifications">{totalVerifications}</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-daily-verifications">{dailyVerifications}</div>
             </div>
             <Activity size={28} style={{ color: 'var(--accent-green)', opacity: 0.8 }} />
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
             Rotating token pickups completed today
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ borderLeft: '4px solid var(--accent-cyan)' }}>
+          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Cumulative Verifications</div>
+              <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-total-verifications">{totalVerifications}</div>
+            </div>
+            <Activity size={28} style={{ color: 'var(--accent-cyan)', opacity: 0.8 }} />
+          </div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            Total safe boarding verifications ever done
           </div>
         </div>
 
@@ -891,8 +958,113 @@ export default function SuperAdminPortal() {
 
       {/* Main SubTab Contents */}
       {activeSubTab === 'schools' && !selectedSchoolId && (
-        <div className="glass-card">
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>School License Directory</h3>
+        <>
+          {/* Most Active Schools Ranking Card */}
+          <div className="glass-card" style={{ marginBottom: '2rem' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              🏆 Most Active Schools Ranking
+            </h3>
+            <div style={{ overflowX: 'auto', marginBottom: '1.25rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--glass-border)', color: 'var(--text-secondary)' }}>
+                    <th style={{ padding: '0.75rem 0.5rem' }}>Rank</th>
+                    <th style={{ padding: '0.75rem 0.5rem' }}>School Name</th>
+                    <th style={{ padding: '0.75rem 0.5rem' }}>Cumulative Scans</th>
+                    <th style={{ padding: '0.75rem 0.5rem' }}>Average Daily Scans</th>
+                    <th style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedSchools.slice(0, 5).map((school, index) => (
+                    <tr key={school.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }} className="school-row">
+                      <td style={{ padding: '0.75rem 0.5rem', fontWeight: 'bold' }}>
+                        {index + 1 === 1 ? '🥇' : index + 1 === 2 ? '🥈' : index + 1 === 3 ? '🥉' : `#${index + 1}`}
+                      </td>
+                      <td style={{ padding: '0.75rem 0.5rem', fontWeight: '600' }}>{school.name}</td>
+                      <td style={{ padding: '0.75rem 0.5rem', color: 'var(--accent-cyan)', fontWeight: 'bold' }}>
+                        {school.cumulativeScans.toLocaleString()}
+                      </td>
+                      <td style={{ padding: '0.75rem 0.5rem', color: 'var(--accent-green)', fontWeight: 'bold' }}>
+                        {school.avgDailyScans} / day
+                      </td>
+                      <td style={{ padding: '0.75rem 0.5rem', textAlign: 'right' }}>
+                        <button 
+                          onClick={() => {
+                            const schoolVerifiedLogs = logs.filter(l => l.schoolId === school.id && l.status === 'VERIFIED');
+                            let days = 1;
+                            if (school.registeredAt) {
+                              const onboardDate = new Date(school.registeredAt);
+                              const today = new Date();
+                              const diffTime = Math.abs(today - onboardDate);
+                              days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+                            }
+                            setSelectedSchoolStats({
+                              id: school.id,
+                              name: school.name,
+                              registeredAt: school.registeredAt,
+                              daysActive: days,
+                              cumulativeScans: schoolVerifiedLogs.length,
+                              avgDailyScans: parseFloat((schoolVerifiedLogs.length / days).toFixed(2))
+                            });
+                          }}
+                          className="btn btn-outline"
+                          style={{ padding: '0.3rem 0.75rem', fontSize: '0.75rem', borderRadius: '6px' }}
+                        >
+                          View Metrics
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Dropdown for the rest of the schools */}
+            {sortedSchools.length > 5 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>View other ranked schools:</span>
+                <select 
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (!val) return;
+                    const school = sortedSchools.find(s => s.id === val);
+                    if (school) {
+                      const schoolVerifiedLogs = logs.filter(l => l.schoolId === school.id && l.status === 'VERIFIED');
+                      let days = 1;
+                      if (school.registeredAt) {
+                        const onboardDate = new Date(school.registeredAt);
+                        const today = new Date();
+                        const diffTime = Math.abs(today - onboardDate);
+                        days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+                      }
+                      setSelectedSchoolStats({
+                        id: school.id,
+                        name: school.name,
+                        registeredAt: school.registeredAt,
+                        daysActive: days,
+                        cumulativeScans: schoolVerifiedLogs.length,
+                        avgDailyScans: parseFloat((schoolVerifiedLogs.length / days).toFixed(2))
+                      });
+                    }
+                    e.target.value = ""; // Reset select
+                  }}
+                  className="input-underline"
+                  style={{ maxWidth: '280px', padding: '0.3rem 0.5rem', background: 'var(--bg-tertiary)', border: '1px solid var(--glass-border)', borderRadius: '6px', fontSize: '0.85rem', color: '#fff' }}
+                >
+                  <option value="" style={{ background: '#0d1321', color: '#fff' }}>Select school...</option>
+                  {sortedSchools.slice(5).map((school, index) => (
+                    <option key={school.id} value={school.id} style={{ background: '#0d1321', color: '#fff' }}>
+                      #{index + 6} - {school.name} ({school.cumulativeScans} scans)
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="glass-card">
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>School License Directory</h3>
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
               <thead>
@@ -1047,7 +1219,8 @@ export default function SuperAdminPortal() {
             </table>
           </div>
         </div>
-      )}
+      </>
+    )}
 
       {/* Detailed School Inspector View */}
       {activeSubTab === 'schools' && selectedSchoolId && (
@@ -2147,6 +2320,75 @@ export default function SuperAdminPortal() {
                 id="btn-confirm-yes"
               >
                 {confirmDialog.confirmText || 'Yes, Proceed'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {selectedSchoolStats && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(5, 7, 12, 0.85)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '1.5rem'
+        }}>
+          <div className="glass-card animate-fadeIn" style={{ 
+            maxWidth: '420px', 
+            width: '100%', 
+            background: 'var(--bg-primary)', 
+            border: '2px solid var(--accent-blue)', 
+            boxShadow: '0 24px 64px rgba(0, 113, 227, 0.25)',
+            borderRadius: '24px',
+            padding: '2rem'
+          }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: '800', marginBottom: '1.5rem', color: '#fff', textAlign: 'center' }}>
+              📊 {selectedSchoolStats.name}
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>School ID:</span>
+                <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 'bold' }}>{selectedSchoolStats.id}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Onboarded Date:</span>
+                <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                  {selectedSchoolStats.registeredAt ? new Date(selectedSchoolStats.registeredAt).toLocaleDateString() : 'N/A'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Days Active:</span>
+                <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 'bold' }}>{selectedSchoolStats.daysActive} day(s)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Cumulative Scans:</span>
+                <span style={{ color: 'var(--accent-cyan)', fontSize: '1rem', fontWeight: '900' }}>
+                  {selectedSchoolStats.cumulativeScans.toLocaleString()}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.5rem' }}>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Average Daily Scans:</span>
+                <span style={{ color: 'var(--accent-green)', fontSize: '1rem', fontWeight: '900' }}>
+                  {selectedSchoolStats.avgDailyScans} / day
+                </span>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button 
+                onClick={() => setSelectedSchoolStats(null)}
+                className="btn btn-primary" 
+                style={{ padding: '0.6rem 2rem', borderRadius: '9999px', fontWeight: 'bold' }}
+              >
+                Close Metrics
               </button>
             </div>
           </div>

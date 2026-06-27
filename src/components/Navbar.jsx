@@ -186,8 +186,8 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
 
       <header className="navbar">
         <div className="container navbar-content">
-          <Link to="/" className="logo" onClick={() => setMobileMenuOpen(false)}>
-            <Shield size={26} style={{ color: 'var(--accent-blue)' }} />
+          <Link to="/" className="logo" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => setMobileMenuOpen(false)}>
+            <img src="/logo.jpg" alt="VerifyMyKid Logo" style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--glass-border)' }} />
             Verify<span>mykid</span>
           </Link>
 
