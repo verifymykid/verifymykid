@@ -337,31 +337,12 @@ export default function ParentSignup() {
               <CheckCircle2 size={32} style={{ color: 'var(--accent-green)' }} />
             </div>
             <h2>Account Registered!</h2>
-            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-              Your generated Parent Unique ID for sign-in is:
-            </p>
-            <div style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '8px',
-              padding: '0.75rem',
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              letterSpacing: '0.1em',
-              color: 'var(--accent-cyan)',
-              display: 'inline-block',
-              marginBottom: '1.5rem',
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)'
-            }} id="parent-uniq-id">
-              {newParentId}
-            </div>
-            
-            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '2rem' }}>
-              Save this ID safely! You need it to access your pickup codes. Your account is currently <strong>PENDING</strong> school admin approval. You will be able to sign in once the school administration approves your access profile.
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+              Your account has been registered successfully. It is currently <strong>PENDING</strong> school admin approval. You will be able to sign in with your email address and password once the school administration approves your access profile.
             </p>
 
             <button 
-              onClick={() => navigate(`/parent-signin?id=${newParentId}`)} 
+              onClick={() => navigate('/parent-signin')} 
               className="btn btn-primary"
               style={{ borderRadius: '9999px', width: '100%' }}
               id="btn-goto-signin"

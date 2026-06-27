@@ -223,7 +223,7 @@ export default function ParentPortal({ parentId, setParentId }) {
             () => {
               proceedVerify(null);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
           );
         } else {
           proceedVerify(null);
@@ -256,7 +256,7 @@ export default function ParentPortal({ parentId, setParentId }) {
           () => {
             proceedVerify(null);
           },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
         );
       } else {
         proceedVerify(null);
@@ -409,7 +409,7 @@ export default function ParentPortal({ parentId, setParentId }) {
         () => {
           triggerVerification('Permission Denied');
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
       );
     } else {
       triggerVerification('N/A');
@@ -499,7 +499,7 @@ export default function ParentPortal({ parentId, setParentId }) {
             () => {
               proceedLogout('N/A (Permission Denied)');
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
           );
         } else {
           proceedLogout('N/A (Not Supported)');
@@ -806,8 +806,6 @@ export default function ParentPortal({ parentId, setParentId }) {
               Welcome, {currentParent.name}
             </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              Parent ID: <span className="badge badge-info">{currentParent.id}</span>
-              <span>•</span>
               Verification Status: 
               {(currentParent.status || 'APPROVED') === 'APPROVED' && <span className="badge badge-success">Active</span>}
               {currentParent.status === 'SUSPENDED' && <span className="badge badge-danger">Suspended</span>}
@@ -988,16 +986,6 @@ export default function ParentPortal({ parentId, setParentId }) {
                             <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>{scanResult.log?.guardianName}</div>
                             <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Bus Guardian</div>
                           </div>
-                        </div>
-
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>
-                          Authorized pickup by school system. Greenwood Academy has logged this coordinate transfer.
-                        </p>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'inline-block', textAlign: 'left', background: 'var(--bg-secondary)', padding: '0.75rem', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
-                          <strong>Pickup Event Details:</strong><br />
-                          • Bus Guardian Name: {scanResult.log?.guardianName}<br />
-                          • Time: {scanResult.log?.timestamp ? new Date(scanResult.log.timestamp).toLocaleTimeString() : 'N/A'}<br />
-                          • Coordinates: {scanResult.log?.gps}
                         </div>
                       </div>
                     ) : (

@@ -235,7 +235,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
           );
           watchIdRef.current = wId;
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
       );
     } else {
       const schoolCoords = getSchoolCoords(g);
@@ -366,7 +366,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
             // Geolocation error/denied: fallback to out-of-bounds to fail coordinate check
             await runMasterQrCheck(6.9999, 3.9999);
           },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
         );
       } else {
         await runMasterQrCheck(6.9999, 3.9999);
@@ -398,7 +398,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
             () => {
               proceedVerify(null);
             },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
           );
         } else {
           proceedVerify(null);
@@ -428,7 +428,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
           () => {
             proceedVerify(null);
           },
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+          { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
         );
       } else {
         proceedVerify(null);

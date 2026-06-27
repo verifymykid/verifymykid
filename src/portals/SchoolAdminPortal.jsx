@@ -93,7 +93,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
         (error) => {
           console.warn("SchoolAdminPortal geolocation capture failed:", error);
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
       );
     }
   }, []);
@@ -306,7 +306,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                     recordPayment(schoolId, amountDue, unpaidChildrenCount);
                     setIsProcessingPayment(false);
                     alert(`PAYMENT SUCCESSFUL! ₦${amountDue.toLocaleString()} received via ${payMethod === 'CARD' ? 'Card' : 'Bank Transfer'}. School account has been unsuspended immediately.`);
-                  }, 1800);
+                  }, 50);
                 }}>
                   <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '1rem', marginBottom: '1.25rem' }}>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 'bold', textTransform: 'uppercase' }}>INVOICE SUMMARY:</div>
@@ -1973,7 +1973,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                         setIsProcessingPayment(false);
                         setShowPayModal(false);
                         alert(`PAYMENT SUCCESSFUL! ₦${amountDue.toLocaleString()} received via ${payMethod === 'CARD' ? 'Card' : 'Bank Transfer'}. School licenses have been updated immediately.`);
-                      }, 1800);
+                      }, 50);
                     }}>
                       <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0.75rem', marginBottom: '1.25rem' }}>
                         <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>INVOICE PAYMENT FOR:</div>

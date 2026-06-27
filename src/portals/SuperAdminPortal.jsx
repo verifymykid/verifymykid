@@ -872,9 +872,9 @@ export default function SuperAdminPortal() {
       </div>
 
       {/* Grid Platform Statistics */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-        <div className="glass-card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem', marginBottom: '2rem', flexWrap: 'nowrap', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+        <div className="glass-card" style={{ flex: '1 1 0px', minWidth: '180px', borderLeft: '4px solid var(--accent-blue)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Total Schools</div>
               <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-total-schools">{totalSchools}</div>
@@ -886,8 +886,8 @@ export default function SuperAdminPortal() {
           </div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: '4px solid var(--accent-cyan)' }}>
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+        <div className="glass-card" style={{ flex: '1 1 0px', minWidth: '180px', borderLeft: '4px solid var(--accent-cyan)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Parents & Kids</div>
               <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-total-parents">{approvedParents} / {approvedChildren}</div>
@@ -899,8 +899,8 @@ export default function SuperAdminPortal() {
           </div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+        <div className="glass-card" style={{ flex: '1 1 0px', minWidth: '180px', borderLeft: '4px solid var(--accent-green)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Daily Verifications</div>
               <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-daily-verifications">{dailyVerifications}</div>
@@ -912,8 +912,8 @@ export default function SuperAdminPortal() {
           </div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: '4px solid var(--accent-cyan)' }}>
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+        <div className="glass-card" style={{ flex: '1 1 0px', minWidth: '180px', borderLeft: '4px solid var(--accent-cyan)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Cumulative Verifications</div>
               <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem' }} id="stat-total-verifications">{totalVerifications}</div>
@@ -925,8 +925,8 @@ export default function SuperAdminPortal() {
           </div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: activeAlertCount > 0 ? '4px solid var(--accent-red)' : '4px solid var(--glass-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+        <div className="glass-card" style={{ flex: '1 1 0px', minWidth: '180px', borderLeft: activeAlertCount > 0 ? '4px solid var(--accent-red)' : '4px solid var(--glass-border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Active Panic Alerts</div>
               <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem', color: activeAlertCount > 0 ? 'var(--accent-red)' : 'inherit' }} id="stat-active-alerts">
@@ -940,8 +940,8 @@ export default function SuperAdminPortal() {
           </div>
         </div>
 
-        <div className="glass-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+        <div className="glass-card" style={{ flex: '1 1 0px', minWidth: '180px', borderLeft: '4px solid var(--accent-green)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Total Revenue</div>
               <div style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '0.2rem', color: 'var(--accent-green)' }} id="stat-total-revenue">

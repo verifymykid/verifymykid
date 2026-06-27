@@ -123,10 +123,10 @@ export const StoreProvider = ({ children }) => {
     }
   };
 
-  // Run initial sync and periodic updates (every 3 seconds)
+  // Run initial sync and periodic updates (every 1 second)
   useEffect(() => {
     syncWithBackend();
-    const interval = setInterval(syncWithBackend, 3000);
+    const interval = setInterval(syncWithBackend, 1000);
     return () => clearInterval(interval);
   }, []);
 
