@@ -1318,6 +1318,20 @@ def list_sessions(db: Session = Depends(get_db)):
 
 @app.post("/api/sessions")
 def create_session(data: SessionRequest, db: Session = Depends(get_db)):
+    # Check if there is already an active session for this user, role and device
+    existing = db.query(models.UserSession).filter(
+        models.UserSession.userId == data.userId,
+        models.UserSession.role == data.role,
+        models.UserSession.deviceName == data.deviceName,
+        models.UserSession.status == "ACTIVE"
+    ).first()
+    
+    if existing:
+        existing.loginTime = datetime.utcnow().isoformat()
+        db.commit()
+        db.refresh(existing)
+        return existing
+
     s_id = f"SES-{uuid.uuid4().hex[:4].upper()}"
     new_sess = models.UserSession(
         id=s_id,

@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Shield, School, Users, AlertOctagon, Bell, ListTodo, Map, Play, Activity, Lock, Unlock, Eye, EyeOff, ShieldAlert, CornerUpLeft, CreditCard, Mail, Key } from 'lucide-react';
 import { useStore } from '../data/mockStore';
 import GoogleMapView from '../components/GoogleMapView';
@@ -164,13 +165,23 @@ export default function SuperAdminPortal() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     addSystemLog({
       type: 'Super Admin Sign-Out',
       gps: 'N/A',
       device: 'Browser session terminated',
       details: 'Super Administrator signed out.'
     });
+
+    const sessId = localStorage.getItem('vmk_current_session_id');
+    if (sessId) {
+      try {
+        await deleteSession(sessId);
+      } catch (err) {
+        console.warn("Failed to delete session on backend:", err);
+      }
+    }
+
     setIsLoggedIn(false);
     localStorage.removeItem('vmk_super_admin_logged');
     localStorage.removeItem('vmk_current_session_id');

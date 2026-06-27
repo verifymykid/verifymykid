@@ -153,7 +153,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     registerSession();
   }, [schoolId, sessions]);
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
     const ua = navigator.userAgent;
     let os = "Unknown OS";
     if (ua.indexOf("Win") !== -1) os = "Windows";
@@ -176,6 +176,15 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
       device: deviceStr,
       details: `School administrator logged out from ${currentSchool.name}.`
     });
+
+    const sessId = localStorage.getItem('vmk_current_school_session_id');
+    if (sessId) {
+      try {
+        await deleteSession(sessId);
+      } catch (err) {
+        console.warn("Failed to delete session on backend:", err);
+      }
+    }
 
     localStorage.removeItem('vmk_current_school_session_id');
     localStorage.removeItem('vmk_token');
