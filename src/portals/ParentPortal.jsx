@@ -16,6 +16,15 @@ export default function ParentPortal({ parentId, setParentId }) {
   const [activeSubTab, setActiveSubTab] = useState('otp'); // 'otp' | 'simulate' | 'temp-auth' | 'history' | 'settings'
   const [showAddTemp, setShowAddTemp] = useState(false);
 
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+  const [filterDate, setFilterDate] = useState(getTodayString());
+
   // Temporary Authorization state
   const [tempForm, setTempForm] = useState({ name: '', phone: '', type: 'One-Time' });
 
@@ -152,7 +161,21 @@ export default function ParentPortal({ parentId, setParentId }) {
   }
 
   // School calculations
-  const parentLogs = logs.filter(l => l.parentName === currentParent.name);
+  const parentLogs = logs.filter(l => {
+    const isParent = l.parentName === currentParent.name;
+    if (!isParent) return false;
+    
+    if (filterDate) {
+      const logDate = new Date(l.timestamp);
+      const filterDateObj = new Date(filterDate);
+      return (
+        logDate.getFullYear() === filterDateObj.getFullYear() &&
+        logDate.getMonth() === filterDateObj.getMonth() &&
+        logDate.getDate() === filterDateObj.getDate()
+      );
+    }
+    return true;
+  });
 
   // Simulation: We assume the approaching bus guardian is GDN-501 (Robert Vance)
   const targetGuardianId = 'GDN-501';
@@ -881,6 +904,11 @@ export default function ParentPortal({ parentId, setParentId }) {
               {/* Spouse / Secondary Parent */}
               {!currentParent.singleParent && currentParent.spouseName ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.2rem' }}>
+                  {currentParent.spouseProfilePic && (
+                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', flexShrink: 0 }}>
+                       <img src={currentParent.spouseProfilePic} alt={currentParent.spouseName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  )}
                   <div>
                     <div style={{ fontSize: '0.95rem', fontWeight: 'bold' }}>{currentParent.spouseName}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Spouse {currentParent.spousePhone ? `(${currentParent.spousePhone})` : ''}</div>
@@ -1165,10 +1193,34 @@ export default function ParentPortal({ parentId, setParentId }) {
 
           {activeSubTab === 'history' && (
             <div className="glass-card">
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '1.2rem' }}>Safety Pickup History</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.2rem' }}>
+                <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Safety Pickup History</h3>
+                
+                {/* Date Selection Filter */}
+                <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                  <input
+                    type="date"
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                    className="input-control"
+                    style={{ fontSize: '0.8rem', height: '34px', width: '130px' }}
+                  />
+                  {filterDate && (
+                    <button 
+                      onClick={() => setFilterDate('')} 
+                      className="btn btn-outline" 
+                      style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', height: '34px' }}
+                      title="Show All Dates"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {parentLogs.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted)' }}>
-                  No verification history found for your account today.
+                  No verification history found for your account {filterDate ? 'on this date' : 'yet'}.
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -1236,6 +1288,11 @@ export default function ParentPortal({ parentId, setParentId }) {
                   {/* Spouse / Secondary Parent */}
                   {!currentParent.singleParent && currentParent.spouseName ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+                      {currentParent.spouseProfilePic && (
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', border: '2px solid var(--accent-cyan)', flexShrink: 0 }}>
+                           <img src={currentParent.spouseProfilePic} alt={currentParent.spouseName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      )}
                       <div>
                         <div style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{currentParent.spouseName}</div>
                         <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>Spouse {currentParent.spousePhone ? `(${currentParent.spousePhone})` : ''}</div>
@@ -1364,6 +1421,57 @@ export default function ParentPortal({ parentId, setParentId }) {
                   />
                 </div>
               </div>
+
+              {/* Section: Change Spouse Profile Picture */}
+              {!currentParent.singleParent && currentParent.spouseName && (
+                <>
+                  {/* Divider */}
+                  <div style={{ borderTop: '1px solid var(--glass-border)', margin: '2rem 0' }} />
+
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-green)' }}>
+                    Update Spouse Profile Picture
+                  </h3>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                    Upload a clear profile picture for your spouse ({currentParent.spouseName}) to verify their identity during school pickup.
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                    <div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', border: '2.5px solid var(--accent-green)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.05)' }}>
+                      {currentParent.spouseProfilePic ? (
+                        <img src={currentParent.spouseProfilePic} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <span style={{ fontSize: '1.5rem' }}>👤</span>
+                      )}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              updateParentProfile(currentParent.id, { spouseProfilePic: reader.result });
+                              setSettingsSuccess("Spouse profile picture updated successfully!");
+                              addSystemLog({
+                                type: 'Spouse Profile Picture Updated',
+                                schoolId: currentParent.schoolId,
+                                parentName: currentParent.name,
+                                details: `Parent ${currentParent.name} updated spouse ${currentParent.spouseName} profile picture.`
+                              });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="input-control"
+                        style={{ padding: '0.4rem', fontSize: '0.8rem', maxWidth: '300px' }}
+                        id="settings-spouse-profile-pic-uploader"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Divider */}
               <div style={{ borderTop: '1px solid var(--glass-border)', margin: '2rem 0' }} />

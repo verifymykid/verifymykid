@@ -55,6 +55,76 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  const hideNavbar = [
+    '/school-admin',
+    '/parent',
+    '/bus-guardian',
+    '/admin-portal'
+  ].includes(location.pathname);
+
+  if (hideNavbar) {
+    return (
+      <div>
+        {/* Real-time Emergency Banner - Only displayed on Super Admin or the affected School's Admin portal */}
+        {(() => {
+          if (location.pathname === '/admin-portal') {
+            const superAdminAlerts = activeAlerts.filter(a => !a.acknowledgedBySuperAdmin);
+            if (superAdminAlerts.length > 0) {
+              return (
+                <div style={{
+                  background: 'linear-gradient(90deg, #ef4444, #b91c1c)',
+                  color: 'white',
+                  padding: '0.6rem 1rem',
+                  textAlign: 'center',
+                  fontWeight: '700',
+                  fontSize: '0.85rem',
+                  letterSpacing: '0.05em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)',
+                  position: 'relative',
+                  zIndex: 101
+                }}>
+                  <ShieldAlert size={18} className="animate-pulse" />
+                  <span>REAL-TIME ALERT: {superAdminAlerts.length} ACTIVE EMERGENCY SOS BROADCASTING.</span>
+                </div>
+              );
+            }
+          }
+          if (location.pathname === '/school-admin' && schoolId) {
+            const schoolAlerts = activeAlerts.filter(a => a.schoolId === schoolId && !a.acknowledgedBySchoolAdmin);
+            if (schoolAlerts.length > 0) {
+              return (
+                <div style={{
+                  background: 'linear-gradient(90deg, #ef4444, #b91c1c)',
+                  color: 'white',
+                  padding: '0.6rem 1rem',
+                  textAlign: 'center',
+                  fontWeight: '700',
+                  fontSize: '0.85rem',
+                  letterSpacing: '0.05em',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)',
+                  position: 'relative',
+                  zIndex: 101
+                }}>
+                  <ShieldAlert size={18} className="animate-pulse" />
+                  <span>REAL-TIME ALERT: {schoolAlerts.length} ACTIVE EMERGENCY SOS BROADCASTING FOR YOUR SCHOOL.</span>
+                </div>
+              );
+            }
+          }
+          return null;
+        })()}
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Real-time Emergency Banner - Only displayed on Super Admin or the affected School's Admin portal */}

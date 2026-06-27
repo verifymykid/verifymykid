@@ -42,6 +42,15 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   const [filterSearch, setFilterSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('ALL');
 
+  const getTodayString = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+  const [filterDate, setFilterDate] = useState(getTodayString());
+
   const [mapCenterCoords, setMapCenterCoords] = useState(null);
 
   // Settings tab states
@@ -615,7 +624,17 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     
     const matchesStatus = filterStatus === 'ALL' || l.status === filterStatus;
     
-    return matchesSearch && matchesStatus;
+    let matchesDate = true;
+    if (filterDate) {
+      const logDate = new Date(l.timestamp);
+      const filterDateObj = new Date(filterDate);
+      matchesDate = 
+        logDate.getFullYear() === filterDateObj.getFullYear() &&
+        logDate.getMonth() === filterDateObj.getMonth() &&
+        logDate.getDate() === filterDateObj.getDate();
+    }
+    
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   return (
@@ -1135,7 +1154,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
             </div>
             
             {/* Search Filter Widgets */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
               <div style={{ position: 'relative' }}>
                 <input
                   type="text"
@@ -1147,6 +1166,27 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                   id="logs-search-box"
                 />
                 <Search size={14} style={{ position: 'absolute', right: '10px', top: '10px', color: 'var(--text-muted)' }} />
+              </div>
+
+              <div style={{ display: 'inline-flex', gap: '0.25rem', alignItems: 'center' }}>
+                <input
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="input-control"
+                  style={{ fontSize: '0.8rem', height: '34px', width: '130px' }}
+                  id="logs-date-filter"
+                />
+                {filterDate && (
+                  <button 
+                    onClick={() => setFilterDate('')} 
+                    className="btn btn-outline" 
+                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', height: '34px' }}
+                    title="Show All Dates"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
 
               <select

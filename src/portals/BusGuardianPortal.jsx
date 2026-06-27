@@ -952,7 +952,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                       sendNotification(currentGuardian.id, currentGuardian.name, currentGuardian.schoolId, composeSubject, composeMessage);
                       setComposeSubject('');
                       setComposeMessage('');
-                      alert("Your dispatch message has been sent to Greenwood Academy HQ desk.");
+                      alert(`Your dispatch message has been sent to ${school ? school.name : "School"} HQ desk.`);
                     }}>
                       <div className="form-group">
                         <label>Report Topic *</label>
@@ -1391,7 +1391,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                   sendNotification(currentGuardian.id, currentGuardian.name, currentGuardian.schoolId, composeSubject, composeMessage);
                   setComposeSubject('');
                   setComposeMessage('');
-                  alert("Your dispatch message has been sent to Greenwood Academy HQ desk.");
+                  alert(`Your dispatch message has been sent to ${school ? school.name : "School"} HQ desk.`);
                 }}>
                   <div className="form-group">
                     <label>Report Topic *</label>
