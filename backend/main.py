@@ -238,7 +238,7 @@ def school_register(data: SchoolRegisterRequest, background_tasks: BackgroundTas
     if existing:
         raise HTTPException(status_code=400, detail="School email address already registered.")
     
-    school_id = f"SCH-{uuid.uuid4().hex[:4].upper()}"
+    school_id = f"SCH-{uuid.uuid4().hex[:6].upper()}"
     new_school = models.School(
         id=school_id,
         name=data.name.strip(),
@@ -337,7 +337,7 @@ def parent_register(data: ParentSignupRequest, background_tasks: BackgroundTasks
         else:
             raise HTTPException(status_code=400, detail="Parent email address already registered.")
         
-    parent_id = f"PAR-{uuid.uuid4().hex[:4].upper()}"
+    parent_id = f"PAR-{uuid.uuid4().hex[:6].upper()}"
     new_parent = models.Parent(
         id=parent_id,
         name=data.name.strip(),
@@ -988,7 +988,7 @@ def add_temp_auth(parent_id: str, data: TempAuthRequest, db: Session = Depends(g
     if not p:
         raise HTTPException(status_code=404, detail="Parent not found")
         
-    auth_id = f"TA-{uuid.uuid4().hex[:3].upper()}"
+    auth_id = f"TA-{uuid.uuid4().hex[:6].upper()}"
     new_auth = models.TemporaryAuthorization(
         id=auth_id,
         parentId=parent_id,
@@ -1023,7 +1023,7 @@ def create_guardian(schoolId: str, data: GuardianCreateRequest, db: Session = De
     school_lat = school.lat if (school and school.lat is not None) else 6.5244
     school_lng = school.lng if (school and school.lng is not None) else 3.3792
 
-    g_id = f"GDN-{uuid.uuid4().hex[:3].upper()}"
+    g_id = f"GDN-{uuid.uuid4().hex[:6].upper()}"
     new_g = models.Guardian(
         id=g_id,
         name=data.name.strip(),
