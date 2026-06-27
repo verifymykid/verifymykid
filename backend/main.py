@@ -556,7 +556,7 @@ def super_admin_verify_2fa(data: SuperAdminVerify2faRequest, db: Session = Depen
     return {"token": token, "role": "SUPER_ADMIN", "id": "SUPER_ADMIN", "name": "Global Super Administrator"}
 
 @app.post("/api/auth/superadmin/forgot-password")
-def super_admin_forgot_password(data: SuperAdminForgotPasswordRequest, db: Session = Depends(get_db)):
+def super_admin_forgot_password(data: SuperAdminForgotPasswordRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     if data.email.lower() != "verifymykid@gmail.com":
         raise HTTPException(status_code=400, detail="Invalid email address.")
         
@@ -572,8 +572,13 @@ def super_admin_forgot_password(data: SuperAdminForgotPasswordRequest, db: Sessi
         
     db.commit()
     
+    # Send real email via background task
+    subject = "VerifyMyKid Super Admin Password Reset"
+    body = f"Your secure 6-digit password reset code is: {reset_code}"
+    background_tasks.add_task(send_real_email, "verifymykid@gmail.com", subject, body)
+    
     # Simulate SMTP email dispatch
-    log_text = f"EMAIL TO: verifymykid@gmail.com | SUBJECT: VerifyMyKid Super Admin Password Reset | MESSAGE: Your secure 6-digit password reset code is: {reset_code}"
+    log_text = f"EMAIL TO: verifymykid@gmail.com | SUBJECT: {subject} | MESSAGE: {body}"
     db.add(models.SmtpLog(timestamp=datetime.utcnow().isoformat(), text=log_text))
     
     # Log in system logs as well

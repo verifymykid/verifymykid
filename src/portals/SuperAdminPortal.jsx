@@ -541,7 +541,7 @@ export default function SuperAdminPortal() {
                 <input
                   type="email"
                   required
-                  placeholder="verifymykid@gmail.com"
+                  placeholder=""
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   className="input-underline"
@@ -643,7 +643,7 @@ export default function SuperAdminPortal() {
                   <input
                     type="email"
                     required
-                    placeholder="verifymykid@gmail.com"
+                    placeholder=""
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     className="input-underline"
@@ -734,32 +734,6 @@ export default function SuperAdminPortal() {
             </form>
           )}
 
-          <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '1.5rem', paddingTop: '1rem', fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.6)', lineHeight: '1.4' }}>
-            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-              ⚠️ Cryptographic audit ledger is active. Unauthorized entry coordinates are reported.
-            </div>
-
-            {/* Simulated Local SMTP Outbox Console (Visible during login, password reset and 2FA simulation) */}
-            {(loginStep === 1 || loginStep === 2 || loginStep === 3 || loginStep === 4) && (
-              <div style={{ marginTop: '1rem', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '0.75rem' }}>
-                <div style={{ fontWeight: 'bold', color: 'var(--accent-cyan)', marginBottom: '0.5rem', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>📬 Simulated SMTP Server Outbox</span>
-                  <span style={{ fontSize: '0.6rem', background: 'rgba(0, 242, 254, 0.15)', color: 'var(--accent-cyan)', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>dev-mode</span>
-                </div>
-                <div style={{ maxHeight: '110px', overflowY: 'auto', background: 'rgba(0,0,0,0.3)', padding: '0.4rem', borderRadius: '4px', fontSize: '0.65rem', fontFamily: 'monospace', color: '#a5f3fc', border: '1px solid rgba(0, 242, 254, 0.2)' }}>
-                  {storeSmtpLogs && storeSmtpLogs.length > 0 ? (
-                    storeSmtpLogs.slice().reverse().map((logText, idx) => (
-                      <div key={idx} style={{ marginBottom: '0.4rem', borderBottom: idx < storeSmtpLogs.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none', paddingBottom: '0.2rem', wordBreak: 'break-all' }}>
-                        {logText}
-                      </div>
-                    ))
-                  ) : (
-                    <span style={{ color: 'var(--text-muted)' }}>No emails dispatched yet. Click "Send Reset Code" to trigger.</span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </main>
     );
