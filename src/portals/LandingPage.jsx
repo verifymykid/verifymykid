@@ -55,7 +55,7 @@ export default function LandingPage() {
     setSubmitError('');
     
     try {
-      const base = localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000';
+      const base = localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io';
       const res = await fetch(`${base}/api/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

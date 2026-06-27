@@ -54,6 +54,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [composeSubject, setComposeSubject] = useState('');
   const [composeMessage, setComposeMessage] = useState('');
+  const [showSyncError, setShowSyncError] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
 
   const [deviceType, setDeviceType] = useState(() => {
@@ -249,7 +250,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     setLoginError('');
 
     try {
-      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/guardian/login`, {
+      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io'}/api/auth/guardian/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: nameInput, password: passwordInput })
@@ -615,11 +616,38 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     );
   }
 
+  useEffect(() => {
+    if (guardianId && guardians.length === 0) {
+      const timer = setTimeout(() => {
+        setShowSyncError(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [guardianId, guardians.length]);
+
   if (guardianId && guardians.length === 0) {
     return (
-      <main className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)' }}>
+      <main className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)', textAlign: 'center' }}>
         <RefreshCw className="animate-spin" size={48} style={{ color: 'var(--accent-blue)' }} />
         <p style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Synchronizing your secure session...</p>
+        {showSyncError && (
+          <div style={{ marginTop: '2rem' }}>
+            <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              Connection to safety server is taking longer than expected.
+            </p>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('vmk_logged_guardian_id');
+                localStorage.removeItem('vmk_token');
+                setGuardianId('');
+              }} 
+              className="btn btn-outline"
+              style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+            >
+              Return to Sign-in Screen
+            </button>
+          </div>
+        )}
       </main>
     );
   }

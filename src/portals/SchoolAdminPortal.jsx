@@ -70,6 +70,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   const [confirmPasswordVal, setConfirmPasswordVal] = useState('');
   const [settingsError, setSettingsError] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState('');
+  const [showSyncError, setShowSyncError] = useState(false);
 
   // Compose states
   const [notifRecipient, setNotifRecipient] = useState('');
@@ -106,7 +107,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
         // Double check directly with the backend before terminating
         const verifyAndLogout = async () => {
           try {
-            const base = localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000';
+            const base = localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io';
             const res = await fetch(`${base}/api/sessions?cb=${Date.now()}`, {
               headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -218,12 +219,39 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
     }
   };
 
+  useEffect(() => {
+    if (schoolId && schools.length === 0) {
+      const timer = setTimeout(() => {
+        setShowSyncError(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [schoolId, schools.length]);
+
   // Verify school exists and is approved
   if (schoolId && schools.length === 0) {
     return (
-      <div className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)' }}>
+      <div className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)', textAlign: 'center' }}>
         <RefreshCw className="animate-spin" size={48} style={{ color: 'var(--accent-blue)' }} />
         <p style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Synchronizing your secure session...</p>
+        {showSyncError && (
+          <div style={{ marginTop: '2rem' }}>
+            <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              Connection to safety server is taking longer than expected.
+            </p>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('vmk_logged_school_id');
+                localStorage.removeItem('vmk_token');
+                setSchoolId('');
+              }} 
+              className="btn btn-outline"
+              style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+            >
+              Return to Sign-in Screen
+            </button>
+          </div>
+        )}
       </div>
     );
   }

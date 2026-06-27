@@ -23,7 +23,7 @@ export default function SchoolSignin({ setSchoolId }) {
 
     const proceedLogin = async (gpsCoords = 'N/A', lat = null, lng = null) => {
       try {
-        const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/school/login`, {
+        const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io'}/api/auth/school/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: emailInput.trim(), password: passwordInput, lat, lng })

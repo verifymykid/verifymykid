@@ -52,6 +52,7 @@ export default function ParentPortal({ parentId, setParentId }) {
   const [uploadError, setUploadError] = useState('');
   const [isActivating, setIsActivating] = useState(false);
   const [activeToast, setActiveToast] = useState(null);
+  const [showSyncError, setShowSyncError] = useState(false);
   const lastNotifIdRef = useRef('');
   const isMountedRef = useRef(false);
   const html5QrcodeRef = useRef(null);
@@ -141,11 +142,39 @@ export default function ParentPortal({ parentId, setParentId }) {
     }
   }, [parentId, parents, currentParent, setParentId, navigate]);
 
+  useEffect(() => {
+    if (parentId && parents.length === 0) {
+      const timer = setTimeout(() => {
+        setShowSyncError(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [parentId, parents.length]);
+
   if (parentId && parents.length === 0) {
     return (
-      <div className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)' }}>
+      <div className="container" style={{ padding: '8rem 1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem', minHeight: 'calc(100vh - 70px)', textAlign: 'center' }}>
         <RefreshCw className="animate-spin" size={48} style={{ color: 'var(--accent-blue)' }} />
         <p style={{ color: 'var(--text-secondary)', fontWeight: '500' }}>Synchronizing your secure session...</p>
+        {showSyncError && (
+          <div style={{ marginTop: '2rem' }}>
+            <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+              Connection to safety server is taking longer than expected.
+            </p>
+            <button 
+              onClick={() => {
+                localStorage.removeItem('vmk_logged_parent_id');
+                localStorage.removeItem('vmk_token');
+                setParentId('');
+                navigate('/parent-signin');
+              }} 
+              className="btn btn-outline"
+              style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}
+            >
+              Return to Sign-in Screen
+            </button>
+          </div>
+        )}
       </div>
     );
   }

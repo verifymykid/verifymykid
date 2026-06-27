@@ -37,7 +37,7 @@ export const hashPassword = (password) => {
 const StoreContext = createContext(null);
 
 export const StoreProvider = ({ children }) => {
-  const API_BASE_URL = localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000';
+  const API_BASE_URL = localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io';
 
   // React State mirrors for FastAPI Database tables
   const [schools, setSchools] = useState([]);

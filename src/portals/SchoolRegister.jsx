@@ -80,7 +80,7 @@ export default function SchoolRegister() {
 
   const handleResendOtp = async () => {
     try {
-      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/schools/${registeredSchoolId}/resend-otp`, {
+      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io'}/api/schools/${registeredSchoolId}/resend-otp`, {
         method: 'POST'
       });
       if (!res.ok) {

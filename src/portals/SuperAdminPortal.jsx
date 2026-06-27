@@ -34,7 +34,7 @@ export default function SuperAdminPortal() {
     setLoginError('');
     setResetSuccessMessage('');
     try {
-      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/superadmin/forgot-password`, {
+      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io'}/api/auth/superadmin/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput.trim() })
@@ -63,7 +63,7 @@ export default function SuperAdminPortal() {
       return;
     }
     try {
-      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/superadmin/reset-password`, {
+      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io'}/api/auth/superadmin/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: resetCodeInput.trim(), password: newPasswordInput })
@@ -89,7 +89,7 @@ export default function SuperAdminPortal() {
     setLoginError('');
     setResetSuccessMessage('');
     try {
-      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/superadmin/login`, {
+      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io'}/api/auth/superadmin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailInput.trim(), password: passwordInput })
@@ -109,7 +109,7 @@ export default function SuperAdminPortal() {
     e.preventDefault();
     setLoginError('');
     try {
-      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000'}/api/auth/superadmin/verify-2fa`, {
+      const res = await fetch(`${localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io'}/api/auth/superadmin/verify-2fa`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: twoFactorInput.trim() })
@@ -222,7 +222,7 @@ export default function SuperAdminPortal() {
         // Double check directly with the backend before terminating
         const verifyAndLogout = async () => {
           try {
-            const base = localStorage.getItem('vmk_api_base_url') || 'http://localhost:8000';
+            const base = localStorage.getItem('vmk_api_base_url') || 'https://168-231-112-221.sslip.io';
             const res = await fetch(`${base}/api/sessions?cb=${Date.now()}`, {
               headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
