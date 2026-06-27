@@ -99,7 +99,7 @@ export default function ParentSignin({ setParentId }) {
 
       const proceedLogin = async (gpsCoords) => {
         let coordsObj = null;
-        if (gpsCoords && gpsCoords !== 'N/A (Permission Denied)' && gpsCoords !== 'N/A (Not Supported)') {
+        if (gpsCoords && gpsCoords !== 'N/A (Permission Denied)' && gpsCoords !== 'N/A (Not Supported)' && gpsCoords !== 'N/A (Timeout)') {
           const parts = gpsCoords.split(',');
           const lat = parseFloat(parts[0]);
           const lng = parseFloat(parts[1]);
@@ -122,20 +122,42 @@ export default function ParentSignin({ setParentId }) {
         navigate('/parent');
       };
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const coordsStr = `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`;
-            proceedLogin(coordsStr);
-          },
-          () => {
-            proceedLogin('N/A (Permission Denied)');
-          },
-          { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
-        );
-      } else {
-        proceedLogin('N/A (Not Supported)');
-      }
+      const getGpsCoords = () => {
+        return new Promise((resolve) => {
+          if (!navigator.geolocation) {
+            resolve('N/A (Not Supported)');
+            return;
+          }
+          let resolved = false;
+          const timer = setTimeout(() => {
+            if (!resolved) {
+              resolved = true;
+              resolve('N/A (Timeout)');
+            }
+          }, 1000);
+
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(timer);
+                resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
+              }
+            },
+            () => {
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(timer);
+                resolve('N/A (Permission Denied)');
+              }
+            },
+            { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
+          );
+        });
+      };
+
+      const coords = await getGpsCoords();
+      await proceedLogin(coords);
     } catch (err) {
       setError("Server connection failed. Make sure backend is running.");
     }

@@ -201,48 +201,76 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       setLoginError('');
     };
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-          activateOnline(coords);
+    const getGpsCoords = () => {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve({ error: true });
+          return;
+        }
+        let resolved = false;
+        const timer = setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            resolve({ error: true });
+          }
+        }, 1000);
 
-          // Start active watch with high accuracy
-          const wId = navigator.geolocation.watchPosition(
-            (pos) => {
-              setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
-            },
-            (err) => {
-              console.warn("Watch position error:", err);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-          );
-          watchIdRef.current = wId;
-        },
-        (error) => {
-          console.warn("Current position error, using lastLocation or fallback:", error);
-          const schoolCoords = getSchoolCoords(g);
-          const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : schoolCoords;
-          activateOnline(coords);
-          
-          const wId = navigator.geolocation.watchPosition(
-            (pos) => {
-              setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
-            },
-            (err) => {
-              console.warn("Watch position error in fallback:", err);
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-          );
-          watchIdRef.current = wId;
-        },
-        { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
-      );
-    } else {
-      const schoolCoords = getSchoolCoords(g);
-      const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : schoolCoords;
-      activateOnline(coords);
-    }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(timer);
+              resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+            }
+          },
+          () => {
+            if (!resolved) {
+              resolved = true;
+              clearTimeout(timer);
+              resolve({ error: true });
+            }
+          },
+          { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
+        );
+      });
+    };
+
+    const runLogin = async () => {
+      const result = await getGpsCoords();
+      if (!result.error) {
+        activateOnline(result);
+
+        // Start active watch with high accuracy
+        const wId = navigator.geolocation.watchPosition(
+          (pos) => {
+            setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
+          },
+          (err) => {
+            console.warn("Watch position error:", err);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+        watchIdRef.current = wId;
+      } else {
+        console.warn("Current position error/timeout, using lastLocation or fallback");
+        const schoolCoords = getSchoolCoords(g);
+        const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : schoolCoords;
+        activateOnline(coords);
+        
+        const wId = navigator.geolocation.watchPosition(
+          (pos) => {
+            setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
+          },
+          (err) => {
+            console.warn("Watch position error in fallback:", err);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+        watchIdRef.current = wId;
+      }
+    };
+
+    runLogin();
   };
 
   const handleLoginSubmit = async (e) => {
