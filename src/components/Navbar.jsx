@@ -114,8 +114,7 @@ export default function Navbar({ parentId, setParentId, guardianId, setGuardianI
         return null;
       })()}
 
-      {/* Clean Production Website Navbar */}
-      <header className="navbar" style={{ position: 'relative' }}>
+      <header className="navbar">
         <div className="container navbar-content">
           <Link to="/" className="logo" onClick={() => setMobileMenuOpen(false)}>
             <Shield size={26} style={{ color: 'var(--accent-blue)' }} />

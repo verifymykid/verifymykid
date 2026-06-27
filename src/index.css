@@ -405,7 +405,7 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: var(--backdrop-blur);
   -webkit-backdrop-filter: var(--backdrop-blur);
   position: sticky;
-  top: 16px;
+  top: calc(16px + env(safe-area-inset-top));
   z-index: 1000;
   box-shadow: var(--glass-shadow);
   transition: var(--transition-smooth);
@@ -853,6 +853,12 @@ input:checked + .slider:before {
   position: relative;
 }
 
+@media (max-width: 768px) {
+  .bg-hero-gradient {
+    background-position: 30% center;
+  }
+}
+
 .bg-hero-gradient h1, 
 .bg-hero-gradient h2, 
 .bg-hero-gradient h3, 
@@ -1226,7 +1232,7 @@ input:checked + .slider:before {
   }
 
   /* Increase padding-bottom on containers to prevent nav overlapping content */
-  .container {
+  .container:not(.navbar-content) {
     padding-bottom: 90px !important;
   }
 

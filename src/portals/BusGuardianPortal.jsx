@@ -635,10 +635,6 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
               <Lock size={26} />
             </div>
             <h2>Bus Guardian Terminal</h2>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.2rem 0.5rem', borderRadius: '9999px', fontSize: '0.65rem', color: '#10b981', fontWeight: 'bold', marginTop: '0.5rem' }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981' }}></span>
-              SECURED (256-BIT SSL)
-            </div>
           </div>
 
           {loginError && (
@@ -696,14 +692,9 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
             </div>
 
             <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }} id="btn-guardian-login">
-              Authenticate & Initialize Terminal
+              Log in
             </button>
           </form>
-          <div style={{ borderTop: '1px solid var(--glass-border)', marginTop: '1.5rem', paddingTop: '1rem' }}>
-            <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.3' }}>
-              ℹ️ Security Audit Info: Device telemetry coordinates and MAC signature logs will register upon terminal start.
-            </div>
-          </div>
         </div>
       </main>
     );
