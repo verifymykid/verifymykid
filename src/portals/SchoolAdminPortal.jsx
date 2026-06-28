@@ -1473,9 +1473,25 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                             )}
                           </div>
                         </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem', lineHeight: '1.4' }}>
-                          {n.message}
-                        </p>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '0.5rem', lineHeight: '1.4' }}>
+                          {(() => {
+                            const msg = n.message;
+                            if (msg && msg.startsWith('FLYER::')) {
+                              const parts = msg.split('::');
+                              const flyerUrl = parts[1];
+                              const textMsg = parts.slice(2).join('::');
+                              return (
+                                <div>
+                                  {textMsg && <div style={{ marginBottom: '0.5rem' }}>{textMsg}</div>}
+                                  <div style={{ maxWidth: '100%', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--glass-border)', marginTop: '0.5rem' }}>
+                                    <img src={flyerUrl} alt="Ad Flyer" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return <p>{msg}</p>;
+                          })()}
+                        </div>
                         <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.5rem', textAlign: 'right' }}>
                           Time: {new Date(n.timestamp).toLocaleString()}
                         </div>

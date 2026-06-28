@@ -188,11 +188,14 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       const gSchool = schools.find(s => s.id === g.schoolId);
       const gSchoolName = gSchool ? gSchool.name : 'School';
 
+      const latVal = (coords && typeof coords.lat === 'number') ? coords.lat.toFixed(4) : 'N/A';
+      const lngVal = (coords && typeof coords.lng === 'number') ? coords.lng.toFixed(4) : 'N/A';
+
       addSystemLog({
         type: 'Bus Guardian Sign-In',
         schoolId: g.schoolId,
         guardianName: g.name,
-        gps: `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
+        gps: `${latVal}, ${lngVal}`,
         device: deviceStr,
         details: `Bus Guardian ${g.name} initiated safety terminal run for ${gSchoolName}.`
       });
@@ -254,7 +257,9 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       } else {
         console.warn("Current position error/timeout, using lastLocation or fallback");
         const schoolCoords = getSchoolCoords(g);
-        const coords = g.lastLocation ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng } : schoolCoords;
+        const coords = (g.lastLocation && typeof g.lastLocation.lat === 'number' && typeof g.lastLocation.lng === 'number')
+          ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng }
+          : schoolCoords;
         activateOnline(coords);
         
         const wId = navigator.geolocation.watchPosition(
@@ -987,7 +992,23 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                               )}
                             </div>
                             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                              {n.message}
+                              {(() => {
+                                const msg = n.message;
+                                if (msg && msg.startsWith('FLYER::')) {
+                                  const parts = msg.split('::');
+                                  const flyerUrl = parts[1];
+                                  const textMsg = parts.slice(2).join('::');
+                                  return (
+                                    <div>
+                                      {textMsg && <div style={{ marginBottom: '0.5rem' }}>{textMsg}</div>}
+                                      <div style={{ maxWidth: '100%', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                                        <img src={flyerUrl} alt="Ad Flyer" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                return msg;
+                              })()}
                             </div>
                             <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
                               {new Date(n.timestamp).toLocaleString()}
@@ -1428,7 +1449,25 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
                             </button>
                           )}
                         </div>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: '1.4' }}>{n.message}</p>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: '1.4' }}>
+                          {(() => {
+                            const msg = n.message;
+                            if (msg && msg.startsWith('FLYER::')) {
+                              const parts = msg.split('::');
+                              const flyerUrl = parts[1];
+                              const textMsg = parts.slice(2).join('::');
+                              return (
+                                <div>
+                                  {textMsg && <div style={{ marginBottom: '0.5rem' }}>{textMsg}</div>}
+                                  <div style={{ maxWidth: '100%', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                                    <img src={flyerUrl} alt="Ad Flyer" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return <p>{msg}</p>;
+                          })()}
+                        </div>
                         <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.4rem', textAlign: 'right' }}>
                           From: {n.senderName} • {new Date(n.timestamp).toLocaleTimeString()}
                         </div>

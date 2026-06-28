@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School, RefreshCw, QrCode, Clock, Settings, Camera, Key, User } from 'lucide-react';
+import { Users, ShieldAlert, CheckCircle2, ScanLine, Bell, LogOut, School, RefreshCw, QrCode, Clock, Settings, Camera, Key, User, Sun, Moon } from 'lucide-react';
 import { useStore, getDynamicCode, hashPassword } from '../data/mockStore';
 import DynamicCode from '../components/DynamicCode';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -11,6 +11,17 @@ export default function ParentPortal({ parentId, setParentId }) {
     notifications, sendNotification, markNotificationRead, addSystemLog, updateParentProfile, deleteParent,
     setParentOnlineStatus
   } = useStore();
+
+  const [theme, setTheme] = useState(() => localStorage.getItem('vmk_theme_parent') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('vmk_theme_parent', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
   const navigate = useNavigate();
   const [activeSubTab, setActiveSubTab] = useState('otp'); // 'otp' | 'simulate' | 'temp-auth' | 'history' | 'settings'
@@ -885,6 +896,26 @@ export default function ParentPortal({ parentId, setParentId }) {
             )}
           </button>
 
+          {/* Theme Toggle Button */}
+          <button 
+            onClick={toggleTheme}
+            className="btn btn-outline"
+            style={{ 
+              padding: '0.6rem', 
+              borderRadius: '50%', 
+              minWidth: '42px', 
+              height: '42px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: 'var(--glass-border)',
+            }}
+            title={theme === 'light' ? "Switch to Dark Mode" : "Switch to Light Mode"}
+            id="btn-parent-theme-toggle"
+          >
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
+
           {/* Logout Button */}
           {deviceType !== 'mobile' && (
             <button 
@@ -1256,6 +1287,8 @@ export default function ParentPortal({ parentId, setParentId }) {
                         <div>
                           {log.status === 'VERIFIED' ? (
                             <span className="badge badge-success">Verified</span>
+                          ) : log.status === 'INFO' ? (
+                            <span className="badge badge-info" style={{ background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-blue)', border: '1px solid var(--accent-blue)' }}>Info Log</span>
                           ) : (
                             <span className="badge badge-danger">Fraud Flag</span>
                           )}
@@ -1659,7 +1692,25 @@ export default function ParentPortal({ parentId, setParentId }) {
                             </button>
                           )}
                         </div>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: '1.4' }}>{n.message}</p>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: '1.4' }}>
+                          {(() => {
+                            const msg = n.message;
+                            if (msg && msg.startsWith('FLYER::')) {
+                              const parts = msg.split('::');
+                              const flyerUrl = parts[1];
+                              const textMsg = parts.slice(2).join('::');
+                              return (
+                                <div>
+                                  {textMsg && <div style={{ marginBottom: '0.75rem' }}>{textMsg}</div>}
+                                  <div style={{ maxWidth: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', marginTop: '0.5rem' }}>
+                                    <img src={flyerUrl} alt="Ad Flyer" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return <p>{msg}</p>;
+                          })()}
+                        </div>
                         <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.4rem', textAlign: 'right' }}>
                           From: {n.senderName} • {new Date(n.timestamp).toLocaleTimeString()}
                         </div>

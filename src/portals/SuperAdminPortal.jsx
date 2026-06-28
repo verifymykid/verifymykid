@@ -299,6 +299,7 @@ export default function SuperAdminPortal() {
   const [notifyTarget, setNotifyTarget] = useState('all');
   const [notifyChannel, setNotifyChannel] = useState('web'); // default to web (In-App)
   const [notifyMessage, setNotifyMessage] = useState('');
+  const [adFlyer, setAdFlyer] = useState(null);
   const [notifySent, setNotifySent] = useState(false);
   const [showSmtpLogs, setShowSmtpLogs] = useState(false);
   const [smtpLogs, setSmtpLogs] = useState([]);
@@ -369,24 +370,29 @@ export default function SuperAdminPortal() {
     e.preventDefault();
     if (!notifyMessage) return;
 
+    let finalMessage = notifyMessage;
+    if (adFlyer) {
+      finalMessage = `FLYER::${adFlyer}::${notifyMessage}`;
+    }
+
     if (notifyChannel === 'web') {
       // In-App Platform Message (Web)
       let count = 0;
       if (notifyTarget === 'all' || notifyTarget === 'schools') {
         schools.filter(s => s.status === 'APPROVED').forEach(s => {
-          sendNotification('SUPER_ADMIN', 'Platform Administrator', s.id, 'Official Admin Broadcast', notifyMessage);
+          sendNotification('SUPER_ADMIN', 'Platform Administrator', s.id, 'Official Admin Broadcast', finalMessage);
           count++;
         });
       }
       if (notifyTarget === 'all' || notifyTarget === 'parents') {
         parents.filter(p => p.status !== 'DELETED').forEach(p => {
-          sendNotification('SUPER_ADMIN', 'Platform Administrator', p.id, 'Official Admin Broadcast', notifyMessage);
+          sendNotification('SUPER_ADMIN', 'Platform Administrator', p.id, 'Official Admin Broadcast', finalMessage);
           count++;
         });
       }
       if (notifyTarget === 'all' || notifyTarget === 'guardians') {
         guardians.filter(g => g.status !== 'SUSPENDED').forEach(g => {
-          sendNotification('SUPER_ADMIN', 'Platform Administrator', g.id, 'Official Admin Broadcast', notifyMessage);
+          sendNotification('SUPER_ADMIN', 'Platform Administrator', g.id, 'Official Admin Broadcast', finalMessage);
           count++;
         });
       }
@@ -395,6 +401,7 @@ export default function SuperAdminPortal() {
       setTimeout(() => {
         setNotifySent(false);
         setNotifyMessage('');
+        setAdFlyer(null);
       }, 3000);
     } else if (notifyChannel === 'email') {
       // SMTP Email Broadcast simulation
@@ -422,6 +429,7 @@ export default function SuperAdminPortal() {
           if (index === logsSeq.length - 1) {
             setNotifySent(true);
             setNotifyMessage('');
+            setAdFlyer(null);
             setTimeout(() => {
               setNotifySent(false);
             }, 3000);
@@ -434,6 +442,7 @@ export default function SuperAdminPortal() {
       setTimeout(() => {
         setNotifySent(false);
         setNotifyMessage('');
+        setAdFlyer(null);
       }, 3000);
     }
   };
@@ -1930,6 +1939,42 @@ export default function SuperAdminPortal() {
                 />
               </div>
 
+              <div className="form-group">
+                <label>Upload Flyer Image (Optional - for Ads purpose)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setAdFlyer(reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="input-control"
+                  style={{ padding: '0.4rem' }}
+                  id="ad-flyer-uploader"
+                />
+                {adFlyer && (
+                  <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ maxWidth: '200px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--glass-border)' }}>
+                      <img src={adFlyer} alt="Flyer Preview" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={() => setAdFlyer(null)} 
+                      className="btn btn-outline" 
+                      style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', color: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}
+                    >
+                      Remove Flyer
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} id="btn-send-broadcast">
                 Dispatch Broadcast Message
               </button>
@@ -1994,9 +2039,25 @@ export default function SuperAdminPortal() {
                       )}
                     </div>
                   </div>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.75rem', lineHeight: '1.5' }}>
-                    {n.message}
-                  </p>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.75rem', lineHeight: '1.5' }}>
+                    {(() => {
+                      const msg = n.message;
+                      if (msg && msg.startsWith('FLYER::')) {
+                        const parts = msg.split('::');
+                        const flyerUrl = parts[1];
+                        const textMsg = parts.slice(2).join('::');
+                        return (
+                          <div>
+                            {textMsg && <div style={{ marginBottom: '0.75rem' }}>{textMsg}</div>}
+                            <div style={{ maxWidth: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', marginTop: '0.5rem' }}>
+                              <img src={flyerUrl} alt="Ad Flyer" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                            </div>
+                          </div>
+                        );
+                      }
+                      return msg;
+                    })()}
+                  </div>
                   <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.75rem', textAlign: 'right' }}>
                     Date Received: {new Date(n.timestamp).toLocaleString()}
                   </div>
