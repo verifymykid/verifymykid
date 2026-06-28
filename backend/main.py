@@ -235,7 +235,8 @@ def send_real_email(to_email: str, subject: str, message_body: str):
         url = "https://api.resend.com/emails"
         headers = {
             "Authorization": f"Bearer {resend_api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "VerifyMyKid-App/1.0"
         }
         payload = {
             "from": "VerifyMyKid <no-reply@verifymykid.com.ng>",
