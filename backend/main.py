@@ -1,10 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException, status, APIRouter, Request, BackgroundTasks
+from fastapi import FastAPI, Depends, HTTPException, status, APIRouter, Request, BackgroundTasks, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
 import uuid
+import requests
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -174,6 +175,51 @@ class ParentResetPasswordRequest(BaseModel):
     email: str
     code: str
     password: str
+
+
+import base64
+
+def get_binary_image_response(base64_str: str):
+    if "," in base64_str:
+        header, base64_data = base64_str.split(",", 1)
+        media_type = "image/png"
+        if "image/jpeg" in header or "image/jpg" in header:
+            media_type = "image/jpeg"
+        elif "image/gif" in header:
+            media_type = "image/gif"
+        try:
+            image_data = base64.b64decode(base64_data)
+            return Response(content=image_data, media_type=media_type)
+        except Exception:
+            pass
+    raise HTTPException(status_code=400, detail="Invalid photo format")
+
+def map_profile_pic_url(base_url: str, role_type: str, item_id: str, current_val: Optional[str], is_spouse: bool = False):
+    if current_val and current_val.startswith("data:image"):
+        suffix = "spouse-photo" if is_spouse else "photo"
+        return f"{base_url}/api/{role_type}/{item_id}/{suffix}"
+    return current_val
+
+@app.get("/api/parents/{parent_id}/photo")
+def get_parent_photo(parent_id: str, db: Session = Depends(get_db)):
+    p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
+    if not p or not p.profilePic:
+        raise HTTPException(status_code=404, detail="Parent photo not found")
+    return get_binary_image_response(p.profilePic)
+
+@app.get("/api/parents/{parent_id}/spouse-photo")
+def get_parent_spouse_photo(parent_id: str, db: Session = Depends(get_db)):
+    p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
+    if not p or not p.spouseProfilePic:
+        raise HTTPException(status_code=404, detail="Spouse photo not found")
+    return get_binary_image_response(p.spouseProfilePic)
+
+@app.get("/api/guardians/{guardian_id}/photo")
+def get_guardian_photo(guardian_id: str, db: Session = Depends(get_db)):
+    g = db.query(models.Guardian).filter(models.Guardian.id == guardian_id).first()
+    if not g or not g.profilePic:
+        raise HTTPException(status_code=404, detail="Guardian photo not found")
+    return get_binary_image_response(g.profilePic)
 
 
 # ==================== MAIN APIS ====================
@@ -1652,7 +1698,8 @@ def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, background_tasks:
 
 
 @app.get("/api/sync")
-def global_sync(db: Session = Depends(get_db)):
+def global_sync(request: Request, db: Session = Depends(get_db)):
+    base_url = str(request.base_url).rstrip("/")
     schools = db.query(models.School).all()
     for s in schools:
         check_and_update_school_trial_status(s, db)
@@ -1666,14 +1713,14 @@ def global_sync(db: Session = Depends(get_db)):
             "email": p.email,
             "phone": p.phone,
             "address": p.address,
-            "profilePic": p.profilePic,
+            "profilePic": map_profile_pic_url(base_url, "parents", p.id, p.profilePic),
             "hasUploadedPic": p.hasUploadedPic,
             "schoolId": p.schoolId,
             "pendingSchoolId": p.pendingSchoolId,
             "singleParent": p.singleParent,
             "spouseName": p.spouseName,
             "spousePhone": p.spousePhone,
-            "spouseProfilePic": p.spouseProfilePic,
+            "spouseProfilePic": map_profile_pic_url(base_url, "parents", p.id, p.spouseProfilePic, is_spouse=True),
             "status": p.status,
             "lat": p.lat,
             "lng": p.lng,
@@ -1686,7 +1733,27 @@ def global_sync(db: Session = Depends(get_db)):
             "tempAuthorizations": [{"id": a.id, "name": a.name, "phone": a.phone, "type": a.type, "status": a.status, "code": a.code, "createdAt": a.createdAt} for a in p.authorizations]
         })
         
-    guardians = db.query(models.Guardian).all()
+    guardians_db = db.query(models.Guardian).all()
+    guardians_data = []
+    for g in guardians_db:
+        guardians_data.append({
+            "id": g.id,
+            "name": g.name,
+            "email": g.email,
+            "phone": g.phone,
+            "busNumber": g.busNumber,
+            "driverName": g.driverName,
+            "plateNumber": g.plateNumber,
+            "assignedRoute": g.assignedRoute,
+            "schoolId": g.schoolId,
+            "online": g.online,
+            "status": g.status,
+            "lat": g.lat,
+            "lng": g.lng,
+            "lastLocationUpdated": g.lastLocationUpdated,
+            "profilePic": map_profile_pic_url(base_url, "guardians", g.id, g.profilePic)
+        })
+
     pickups = db.query(models.PickupLog).order_by(models.PickupLog.timestamp.desc()).all()
     alerts = db.query(models.ActiveAlert).all()
     notifications = db.query(models.Notification).all()
@@ -1697,7 +1764,7 @@ def global_sync(db: Session = Depends(get_db)):
     return {
         "schools": schools,
         "parents": parents_data,
-        "guardians": guardians,
+        "guardians": guardians_data,
         "pickups": pickups,
         "alerts": alerts,
         "notifications": notifications,
