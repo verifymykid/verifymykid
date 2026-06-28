@@ -478,9 +478,24 @@ export const StoreProvider = ({ children }) => {
     await syncWithBackend();
   };
 
-  const markNotificationRead = async (notificationId) => {
-    await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, { method: 'PUT' });
+  const broadcastNotification = async (senderId, senderName, targetAudience, subject, message) => {
+    await fetch(`${API_BASE_URL}/api/notifications/broadcast`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ senderId, senderName, targetAudience, subject, message })
+    });
     await syncWithBackend();
+  };
+
+  const markNotificationRead = async (notificationId) => {
+    // Optimistic UI update: instantly update local state for zero-latency feel
+    setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true, read: true } : n));
+    try {
+      await fetch(`${API_BASE_URL}/api/notifications/${notificationId}/read`, { method: 'PUT' });
+      await syncWithBackend();
+    } catch (err) {
+      console.warn("Backend read sync error: ", err);
+    }
   };
 
   // Payment
@@ -588,6 +603,7 @@ export const StoreProvider = ({ children }) => {
     setGuardianOnlineStatus,
     addSystemLog,
     sendNotification,
+    broadcastNotification,
     markNotificationRead,
     payments,
     setParentStatus,

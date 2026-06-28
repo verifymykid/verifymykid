@@ -146,6 +146,15 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   }, []);
 
   useEffect(() => {
+    if (guardianId && guardians.length === 0) {
+      const timer = setTimeout(() => {
+        setShowSyncError(true);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [guardianId, guardians.length]);
+
+  useEffect(() => {
     if (currentGuardian && currentGuardian.status === 'SUSPENDED') {
       if (watchIdRef.current) {
         navigator.geolocation.clearWatch(watchIdRef.current);
@@ -649,14 +658,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
     );
   }
 
-  useEffect(() => {
-    if (guardianId && guardians.length === 0) {
-      const timer = setTimeout(() => {
-        setShowSyncError(true);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [guardianId, guardians.length]);
+
 
   if (guardianId && guardians.length === 0) {
     return (

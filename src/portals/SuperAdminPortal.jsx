@@ -7,7 +7,7 @@ export default function SuperAdminPortal() {
   const { 
     schools, parents, guardians, logs, activeAlerts,
     approveSchool, rejectSchool, suspendSchool, deleteSchool, resolvePanic, acknowledgePanicSuperAdmin, addSystemLog,
-    payments, notifications, markNotificationRead, sendNotification,
+    payments, notifications, markNotificationRead, sendNotification, broadcastNotification,
     sessions, sessionsLoaded, freezeSession, deleteSession, deleteUnrecognizedSessions, addSession,
     approveMasterQrRequest, rejectMasterQrRequest, activateSchoolTrial, extendSchoolPaymentDeadline, upliftSchoolTrial,
     smtpLogs: storeSmtpLogs
@@ -376,26 +376,8 @@ export default function SuperAdminPortal() {
     }
 
     if (notifyChannel === 'web') {
-      // In-App Platform Message (Web)
-      let count = 0;
-      if (notifyTarget === 'all' || notifyTarget === 'schools') {
-        schools.filter(s => s.status === 'APPROVED').forEach(s => {
-          sendNotification('SUPER_ADMIN', 'Platform Administrator', s.id, 'Official Admin Broadcast', finalMessage);
-          count++;
-        });
-      }
-      if (notifyTarget === 'all' || notifyTarget === 'parents') {
-        parents.filter(p => p.status !== 'DELETED').forEach(p => {
-          sendNotification('SUPER_ADMIN', 'Platform Administrator', p.id, 'Official Admin Broadcast', finalMessage);
-          count++;
-        });
-      }
-      if (notifyTarget === 'all' || notifyTarget === 'guardians') {
-        guardians.filter(g => g.status !== 'SUSPENDED').forEach(g => {
-          sendNotification('SUPER_ADMIN', 'Platform Administrator', g.id, 'Official Admin Broadcast', finalMessage);
-          count++;
-        });
-      }
+      // In-App Platform Message (Web) via efficient single Broadcast request
+      broadcastNotification('SUPER_ADMIN', 'Platform Administrator', notifyTarget, 'Official Admin Broadcast', finalMessage);
 
       setNotifySent(true);
       setTimeout(() => {

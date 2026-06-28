@@ -150,6 +150,13 @@ class NotificationRequest(BaseModel):
     subject: str
     message: str
 
+class BroadcastRequest(BaseModel):
+    senderId: Optional[str] = None
+    senderName: Optional[str] = None
+    targetAudience: str
+    subject: str
+    message: str
+
 class SessionRequest(BaseModel):
     userId: str
     role: str
@@ -1206,6 +1213,40 @@ def list_notifications(recipientId: Optional[str] = None, db: Session = Depends(
     if recipientId:
         query = query.filter(models.Notification.recipientId == recipientId)
     return query.all()
+
+@app.post("/api/notifications/broadcast")
+def broadcast_notification(data: BroadcastRequest, db: Session = Depends(get_db)):
+    recipients = []
+    if data.targetAudience in ('all', 'schools'):
+        schools_list = db.query(models.School).filter(models.School.status == 'APPROVED').all()
+        recipients.extend([s.id for s in schools_list])
+    if data.targetAudience in ('all', 'parents'):
+        parents_list = db.query(models.Parent).filter(models.Parent.status != 'DELETED').all()
+        recipients.extend([p.id for p in parents_list])
+    if data.targetAudience in ('all', 'guardians'):
+        guardians_list = db.query(models.Guardian).filter(models.Guardian.status != 'SUSPENDED').all()
+        recipients.extend([g.id for g in guardians_list])
+
+    notifications_to_add = []
+    for r_id in recipients:
+        n_id = f"NTF-{uuid.uuid4().hex[:8].upper()}"
+        new_n = models.Notification(
+            id=n_id,
+            senderId=data.senderId,
+            senderName=data.senderName,
+            recipientId=r_id,
+            subject=data.subject,
+            message=data.message,
+            isRead=False,
+            timestamp=datetime.utcnow().isoformat()
+        )
+        notifications_to_add.append(new_n)
+    
+    if notifications_to_add:
+        db.add_all(notifications_to_add)
+        db.commit()
+    
+    return {"status": "success", "sent_count": len(notifications_to_add)}
 
 @app.post("/api/notifications")
 def create_notification(data: NotificationRequest, db: Session = Depends(get_db)):
