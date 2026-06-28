@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
 import uuid
-import requests
+import json
+import urllib.request
+import urllib.error
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -230,6 +232,7 @@ def send_real_email(to_email: str, subject: str, message_body: str):
         return False
         
     try:
+        url = "https://api.resend.com/emails"
         headers = {
             "Authorization": f"Bearer {resend_api_key}",
             "Content-Type": "application/json"
@@ -240,13 +243,27 @@ def send_real_email(to_email: str, subject: str, message_body: str):
             "subject": subject,
             "text": message_body
         }
-        res = requests.post("https://api.resend.com/emails", json=payload, headers=headers)
-        if res.status_code in (200, 201):
-            print(f"SUCCESS: Real email sent to {to_email} via Resend")
-            return True
-        else:
-            print(f"ERROR: Resend API returned status code {res.status_code}: {res.text}")
-            return False
+        req = urllib.request.Request(
+            url, 
+            data=json.dumps(payload).encode("utf-8"), 
+            headers=headers, 
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_body = response.read().decode("utf-8")
+            if response.status in (200, 201, 202):
+                print(f"SUCCESS: Real email sent to {to_email} via Resend")
+                return True
+            else:
+                print(f"ERROR: Resend API returned status code {response.status}: {res_body}")
+                return False
+    except urllib.error.HTTPError as e:
+        try:
+            res_body = e.read().decode("utf-8")
+        except Exception:
+            res_body = str(e)
+        print(f"ERROR: Resend API HTTP error {e.code}: {res_body}")
+        return False
     except Exception as e:
         print(f"ERROR: Failed to send real email to {to_email} via Resend: {e}")
         return False
