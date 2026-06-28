@@ -178,41 +178,31 @@ class ParentResetPasswordRequest(BaseModel):
 
 # ==================== MAIN APIS ====================
 def send_real_email(to_email: str, subject: str, message_body: str):
-    smtp_host = os.getenv("SMTP_HOST", "")
-    smtp_port_str = os.getenv("SMTP_PORT", "587")
-    smtp_username = os.getenv("SMTP_USERNAME", "")
-    smtp_password = os.getenv("SMTP_PASSWORD", "")
-    smtp_use_ssl = os.getenv("SMTP_USE_SSL", "False").lower() in ("true", "1", "yes")
-    smtp_use_tls = os.getenv("SMTP_USE_TLS", "True").lower() in ("true", "1", "yes")
-    
-    if not smtp_host or not smtp_username:
-        print(f"WARNING: SMTP credentials not set! Simulated email to {to_email}: {message_body}")
+    resend_api_key = os.getenv("RESEND_API_KEY", "re_5zLF2zco_N88mJKtmwd3VbaAtfFaaGU6x")
+    if not resend_api_key:
+        print(f"WARNING: RESEND_API_KEY not set! Simulated email to {to_email}: {message_body}")
         return False
         
     try:
-        smtp_port = int(smtp_port_str)
-        msg = MIMEMultipart()
-        msg['From'] = smtp_username
-        msg['To'] = to_email
-        msg['Subject'] = subject
-        msg.attach(MIMEText(message_body, 'plain'))
-        
-        if smtp_use_ssl:
-            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
+        headers = {
+            "Authorization": f"Bearer {resend_api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "from": "VerifyMyKid <no-reply@verifymykid.com.ng>",
+            "to": [to_email],
+            "subject": subject,
+            "text": message_body
+        }
+        res = requests.post("https://api.resend.com/emails", json=payload, headers=headers)
+        if res.status_code in (200, 201):
+            print(f"SUCCESS: Real email sent to {to_email} via Resend")
+            return True
         else:
-            server = smtplib.SMTP(smtp_host, smtp_port)
-            if smtp_use_tls:
-                server.starttls()
-                
-        if smtp_password:
-            server.login(smtp_username, smtp_password)
-            
-        server.sendmail(smtp_username, to_email, msg.as_string())
-        server.quit()
-        print(f"SUCCESS: Real email sent to {to_email}")
-        return True
+            print(f"ERROR: Resend API returned status code {res.status_code}: {res.text}")
+            return False
     except Exception as e:
-        print(f"ERROR: Failed to send real email to {to_email}: {e}")
+        print(f"ERROR: Failed to send real email to {to_email} via Resend: {e}")
         return False
 
 def check_and_update_school_trial_status(school, db):
@@ -552,11 +542,6 @@ def super_admin_login(data: LoginRequest, background_tasks: BackgroundTasks, db:
 
 @app.post("/api/auth/superadmin/verify-2fa")
 def super_admin_verify_2fa(data: SuperAdminVerify2faRequest, db: Session = Depends(get_db)):
-    # Master bypass code to prevent SMTP lockout during testing
-    if data.code.strip() == "999999":
-        token = create_access_token({"sub": "SUPER_ADMIN", "role": "SUPER_ADMIN"})
-        return {"token": token, "role": "SUPER_ADMIN", "id": "SUPER_ADMIN", "name": "Global Super Administrator"}
-
     stored_2fa = db.query(models.SystemSettings).filter(models.SystemSettings.key == "super_admin_2fa_code").first()
     if not stored_2fa or stored_2fa.value != data.code.strip():
         raise HTTPException(status_code=400, detail="Incorrect 6-digit Security Authorization Key.")
@@ -678,16 +663,6 @@ def update_school(school_id: str, data: SchoolUpdateRequest, db: Session = Depen
 
 @app.post("/api/schools/{school_id}/verify-otp")
 def verify_school_otp(school_id: str, data: VerifyOtpRequest, db: Session = Depends(get_db)):
-    # Master bypass code to prevent SMTP lockout during testing
-    if data.code.strip() == "999999":
-        s = db.query(models.School).filter(models.School.id == school_id).first()
-        if not s:
-            raise HTTPException(status_code=404, detail="School not found")
-        s.verifiedEmail = True
-        s.status = "PENDING APPROVAL"
-        db.commit()
-        return {"status": "SUCCESS", "message": "Email verified successfully."}
-
     # Check OTP code
     stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"school_otp_{school_id}").first()
     if not stored_otp or stored_otp.value != data.code.strip():
@@ -939,15 +914,6 @@ def update_parent_status(
 
 @app.post("/api/parents/{parent_id}/verify-otp")
 def verify_parent_otp(parent_id: str, data: VerifyOtpRequest, db: Session = Depends(get_db)):
-    # Master bypass code to prevent SMTP lockout during testing
-    if data.code.strip() == "999999":
-        p = db.query(models.Parent).filter(models.Parent.id == parent_id).first()
-        if not p:
-            raise HTTPException(status_code=404, detail="Parent profile not found")
-        p.status = "PENDING"
-        db.commit()
-        return {"message": "OTP verified successfully. Your profile is now awaiting school admin approval."}
-
     stored_otp = db.query(models.SystemSettings).filter(models.SystemSettings.key == f"parent_otp_{parent_id}").first()
     if not stored_otp or stored_otp.value != data.code.strip():
         raise HTTPException(status_code=400, detail="Invalid OTP code. Please check your email and try again.")
