@@ -1182,7 +1182,8 @@ def trigger_panic(data: PanicRequest, db: Session = Depends(get_db)):
         schoolId=school_id,
         acknowledgedBySchoolAdmin=False,
         acknowledgedBySuperAdmin=False,
-        resolvedBySuperAdmin=False
+        resolvedBySuperAdmin=False,
+        resolvedByGuardian=False
     )
     db.add(alert)
 
@@ -1210,7 +1211,7 @@ def resolve_panic(alert_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Alert not found")
     a.acknowledgedBySuperAdmin = True
     a.resolvedBySuperAdmin = True
-    if a.acknowledgedBySchoolAdmin:
+    if a.acknowledgedBySchoolAdmin and a.resolvedByGuardian:
         a.status = "RESOLVED"
     
     # Permanent audit log for Super Admin resolving/acknowledging the alert
@@ -1235,7 +1236,7 @@ def acknowledge_panic(alert_id: str, db: Session = Depends(get_db)):
     if not a:
         raise HTTPException(status_code=404, detail="Alert not found")
     a.acknowledgedBySchoolAdmin = True
-    if a.acknowledgedBySuperAdmin:
+    if a.acknowledgedBySuperAdmin and a.resolvedByGuardian:
         a.status = "RESOLVED"
     
     # Permanent audit log for School Admin acknowledging the alert
@@ -1248,6 +1249,31 @@ def acknowledge_panic(alert_id: str, db: Session = Depends(get_db)):
         gps="N/A",
         device="School Admin Portal",
         details=f"Panic Alert ({a.type}) for Guardian {a.guardianName} acknowledged & cleared by School Admin."
+    )
+    db.add(new_log)
+    
+    db.commit()
+    return a
+
+@app.post("/api/alerts/{alert_id}/resolve_guardian")
+def resolve_guardian_panic(alert_id: str, db: Session = Depends(get_db)):
+    a = db.query(models.ActiveAlert).filter(models.ActiveAlert.id == alert_id).first()
+    if not a:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    a.resolvedByGuardian = True
+    if a.acknowledgedBySchoolAdmin and a.acknowledgedBySuperAdmin:
+        a.status = "RESOLVED"
+    
+    # Permanent audit log for Bus Guardian resolving the alert
+    log_id = f"LOG-{uuid.uuid4().hex[:8].upper()}"
+    new_log = models.SystemLog(
+        id=log_id,
+        type="Panic Alert Cancelled",
+        timestamp=datetime.utcnow().isoformat(),
+        schoolId=a.schoolId,
+        gps="N/A",
+        device="Bus Guardian Terminal",
+        details=f"Panic Alert ({a.type}) cancelled/resolved by Bus Guardian {a.guardianName}."
     )
     db.add(new_log)
     

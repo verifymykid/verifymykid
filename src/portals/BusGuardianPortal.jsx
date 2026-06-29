@@ -7,7 +7,7 @@ import DynamicCode from '../components/DynamicCode';
 
 export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const { 
-    schools, guardians, parents, logs, verifyPickupEvent, triggerPanic, activeAlerts, resolvePanic,
+    schools, guardians, parents, logs, verifyPickupEvent, triggerPanic, activeAlerts, resolvePanicGuardian,
     notifications, sendNotification, markNotificationRead, setGuardianOnlineStatus, addSystemLog,
     scanMasterQrCode
   } = useStore();
@@ -116,7 +116,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       }
     };
   }, []);
-  const hasActivePanic = currentGuardian ? activeAlerts.some(a => a.guardianId === currentGuardian.id) : false;
+  const hasActivePanic = currentGuardian ? activeAlerts.some(a => a.guardianId === currentGuardian.id && !a.resolvedByGuardian) : false;
 
   const matchedParent = (dropOffResult && dropOffResult.log) ? parents.find(p => p.name === dropOffResult.log.parentName) : null;
 
@@ -621,7 +621,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       setConfirmDialog({
         title: "Resolve Security Emergency",
         message: "Are you sure you want to resolve and cancel this active SOS Panic Alert? This will notify the school safety desk that you are secure.",
-        onConfirm: () => resolvePanic(activePanic.id)
+        onConfirm: () => resolvePanicGuardian(activePanic.id)
       });
     }
   };

@@ -666,10 +666,12 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
 
   // Filter logs logic
   const filteredLogs = schoolLogs.filter(l => {
-    const matchesSearch = 
-      l.parentName.toLowerCase().includes(filterSearch.toLowerCase()) ||
-      l.childName.toLowerCase().includes(filterSearch.toLowerCase()) ||
-      l.guardianName.toLowerCase().includes(filterSearch.toLowerCase());
+    const matchesSearch = !filterSearch ||
+      (l.parentName && l.parentName.toLowerCase().includes(filterSearch.toLowerCase())) ||
+      (l.childName && l.childName.toLowerCase().includes(filterSearch.toLowerCase())) ||
+      (l.guardianName && l.guardianName.toLowerCase().includes(filterSearch.toLowerCase())) ||
+      (l.type && l.type.toLowerCase().includes(filterSearch.toLowerCase())) ||
+      (l.details && l.details.toLowerCase().includes(filterSearch.toLowerCase()));
     
     const matchesStatus = filterStatus === 'ALL' || l.status === filterStatus;
     

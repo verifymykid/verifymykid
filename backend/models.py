@@ -177,6 +177,7 @@ class ActiveAlert(Base):
     acknowledgedBySchoolAdmin = Column(Boolean, default=False)
     resolvedBySuperAdmin = Column(Boolean, default=False)
     acknowledgedBySuperAdmin = Column(Boolean, default=False)
+    resolvedByGuardian = Column(Boolean, default=False)
 
 class UserSession(Base):
     __tablename__ = "user_sessions"

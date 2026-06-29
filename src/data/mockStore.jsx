@@ -435,6 +435,11 @@ export const StoreProvider = ({ children }) => {
     await syncWithBackend();
   };
 
+  const resolvePanicGuardian = async (alertId) => {
+    await fetch(`${API_BASE_URL}/api/alerts/${alertId}/resolve_guardian`, { method: 'POST' });
+    await syncWithBackend();
+  };
+
   const acknowledgePanicSuperAdmin = async (alertId) => {
     await fetch(`${API_BASE_URL}/api/alerts/${alertId}/resolve`, { method: 'POST' });
     await syncWithBackend();
@@ -608,6 +613,7 @@ export const StoreProvider = ({ children }) => {
     addGuardian,
     triggerPanic,
     resolvePanic,
+    resolvePanicGuardian,
     acknowledgePanicSuperAdmin,
     acknowledgePanicSchoolAdmin,
     verifyPickupEvent,
