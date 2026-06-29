@@ -1180,9 +1180,25 @@ def trigger_panic(data: PanicRequest, db: Session = Depends(get_db)):
         timestamp=datetime.utcnow().isoformat(),
         note=data.note,
         schoolId=school_id,
-        acknowledgedBySchoolAdmin=False
+        acknowledgedBySchoolAdmin=False,
+        acknowledgedBySuperAdmin=False,
+        resolvedBySuperAdmin=False
     )
     db.add(alert)
+
+    # Permanent audit log for the raised panic alert
+    log_id = f"LOG-{uuid.uuid4().hex[:8].upper()}"
+    new_log = models.SystemLog(
+        id=log_id,
+        type="Panic Alert Raised",
+        timestamp=datetime.utcnow().isoformat(),
+        schoolId=school_id,
+        gps="N/A",
+        device="Bus Guardian Terminal",
+        details=f"Panic Alert ({data.type}) raised by Guardian {g_name} (Bus {g_bus}). Note: {data.note}"
+    )
+    db.add(new_log)
+    
     db.commit()
     db.refresh(alert)
     return alert
@@ -1192,7 +1208,24 @@ def resolve_panic(alert_id: str, db: Session = Depends(get_db)):
     a = db.query(models.ActiveAlert).filter(models.ActiveAlert.id == alert_id).first()
     if not a:
         raise HTTPException(status_code=404, detail="Alert not found")
-    a.status = "RESOLVED"
+    a.acknowledgedBySuperAdmin = True
+    a.resolvedBySuperAdmin = True
+    if a.acknowledgedBySchoolAdmin:
+        a.status = "RESOLVED"
+    
+    # Permanent audit log for Super Admin resolving/acknowledging the alert
+    log_id = f"LOG-{uuid.uuid4().hex[:8].upper()}"
+    new_log = models.SystemLog(
+        id=log_id,
+        type="Panic Alert Resolved",
+        timestamp=datetime.utcnow().isoformat(),
+        schoolId=a.schoolId,
+        gps="N/A",
+        device="Super Admin Portal",
+        details=f"Panic Alert ({a.type}) for Guardian {a.guardianName} resolved & cleared by Platform Super Admin."
+    )
+    db.add(new_log)
+    
     db.commit()
     return a
 
@@ -1202,6 +1235,22 @@ def acknowledge_panic(alert_id: str, db: Session = Depends(get_db)):
     if not a:
         raise HTTPException(status_code=404, detail="Alert not found")
     a.acknowledgedBySchoolAdmin = True
+    if a.acknowledgedBySuperAdmin:
+        a.status = "RESOLVED"
+    
+    # Permanent audit log for School Admin acknowledging the alert
+    log_id = f"LOG-{uuid.uuid4().hex[:8].upper()}"
+    new_log = models.SystemLog(
+        id=log_id,
+        type="Panic Alert Acknowledged",
+        timestamp=datetime.utcnow().isoformat(),
+        schoolId=a.schoolId,
+        gps="N/A",
+        device="School Admin Portal",
+        details=f"Panic Alert ({a.type}) for Guardian {a.guardianName} acknowledged & cleared by School Admin."
+    )
+    db.add(new_log)
+    
     db.commit()
     return a
 

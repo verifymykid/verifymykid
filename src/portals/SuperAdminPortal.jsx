@@ -192,7 +192,17 @@ export default function SuperAdminPortal() {
     setLoginError('');
   };
 
+  const getTodayString = () => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const [activeSubTab, setActiveSubTab] = useState('schools'); // 'schools' | 'map' | 'alerts' | 'logs' | 'notify'
+  const [filterDate, setFilterDate] = useState(getTodayString());
+  const [filterSearch, setFilterSearch] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState(null);
   const [mapCenterCoords, setMapCenterCoords] = useState(null);
   const [replyingToId, setReplyingToId] = useState(null);
@@ -1715,9 +1725,46 @@ export default function SuperAdminPortal() {
 
       {activeSubTab === 'logs' && (
         <div className="glass-card">
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ListTodo size={18} /> Global Security Audit Trails
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <ListTodo size={18} /> Global Security Audit Trails
+            </h3>
+            
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  placeholder="Search logs..."
+                  value={filterSearch}
+                  onChange={(e) => setFilterSearch(e.target.value)}
+                  className="input-control"
+                  style={{ paddingRight: '2rem', fontSize: '0.8rem', width: '220px', height: '34px' }}
+                  id="superadmin-logs-search"
+                />
+              </div>
+
+              <div style={{ display: 'inline-flex', gap: '0.25rem', alignItems: 'center' }}>
+                <input
+                  type="date"
+                  value={filterDate}
+                  onChange={(e) => setFilterDate(e.target.value)}
+                  className="input-control"
+                  style={{ fontSize: '0.8rem', height: '34px', width: '130px' }}
+                  id="superadmin-logs-date-filter"
+                />
+                {filterDate && (
+                  <button 
+                    onClick={() => setFilterDate('')} 
+                    className="btn btn-outline" 
+                    style={{ padding: '0.35rem 0.5rem', fontSize: '0.75rem', height: '34px' }}
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
               <thead>
@@ -1732,52 +1779,83 @@ export default function SuperAdminPortal() {
                 </tr>
               </thead>
               <tbody>
-                {logs.map(log => (
-                  <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }} className="log-row">
-                    <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)' }}>
-                      <div>{new Date(log.timestamp).toLocaleDateString()}</div>
-                      <div style={{ fontSize: '0.75rem', marginTop: '0.1rem' }}>{new Date(log.timestamp).toLocaleTimeString()}</div>
-                    </td>
-                    <td style={{ padding: '0.75rem 0.5rem', fontWeight: '600' }}>
-                    {log.type}
-                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>{log.details}</div>
-                    </td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>{log.parentName} <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Kid: {log.childName}</div></td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>{log.guardianName}</td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
-                      <button
-                        onClick={() => handleCoordinateClick(log.gps)}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--accent-cyan)',
-                          textDecoration: 'underline',
-                          fontFamily: 'monospace',
-                          cursor: 'pointer',
-                          padding: 0,
-                          fontSize: '0.75rem'
-                        }}
-                      >
-                        {log.gps}
-                      </button>
-                    </td>
-                    <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{log.device}</td>
-                    <td style={{ padding: '0.75rem 0.5rem' }}>
-                       {(() => {
-                         const parent = parents.find(p => p.name === log.parentName);
-                         if (parent && parent.status === 'SUSPENDED') {
-                           return <span className="badge badge-danger">Suspended</span>;
-                         }
-                         if (log.status === 'VERIFIED') return <span className="badge badge-success">Verified</span>;
-                         if (log.status === 'UNRECOGNIZED') return <span className="badge badge-danger">Unrecognized</span>;
-                         if (log.status === 'PANIC ALERT') return <span className="badge badge-warning" style={{ color: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}>SOS</span>;
-                         if (log.status === 'LOGIN') return <span className="badge badge-info">Login</span>;
-                         if (log.status === 'LOGOUT') return <span className="badge badge-secondary">Logout</span>;
-                         return null;
-                       })()}
-                    </td>
-                  </tr>
-                ))}
+                {(() => {
+                  const filteredLogs = logs.filter(log => {
+                    const matchesSearch = !filterSearch || 
+                      (log.parentName && log.parentName.toLowerCase().includes(filterSearch.toLowerCase())) ||
+                      (log.guardianName && log.guardianName.toLowerCase().includes(filterSearch.toLowerCase())) ||
+                      (log.type && log.type.toLowerCase().includes(filterSearch.toLowerCase())) ||
+                      (log.details && log.details.toLowerCase().includes(filterSearch.toLowerCase()));
+
+                    let matchesDate = true;
+                    if (filterDate) {
+                      const filterDateObj = new Date(filterDate);
+                      const logDate = new Date(log.timestamp);
+                      matchesDate = 
+                        logDate.getFullYear() === filterDateObj.getFullYear() &&
+                        logDate.getMonth() === filterDateObj.getMonth() &&
+                        logDate.getDate() === filterDateObj.getDate();
+                    }
+                    return matchesSearch && matchesDate;
+                  });
+
+                  if (filteredLogs.length === 0) {
+                    return (
+                      <tr>
+                        <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                          No audit trail records found matching criteria.
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return filteredLogs.map(log => (
+                    <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }} className="log-row">
+                      <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-muted)' }}>
+                        <div>{new Date(log.timestamp).toLocaleDateString()}</div>
+                        <div style={{ fontSize: '0.75rem', marginTop: '0.1rem' }}>{new Date(log.timestamp).toLocaleTimeString()}</div>
+                      </td>
+                      <td style={{ padding: '0.75rem 0.5rem', fontWeight: '600' }}>
+                      {log.type}
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>{log.details}</div>
+                      </td>
+                      <td style={{ padding: '0.75rem 0.5rem' }}>{log.parentName} <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Kid: {log.childName}</div></td>
+                      <td style={{ padding: '0.75rem 0.5rem' }}>{log.guardianName}</td>
+                      <td style={{ padding: '0.75rem 0.5rem' }}>
+                        <button
+                          onClick={() => handleCoordinateClick(log.gps)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--accent-cyan)',
+                            textDecoration: 'underline',
+                            fontFamily: 'monospace',
+                            cursor: 'pointer',
+                            padding: 0,
+                            fontSize: '0.75rem'
+                          }}
+                        >
+                          {log.gps}
+                        </button>
+                      </td>
+                      <td style={{ padding: '0.75rem 0.5rem', color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{log.device}</td>
+                      <td style={{ padding: '0.75rem 0.5rem' }}>
+                         {(() => {
+                           const parent = parents.find(p => p.name === log.parentName);
+                           if (parent && parent.status === 'SUSPENDED') {
+                             return <span className="badge badge-danger">Suspended</span>;
+                           }
+                           if (log.status === 'VERIFIED') return <span className="badge badge-success">Verified</span>;
+                           if (log.status === 'UNRECOGNIZED') return <span className="badge badge-danger">Unrecognized</span>;
+                           if (log.status === 'PANIC ALERT') return <span className="badge badge-warning" style={{ color: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}>SOS</span>;
+                           if (log.status === 'LOGIN') return <span className="badge badge-info">Login</span>;
+                           if (log.status === 'LOGOUT') return <span className="badge badge-secondary">Logout</span>;
+                           return null;
+                         })()}
+                      </td>
+                    </tr>
+                  ));
+                })()}
               </tbody>
             </table>
           </div>

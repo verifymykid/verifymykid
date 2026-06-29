@@ -175,6 +175,8 @@ class ActiveAlert(Base):
     note = Column(String, default="")
     schoolId = Column(String, nullable=True)
     acknowledgedBySchoolAdmin = Column(Boolean, default=False)
+    resolvedBySuperAdmin = Column(Boolean, default=False)
+    acknowledgedBySuperAdmin = Column(Boolean, default=False)
 
 class UserSession(Base):
     __tablename__ = "user_sessions"
