@@ -83,50 +83,7 @@ export default function SchoolSignin({ setSchoolId }) {
       }
     };
 
-    const getGpsCoords = () => {
-      return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-          resolve({ lat: null, lng: null, coordsStr: 'N/A (Not Supported)' });
-          return;
-        }
-        let resolved = false;
-        const timer = setTimeout(() => {
-          if (!resolved) {
-            resolved = true;
-            resolve({ lat: null, lng: null, coordsStr: 'N/A (Timeout)' });
-          }
-        }, 1000);
-
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            if (!resolved) {
-              resolved = true;
-              clearTimeout(timer);
-              resolve({
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude,
-                coordsStr: `${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`
-              });
-            }
-          },
-          () => {
-            if (!resolved) {
-              resolved = true;
-              clearTimeout(timer);
-              resolve({ lat: null, lng: null, coordsStr: 'N/A (Permission Denied)' });
-            }
-          },
-          { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
-        );
-      });
-    };
-
-    const runLogin = async () => {
-      const loc = await getGpsCoords();
-      await proceedLogin(loc.coordsStr, loc.lat, loc.lng);
-    };
-
-    runLogin();
+    proceedLogin('N/A', null, null);
   };
 
   return (

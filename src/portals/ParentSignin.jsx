@@ -122,42 +122,7 @@ export default function ParentSignin({ setParentId }) {
         navigate('/parent');
       };
 
-      const getGpsCoords = () => {
-        return new Promise((resolve) => {
-          if (!navigator.geolocation) {
-            resolve('N/A (Not Supported)');
-            return;
-          }
-          let resolved = false;
-          const timer = setTimeout(() => {
-            if (!resolved) {
-              resolved = true;
-              resolve('N/A (Timeout)');
-            }
-          }, 1000);
-
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              if (!resolved) {
-                resolved = true;
-                clearTimeout(timer);
-                resolve(`${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
-              }
-            },
-            () => {
-              if (!resolved) {
-                resolved = true;
-                clearTimeout(timer);
-                resolve('N/A (Permission Denied)');
-              }
-            },
-            { enableHighAccuracy: false, timeout: 800, maximumAge: 60000 }
-          );
-        });
-      };
-
-      const coords = await getGpsCoords();
-      await proceedLogin(coords);
+      proceedLogin('N/A');
     } catch (err) {
       setError("Server connection failed. Make sure backend is running.");
     }
