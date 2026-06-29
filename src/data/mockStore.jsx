@@ -62,7 +62,18 @@ export const StoreProvider = ({ children }) => {
   // Sync data from FastAPI backend
   const syncWithBackend = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/sync?cb=${Date.now()}`, {
+      let recipientId = '';
+      const parentId = localStorage.getItem('vmk_logged_parent_id');
+      const schoolId = localStorage.getItem('vmk_current_school_id') || localStorage.getItem('vmk_logged_school_id');
+      const guardianId = localStorage.getItem('vmk_current_guardian_id') || localStorage.getItem('vmk_logged_guardian_id');
+      const superAdminLogged = localStorage.getItem('vmk_super_admin_logged');
+
+      if (parentId) recipientId = parentId;
+      else if (schoolId) recipientId = schoolId;
+      else if (guardianId) recipientId = guardianId;
+      else if (superAdminLogged === 'true') recipientId = 'SUPER_ADMIN';
+
+      const res = await fetch(`${API_BASE_URL}/api/sync?recipientId=${recipientId}&cb=${Date.now()}`, {
         headers: {
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',

@@ -1757,7 +1757,7 @@ def scan_master_qr(guardian_id: str, req: MasterQrScanRequest, background_tasks:
 
 
 @app.get("/api/sync")
-def global_sync(request: Request, db: Session = Depends(get_db)):
+def global_sync(request: Request, recipientId: Optional[str] = None, db: Session = Depends(get_db)):
     base_url = str(request.base_url).rstrip("/")
     schools = db.query(models.School).all()
     for s in schools:
@@ -1813,12 +1813,17 @@ def global_sync(request: Request, db: Session = Depends(get_db)):
             "profilePic": map_profile_pic_url(base_url, "guardians", g.id, g.profilePic)
         })
 
-    pickups = db.query(models.PickupLog).order_by(models.PickupLog.timestamp.desc()).all()
+    pickups = db.query(models.PickupLog).order_by(models.PickupLog.timestamp.desc()).limit(100).all()
     alerts = db.query(models.ActiveAlert).all()
-    notifications = db.query(models.Notification).all()
-    smtp_logs = db.query(models.SmtpLog).order_by(models.SmtpLog.id.desc()).all()
-    sessions = db.query(models.UserSession).all()
-    system_logs = db.query(models.SystemLog).order_by(models.SystemLog.timestamp.desc()).all()
+    
+    if recipientId:
+        notifications = db.query(models.Notification).filter(models.Notification.recipientId == recipientId).all()
+    else:
+        notifications = []
+        
+    smtp_logs = db.query(models.SmtpLog).order_by(models.SmtpLog.id.desc()).limit(100).all()
+    sessions = db.query(models.UserSession).order_by(models.UserSession.loginTime.desc()).limit(100).all()
+    system_logs = db.query(models.SystemLog).order_by(models.SystemLog.timestamp.desc()).limit(100).all()
     
     return {
         "schools": schools,
