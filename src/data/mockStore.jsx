@@ -419,11 +419,11 @@ export const StoreProvider = ({ children }) => {
   };
 
   // Panic actions
-  const triggerPanic = async (guardianId, type, note = '') => {
+  const triggerPanic = async (guardianId, type, note = '', gps = 'N/A') => {
     const res = await fetch(`${API_BASE_URL}/api/alerts/panic`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ guardianId, type, note })
+      body: JSON.stringify({ guardianId, type, note, gps })
     });
     const alert = await res.json();
     await syncWithBackend();

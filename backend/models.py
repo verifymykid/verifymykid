@@ -178,6 +178,7 @@ class ActiveAlert(Base):
     resolvedBySuperAdmin = Column(Boolean, default=False)
     acknowledgedBySuperAdmin = Column(Boolean, default=False)
     resolvedByGuardian = Column(Boolean, default=False)
+    gps = Column(String, default="N/A")
 
 class UserSession(Base):
     __tablename__ = "user_sessions"

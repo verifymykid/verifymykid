@@ -290,7 +290,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
   const schoolPayments = payments.filter(pay => pay.schoolId === schoolId);
   const paidChildrenCount = schoolPayments.reduce((acc, pay) => acc + pay.childrenCount, 0);
   const unpaidChildrenCount = isTrialActive ? 0 : Math.max(0, schoolStudentsCount - paidChildrenCount);
-  const amountDue = isTrialActive ? 0 : unpaidChildrenCount * 3600;
+  const amountDue = isTrialActive ? 0 : unpaidChildrenCount * 500;
 
   if (currentSchool.status !== 'APPROVED') {
     const isSuspended = currentSchool.status === 'SUSPENDED';
@@ -1664,7 +1664,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                                   if (!isTrialActive && realUnpaid > 0) {
                                     setConfirmDialog({
                                       title: "SaaS License Payment Required",
-                                      message: `Your 1-month free trial has expired. To approve parent ${p.name}, you must settle your outstanding licensing balance of ₦${(realUnpaid * 3600).toLocaleString()} at the Billing Desk.`,
+                                      message: `Your 1-month free trial has expired. To approve parent ${p.name}, you must settle your outstanding licensing balance of ₦${(realUnpaid * 500).toLocaleString()} at the Billing Desk.`,
                                       confirmText: "Go to Billing Desk",
                                       isAlert: true,
                                       onConfirm: () => {
@@ -1700,7 +1700,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
                                   if (!isTrialActive && realUnpaid > 0) {
                                     setConfirmDialog({
                                       title: "SaaS License Payment Required",
-                                      message: `Your 1-month free trial has expired. To unsuspend parent ${p.name}, you must settle your outstanding licensing balance of ₦${(realUnpaid * 3600).toLocaleString()} at the Billing Desk.`,
+                                      message: `Your 1-month free trial has expired. To unsuspend parent ${p.name}, you must settle your outstanding licensing balance of ₦${(realUnpaid * 500).toLocaleString()} at the Billing Desk.`,
                                       confirmText: "Go to Billing Desk",
                                       isAlert: true,
                                       onConfirm: () => {
@@ -1798,7 +1798,7 @@ export default function SchoolAdminPortal({ schoolId, setSchoolId }) {
         const schoolPayments = payments.filter(pay => pay.schoolId === schoolId);
         const paidChildrenCount = schoolPayments.reduce((acc, pay) => acc + pay.childrenCount, 0);
         const unpaidChildrenCount = isTrialActive ? 0 : Math.max(0, totalChildren - paidChildrenCount);
-        const amountDue = isTrialActive ? 0 : unpaidChildrenCount * 3600;
+        const amountDue = isTrialActive ? 0 : unpaidChildrenCount * 500;
 
         return (
           <div className="glass-card">

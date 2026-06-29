@@ -56,6 +56,7 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   const [composeMessage, setComposeMessage] = useState('');
   const [showSyncError, setShowSyncError] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
+  const [currentCoords, setCurrentCoords] = useState(null);
 
   const [deviceType, setDeviceType] = useState(() => {
     const w = typeof window !== 'undefined' ? window.innerWidth : 1200;
@@ -251,10 +252,12 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
       const result = await getGpsCoords();
       if (!result.error) {
         activateOnline(result);
+        setCurrentCoords(result);
 
         // Start active watch with high accuracy
         const wId = navigator.geolocation.watchPosition(
           (pos) => {
+            setCurrentCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
             setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
           (err) => {
@@ -270,9 +273,11 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
           ? { lat: g.lastLocation.lat, lng: g.lastLocation.lng }
           : schoolCoords;
         activateOnline(coords);
+        setCurrentCoords(coords);
         
         const wId = navigator.geolocation.watchPosition(
           (pos) => {
+            setCurrentCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
             setGuardianOnlineStatus(g.id, true, { lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
           (err) => {
@@ -610,7 +615,10 @@ export default function BusGuardianPortal({ guardianId, setGuardianId }) {
   };
 
   const handleTriggerPanicSubmit = (type) => {
-    triggerPanic(currentGuardian.id, type, panicNote);
+    const gpsStr = (currentCoords && typeof currentCoords.lat === 'number' && typeof currentCoords.lng === 'number')
+      ? `${currentCoords.lat.toFixed(6)}, ${currentCoords.lng.toFixed(6)}`
+      : 'N/A';
+    triggerPanic(currentGuardian.id, type, panicNote, gpsStr);
     setShowPanicModal(false);
     setPanicNote('');
   };

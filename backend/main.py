@@ -128,6 +128,7 @@ class PanicRequest(BaseModel):
     guardianId: str
     type: str
     note: Optional[str] = ""
+    gps: Optional[str] = "N/A"
 
 class VerifyPickupRequest(BaseModel):
     parentId: str
@@ -1183,7 +1184,8 @@ def trigger_panic(data: PanicRequest, db: Session = Depends(get_db)):
         acknowledgedBySchoolAdmin=False,
         acknowledgedBySuperAdmin=False,
         resolvedBySuperAdmin=False,
-        resolvedByGuardian=False
+        resolvedByGuardian=False,
+        gps=data.gps
     )
     db.add(alert)
 
@@ -1194,7 +1196,7 @@ def trigger_panic(data: PanicRequest, db: Session = Depends(get_db)):
         type="Panic Alert Raised",
         timestamp=datetime.utcnow().isoformat(),
         schoolId=school_id,
-        gps="N/A",
+        gps=data.gps,
         device="Bus Guardian Terminal",
         details=f"Panic Alert ({data.type}) raised by Guardian {g_name} (Bus {g_bus}). Note: {data.note}"
     )
